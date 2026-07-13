@@ -13,7 +13,7 @@ tags:
 categories:
   - Developer Tools
 intro: |
-     A basic, production-ready Git command-line reference guide. 
+  An advanced, production-ready Git command-line reference guide.
   Covers everything from basic staging to advanced branching, stashing, and cloud deployment.
 plugins:
   - copyCode
@@ -24,6 +24,7 @@ plugins:
 ## Repository Management
 
 ### Initialize & Clone
+
 Create a new local repository
 ```shell script
 $ git init [project name]
@@ -40,6 +41,7 @@ $ git clone git_url my_directory
 ```
 
 ### Configuration
+
 Set the name that will be attached to your commits and tags
 ```shell script
 $ git config --global user.name "name"
@@ -65,6 +67,7 @@ $ git config --global --edit
 ## Making Changes
 
 ### Stage & Commit
+
 Show modified files in working directory, staged for your next commit
 ```shell script
 $ git status
@@ -91,6 +94,7 @@ $ git commit -am "commit message"
 ```
 
 ### Undo & Reset
+
 Discard changes in working directory which is not staged
 ```shell script
 $ git restore [file]
@@ -112,6 +116,7 @@ $ git reset --hard
 ```
 
 ### Compare Changes
+
 Diff of what is changed but not staged
 ```shell script
 $ git diff
@@ -128,6 +133,7 @@ $ git rebase [branch]
 ```
 
 ### Track Files
+
 Delete the file from project and stage the removal for commit
 ```shell script
 $ git rm [file]
@@ -139,6 +145,7 @@ $ git mv [existing-path] [new-path]
 ```
 
 ### Ignore Files
+
 A `.gitignore` file specifies intentionally untracked files that Git should ignore
 ```
 /logs/*
@@ -153,6 +160,7 @@ node_modules
 ## Branch Management
 
 ### Create & Switch
+
 List all local branches
 ```shell script
 $ git branch
@@ -189,6 +197,7 @@ $ git checkout -b new_branch
 ```
 
 ### Merge & Delete
+
 Merge branchA into branchB
 ```shell script
 $ git checkout branchB
@@ -201,6 +210,7 @@ $ git branch -d my_branch
 ```
 
 ### Working with Files
+
 Checkout a single file from another branch
 ```shell script
 $ git checkout <branch> -- <file>
@@ -212,6 +222,7 @@ $ git tag my_tag
 ```
 
 ### Rename Branch
+
 ```shell script
 # Rename to new_name
 $ git branch -m <new_name>
@@ -228,6 +239,7 @@ $ git push origin --delete <old>
 ## Viewing History
 
 ### Basic Log
+
 Show the commit history for the currently active branch
 ```shell script
 $ git log
@@ -244,12 +256,14 @@ $ git log --follow [file]
 ```
 
 ### Visual Log
+
 Print out a cool visualization of your log
 ```shell script
 $ git log --pretty=oneline --graph --decorate --all
 ```
 
 ### Search & Filter
+
 Search change by content
 ```shell script
 $ git log -S'<a term in the source>'
@@ -261,6 +275,7 @@ $ git log -p <file_name>
 ```
 
 ### Show Details
+
 Show the diff of what is in branchA that is not in branchB
 ```shell script
 $ git diff branchB...branchA
@@ -300,6 +315,7 @@ $ git stash drop
 ## Git Tricks
 
 ### Rewrite History
+
 Rewrite last commit message
 ```shell script
 $ git commit --amend -m "new message"
@@ -311,6 +327,7 @@ $ git commit --amend --no-edit
 ```
 
 ### Git Aliases
+
 ```shell script
 git config --global alias.co checkout
 git config --global alias.br branch
@@ -359,3 +376,6 @@ Crafted with ❤️ by **Sanaullah** — dedicated to AI, open-source developmen
 <div align="center">
   <sub>Developed by <strong>Sanaullah</strong> | Open Source</sub>
 </div>
+
+---
+
