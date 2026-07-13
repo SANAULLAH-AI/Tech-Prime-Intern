@@ -1,6 +1,4 @@
----
 
-```markdown
 # Phase 1: Digital Image Fundamentals & Representations
 
 ---
