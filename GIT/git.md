@@ -359,5 +359,3 @@ Crafted with ❤️ by **Sanaullah** — dedicated to AI, open-source developmen
 <div align="center">
   <sub>Developed by <strong>Sanaullah</strong> | Open Source</sub>
 </div>
-
----
