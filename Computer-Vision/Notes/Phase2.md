@@ -265,7 +265,3 @@ Process of separating background and foreground in an image.
 
 *End of Phase 2*
 ```
-
-
----
-**Your `phase2.md` is now ready to use!** 🎉
