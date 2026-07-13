@@ -13,7 +13,7 @@ tags:
 categories:
   - Developer Tools
 intro: |
-  An advanced, production-ready Git command-line reference guide.
+  A basic, production-ready Git command-line reference guide.
   Covers everything from basic staging to advanced branching, stashing, and cloud deployment.
 plugins:
   - copyCode
