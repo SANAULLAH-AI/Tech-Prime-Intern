@@ -1,3 +1,5 @@
+Here's the content with the requested sections removed (Synchronize, Remote, git log --stat -M under Tracking path Changes, Extra Log variations, Advanced Git section, and See also links):
+
 ---
 title: Git
 date: 2020-11-25 18:28:43
@@ -213,74 +215,6 @@ Show any object in Git in human-readable format
 $ git show [SHA]
 ```
 
-### Synchronize
-
-Fetch down all the branches from that Git remote
-
-```shell script
-$ git fetch [alias]
-```
-
-Merge a remote branch into your current branch to bring it up to date
-
-```shell script
-$ git merge [alias]/[branch]
-# No fast-forward
-$ git merge --no-ff [alias]/[branch]
-# Only fast-forward
-$ git merge --ff-only [alias]/[branch]
-```
-
-Transmit local branch commits to the remote repository branch
-
-```shell script
-$ git push [alias] [branch]
-```
-
-Fetch and merge any commits from the tracking remote branch
-
-```shell script
-$ git pull
-```
-
-Merge just one specific commit from another branch to your current branch
-
-```shell script
-$ git cherry-pick [commit_id]
-```
-
-### Remote
-
-Add a git URL as an alias
-
-```shell script
-$ git remote add [alias] [url]
-```
-
-Show the names of the remote repositories you've set up
-
-```shell script
-$ git remote
-```
-
-Show the names and URLs of the remote repositories
-
-```shell script
-$ git remote -v
-```
-
-Remove a remote repository
-
-```shell script
-$ git remote rm [remote repo name]
-```
-
-Change the URL of the git repo
-
-```shell script
-$ git remote set-url origin [git_url]
-```
-
 ### Temporary Commits
 
 Save modified and staged changes
@@ -321,12 +255,6 @@ Change an existing file path and stage the move
 $ git mv [existing-path] [new-path]
 ```
 
-Show all commit logs with indication of any paths that moved
-
-```shell script
-$ git log --stat -M
-```
-
 ### Ignoring Files
 
 ```
@@ -363,7 +291,6 @@ A `.gitignore` file specifies intentionally untracked files that Git should igno
   ```shell script
   $ git push origin --delete <old>
   ```
-  {.marker-timeline}
 
 ### Log
 
@@ -381,86 +308,8 @@ $ git log -p <file_name>
 
 Print out a cool visualization of your log
 
-```shell script {.wrap}
+```shell script
 $ git log --pretty=oneline --graph --decorate --all
-```
-
-List files changed in a commit 
-
-```shell script
-$ git log --name-only <commit-id>
-```
-
-List files changed in commits excluding merges
-
-```shell script
-$ git log --no-merges --name-only
-```
-
-Limit commits to the last N entries 
-
-```shell script
-$ git log -<number>
-```
-
-Limit commits to the last N entries (alternate syntax) 
-
-```shell script
-$ git log -n <number>
-```
-
-Limit commits to a maximum of N entries 
-
-```shell script
-$ git log --max-count=<number>
-```
-
-Show commits more recent than a specific date 
-
-```shell script
-$ git log --after="YYYY-MM-DD HH:MM:SS ±HHMM"
-```
-
-Show commits older than a specific date 
-
-```shell script
-$ git log --before="YYYY-MM-DD HH:MM:SS ±HHMM"
-```
-
-Filter commits by author matching a pattern 
-
-```shell script
-$ git log --author=<pattern>
-```
-
-Filter commits by commit message matching a pattern 
-
-```shell script
-$ git log --grep=<pattern>
-```
-
-Show commit graph of the current branch with reference decorations
-
-```shell script
-$ git log --graph --decorate
-```
-
-Show commit graph of a specific branch without switching to it
-
-```shell script
-$ git log --graph --decorate <branch>
-```
-
-Show commit graph for commits in one branch not in another
-
-```shell script
-$ git log --graph --decorate <branchB>..<branchA>
-```
-
-Show commit graph of all branches
-
-```shell script
-$ git log --graph --decorate --all
 ```
 
 ### Branch {.row-span-2}
@@ -503,8 +352,6 @@ Amend the latest commit without changing the commit message.
 $ git commit --amend --no-edit
 ```
 
-See also: [Rewriting history](https://www.atlassian.com/git/tutorials/rewriting-history)
-
 ### Git Aliases
 
 ```cmd
@@ -513,97 +360,3 @@ git config --global alias.br branch
 git config --global alias.ci commit
 git config --global alias.st status
 ```
-
-See also: [More Aliases](https://gist.github.com/johnpolacek/69604a1f6861129ef088)
-
-## Advanced Git
-
-### Worktrees
-
-Create a new working tree at the specified path. If a branch is specified, it checks out that branch. If no branch is given, a new one is created based on HEAD and named after the new directory.
-
-```shell script
-$ git worktree add <path> [<branch>]
-```
-
-List all of the active working trees associated with the repository.
-
-```shell script
-$ git worktree list
-```
-
-Remove the specified working tree.
-
-```shell script
-$ git worktree remove <path>
-```
-
-Clean up stale or manually deleted working trees.
-
-```shell script
-$ git worktree prune
-```
-
-Relocate the working tree to a new path.
-
-```shell script
-$  git worktree move <old_path> <new_path>
-```
-
-### Submodules
-
-Create a new submodule within your repository:
-
-```shell script
-$ git submodule add <repository_url> <path>
-```
-
-Clone a repository and initialize its submodules:
-
-```shell script
-$ git clone --recursive <repository_url>
-```
-
-Update all the submodules in your repository to the latest commit of their respective branches:
-
-```shell script
-$ git submodule update
-```
-
-Pull the latest changes from the remote repositories of the submodules and update them in your main repository:
-
-```shell script
-$ git submodule update --remote
-```
-
-Remove a submodule from your repository:
-
-```shell script
-$ git submodule deinit <path>
-$ git rm <path>
-$ git commit -m "Removed submodule"
-```
-
-### Cherry-picking
-
-Cherry-picking allows you to apply a specific commit from one branch to another branch.
-
-```shell script
-$ git cherry-pick <commit_hash>
-```
-
-### Reflog
-
-Display the reflog, showing the history of HEAD and branch movements:
-
-```shell script
-$ git reflog
-```
-
-Find the hash of the lost commit or branch using the reflog and then checkout to that hash to restore it:
-
-```shell script
-$ git checkout <commit_or_branch_hash>
-```
-
-SANAULLAH
