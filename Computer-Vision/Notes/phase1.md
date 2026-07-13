@@ -220,8 +220,3 @@ To handle this, we use **Image Pyramids**. Images are made smaller or bigger ste
 
 *End of Phase 1*
 ```
-
-
----
-
-**Now your `phase1.md` is in easy-level English!** 🎉
