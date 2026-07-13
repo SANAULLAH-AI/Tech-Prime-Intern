@@ -13,14 +13,13 @@ tags:
 categories:
   - Developer Tools
 intro: |
-  An advanced, production-ready Git command-line reference guide. 
+     A basic, production-ready Git command-line reference guide. 
   Covers everything from basic staging to advanced branching, stashing, and cloud deployment.
 plugins:
   - copyCode
   - search
   - darkMode
 ---
-
 
 ## Repository Management
 
@@ -340,20 +339,25 @@ git config --global alias.st status
 
 ---
 
->  **Pro Tip**: Use `git --help` or `git <command> --help` to learn more about any Git command.
+> 💡 **Pro Tip**: Use `git --help` or `git <command> --help` to learn more about any Git command.
 
 ---
 
 ## Author & Maintainer
 
-> 💡 **About the Author**: Crafted by Sanaullah. Dedicated to AI, open-source development, and building robust version control workflows. Connect with me across platforms!
+Crafted with ❤️ by **Sanaullah** — dedicated to AI, open-source development, and building robust version control workflows.
 
 ### Connect With Me
 
-[![GitHub](https://shields.io)](https://github.com/sanaullah-ai)
-[![HuggingFace](https://shields.io)](https://huggingface.co/sanaullah7964)
-[![LinkedIn](https://shields.io)](https://linkedin.com/in/sana-ullah-a799b22a8)
-[![Kaggle](https://shields.io)](https://kaggle.com/sanaullah03041417973)
+[![GitHub](https://img.shields.io/badge/GitHub-sanaullah--ai-181717?style=flat&logo=github)](https://github.com/sanaullah-ai)
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-sanaullah7964-FFD21E?style=flat&logo=huggingface)](https://huggingface.co/sanaullah7964)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Sana%20Ullah-0A66C2?style=flat&logo=linkedin)](https://linkedin.com/in/sana-ullah-a799b22a8)
+[![Kaggle](https://img.shields.io/badge/Kaggle-sanaullah03041417973-20BEFF?style=flat&logo=kaggle)](https://kaggle.com/sanaullah03041417973)
 
 ---
-Developed by **Sanaullah** | Open Source.
+
+<div align="center">
+  <sub>Developed by <strong>Sanaullah</strong> | Open Source</sub>
+</div>
+
+---
