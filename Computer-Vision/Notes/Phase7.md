@@ -140,7 +140,7 @@ In the real world, we need to track 50 cars and 100 people at the same time. Tra
 
 ---
 
-## 📊 Quick Summary Table
+## Quick Summary Table
 
 | Concept | Simple Explanation |
 |---------|-------------------|
@@ -158,7 +158,7 @@ In the real world, we need to track 50 cars and 100 people at the same time. Tra
 
 ---
 
-## 🔍 Tracking Methods Comparison
+## Tracking Methods Comparison
 
 | Method | Type | Speed | Works With | Best For |
 |--------|------|-------|------------|----------|
@@ -174,7 +174,7 @@ In the real world, we need to track 50 cars and 100 people at the same time. Tra
 
 ---
 
-## 🎯 Key Points to Remember
+## Key Points to Remember
 
 1. **Background Subtraction** = Removes static things, keeps moving objects.
 
@@ -196,7 +196,7 @@ In the real world, we need to track 50 cars and 100 people at the same time. Tra
 
 ---
 
-## 📈 Tracking Evolution Timeline
+## Tracking Evolution Timeline
 
 ```
 1960s: Kalman Filter
@@ -210,7 +210,7 @@ In the real world, we need to track 50 cars and 100 people at the same time. Tra
 
 ---
 
-## 💡 When to Use Which Tracker?
+## When to Use Which Tracker?
 
 | Use Case | Best Choice |
 |----------|-------------|
