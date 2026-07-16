@@ -208,69 +208,13 @@ The 8-Week Advanced AI/ML Internship Program by Tech Prime Pvt Limited delivers 
 
 ---
 
-## Repository Structure
-
-```
-tech-prime-intern/
-├── week-1-pytorch-fundamentals/
-│   ├── cifar10_classifier.ipynb
-│   └── README.md
-├── week-2-computer-vision-cnns/
-│   ├── yolo_object_detection.ipynb
-│   └── README.md
-├── week-3-advanced-computer-vision/
-│   ├── medical_segmentation.ipynb
-│   └── README.md
-├── week-4-nlp-fundamentals/
-│   ├── sentiment_analysis.ipynb
-│   └── README.md
-├── week-5-advanced-nlp/
-│   ├── ner_summarization.ipynb
-│   └── README.md
-├── week-6-large-language-models/
-│   ├── finetuned_chatbot.ipynb
-│   └── README.md
-├── week-7-rag/
-│   ├── document_qa_system.ipynb
-│   └── README.md
-├── week-8-agentic-ai/
-│   ├── multi_agent_system.ipynb
-│   └── README.md
-└── README.md
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-```bash
-# Install required packages
-pip install torch torchvision torchaudio
-pip install transformers datasets
-pip install langchain langchain-community
-pip install opencv-python
-pip install numpy pandas matplotlib scikit-learn
-pip install accelerate peft
-pip install crewai langgraph
-```
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/sanaullah-ai/tech-prime-intern.git
-cd tech-prime-intern
-```
-
----
 
 ## Contact & Connect
 
 | **Platform** | **Link** |
 |--------------|----------|
 | **GitHub** | [github.com/sanaullah-ai](https://github.com/sanaullah-ai) |
-| **LinkedIn** | [linkedin.com/in/sanaullah-ai](https://linkedin.com/in/sanaullah-ai) |
+| **LinkedIn** | [linkedin.com/in/sanaullah-ai](https://linkedin.com/in/sana-ullah-a799b22a8) |
 | **Portfolio** | [sanaullah-ai.github.io](https://sanaullah-ai.github.io) |
 
 ---
