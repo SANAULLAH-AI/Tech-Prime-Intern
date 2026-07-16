@@ -215,7 +215,6 @@ The 8-Week Advanced AI/ML Internship Program by Tech Prime Pvt Limited delivers 
 |--------------|----------|
 | **GitHub** | [github.com/sanaullah-ai](https://github.com/sanaullah-ai) |
 | **LinkedIn** | [linkedin.com/in/sanaullah-ai](https://linkedin.com/in/sana-ullah-a799b22a8) |
-| **Portfolio** | [sanaullah-ai.github.io](https://sanaullah-ai.github.io) |
 
 ---
 
