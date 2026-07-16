@@ -2101,14 +2101,6 @@ criterion = nn.L1Loss()
 | Write README | ☐ | Documentation, usage, results |
 | Push to GitHub | ☐ | Repository, commit, push |
 
-## Files to Submit
-
-- [ ] `cifar10.py` - Complete code
-- [ ] `README.md` - Documentation
-- [ ] `requirements.txt` - Dependencies
-- [ ] `cifar10_model.pth` - Trained model
-- [ ] `training_results.png` - Training curves
-- [ ] `predictions.png` - Sample predictions
 
 ## Key Concepts to Understand
 
@@ -2123,9 +2115,9 @@ criterion = nn.L1Loss()
 
 ---
 
-# 📝 SUMMARY
+#  SUMMARY
 
-## What You've Learned
+## What I've Learned
 
 | Day | Topic | Key Concepts |
 |-----|-------|--------------|
@@ -2137,13 +2129,6 @@ criterion = nn.L1Loss()
 | Day 6 | GPU | Acceleration |
 | Day 7 | Project | CIFAR-10 Classifier |
 
-## Next Steps After Week 1
-
-1. **Experiment**: Try different architectures (ResNet, EfficientNet)
-2. **Tune Hyperparameters**: Learning rate, batch size, epochs
-3. **Data Augmentation**: Try more augmentation techniques
-4. **Deploy**: Use TorchScript to deploy the model
-5. **Move to Week 2**: Computer Vision with CNNs
 
 ---
 
