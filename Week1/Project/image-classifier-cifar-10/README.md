@@ -91,6 +91,18 @@ pip install torch torchvision matplotlib numpy
 
 ---
 
+## Output Files & Visualizations
+
+| File | Preview / Link |
+|------|----------------|
+| `cifar10_best_model.pth` | [⬇ Download model](https://github.com/SANAULLAH-AI/Tech-Prime-Intern/blob/main/Week1/Project/image-classifier-cifar-10/cifar10_best_model.pth) (620 KB) |
+| `training_results.png` | ![Training Curves](https://raw.githubusercontent.com/SANAULLAH-AI/Tech-Prime-Intern/main/Week1/Project/image-classifier-cifar-10/training_results.png) |
+| `predictions.png` | ![Sample Predictions](https://raw.githubusercontent.com/SANAULLAH-AI/Tech-Prime-Intern/main/Week1/Project/image-classifier-cifar-10/predictions.png) |
+
+> *The model file can be downloaded and loaded with `torch.load('cifar10_best_model.pth')`.*
+
+---
+
 ### Output Files
 
 | File | Description |
