@@ -11,19 +11,17 @@
 
 ## Table of Contents
 
-- [Program Overview](#program-overview)
-- [Revised Program Structure](#revised-program-structure)
-  - [Week 1: PyTorch & LLM Mechanics (Conceptual Foundations)](#week-1-pytorch--llm-mechanics-conceptual-foundations)
-  - [Week 2: Containerization & High-Performance Local Model Serving](#week-2-containerization--high-performance-local-model-serving)
-  - [Week 3: Production Data Ingestion & Resilient Vector DBs](#week-3-production-data-ingestion--resilient-vector-dbs)
-  - [Week 4: Advanced RAG Engineering & Real-Time Optimization](#week-4-advanced-rag-engineering--real-time-optimization)
-  - [Week 5: LLM Evaluation & Defensive Guardrails](#week-5-llm-evaluation--defensive-guardrails)
-  - [Week 6: Stateful Agentic AI Orchestration](#week-6-stateful-agentic-ai-orchestration)
-  - [Week 7: MLOps Infrastructure: Observability & Automated Workflows](#week-7-mlops-infrastructure-observability--automated-workflows)
-  - [Week 8: Capstone: The Sovereign, Cost-Optimized GenAI Platform](#week-8-capstone-the-sovereign-cost-optimized-genai-platform)
-- [Portfolio Checklist](#portfolio-checklist)
-- [Technologies & Tools](#technologies--tools)
-- [Contact & Connect](#contact--connect)
+1. [Program Overview](#program-overview)
+2. [Week 1: PyTorch & LLM Mechanics](#week-1-pytorch--llm-mechanics-conceptual-foundations)
+3. [Week 2: Containerization & Local Serving](#week-2-containerization--high-performance-local-model-serving)
+4. [Week 3: Data Ingestion & Vector DBs](#week-3-production-data-ingestion--resilient-vector-dbs)
+5. [Week 4: Advanced RAG & Optimization](#week-4-advanced-rag-engineering--real-time-optimization)
+6. [Week 5: Evaluation & Guardrails](#week-5-llm-evaluation--defensive-guardrails)
+7. [Week 6: Stateful Agentic AI](#week-6-stateful-agentic-ai-orchestration)
+8. [Week 7: MLOps Observability & CI/CD](#week-7-mlops-infrastructure-observability--automated-workflows)
+9. [Week 8: Capstone Platform](#week-8-capstone-the-sovereign-cost-optimized-genai-platform)
+10. [Portfolio Checklist](#portfolio-checklist)
+11. [Technologies & Tools](#technologies--tools)
 
 ---
 
