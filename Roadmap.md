@@ -1,43 +1,30 @@
 # Tech Prime Internship Program
-## 8-Week Production GenAI & MLOps Engineering Portfolio (Lightweight / CPU-Optimized Track)
+## 8-Week Production GenAI & MLOps Engineering Portfolio
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.2+-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-Transformers-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/)
+[![LangChain](https://img.shields.io/badge/LangChain-0.3+-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://www.langchain.com/)
 [![Docker](https://img.shields.io/badge/Docker-24.0+-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![GitHub](https://img.shields.io/badge/GitHub-Portfolio-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sanaullah-ai)
-
----
-
-## ⚠️ Strict Hardware & Software Prerequisites (Read This First)
-
-**Yeh roadmap heavy GPUs ke liye nahi, balke smart, cost-effective, aur CPU-friendly engineering ke liye design kiya gaya hai.**
-
-| Resource | Recommended Setup (If available) | **Lightweight / Fallback Track (For students without GPU)** |
-| :--- | :--- | :--- |
-| **RAM** | 16 GB+ | **8 GB minimum** (Chhote models 8GB par bhi chal jayenge). |
-| **GPU** | NVIDIA RTX 3060+ (8GB VRAM) | **Not Required.** Pure CPU inference (Ollama / llama.cpp) ya Google Colab (Free T4 GPU) use karenge. |
-| **Target Models** | Llama-3-8B, Mistral-7B | **Phi-3-Mini (3.8B), Qwen-2.5-1.5B, Llama-3.2-1B, Gemma-2-2B** (Quantized INT4/GGUF format). |
-| **Embedding Models** | BGE-Large (1024 dims) | **all-MiniLM-L6-v2** (384 dims) – Ye CPU par 0.1 sec mein chal jaata hai. |
-| **Rerankers** | BGE-Reranker-Large | **cross-encoder/ms-marco-MiniLM-L-6-v2** (CPU friendly). |
-
-*Strategy: Hum production-grade code likhenge, lekin inference ke liye hamesha **quantized (GGUF / 4-bit)** ya **distilled** versions use karenge. Week 8 tak pohanchte pohanchte aapko pata chal jayega ke bade models ko chhote models ki tarah optimize kaise karte hain.*
 
 ---
 
 ## Table of Contents
 
-1. [Program Overview](#program-overview)
-2. [Week 1: PyTorch Basics for NLP & LLM Mechanics](#week-1-pytorch-basics-for-nlp--llm-mechanics)
-3. [Week 2: Containerization & Local Model Serving](#week-2-containerization--high-performance-local-model-serving)
-4. [Week 3: Production Data Ingestion & Vector DBs](#week-3-production-data-ingestion--resilient-vector-dbs)
-5. [Week 4: Advanced RAG Engineering & Optimization](#week-4-advanced-rag-engineering--real-time-optimization)
-6. [Week 5: LLM Evaluation & Defensive Guardrails](#week-5-llm-evaluation--defensive-guardrails)
-7. [Week 6: Stateful Agentic AI Orchestration](#week-6-stateful-agentic-ai-orchestration)
-8. [Week 7: MLOps Observability & Automated CI/CD](#week-7-mlops-infrastructure-observability--automated-workflows)
-9. [Week 8: Capstone Platform](#week-8-capstone-the-sovereign-cost-optimized-genai-platform)
-10. [Portfolio Checklist](#portfolio-checklist)
-11. [Technologies & Tools](#technologies--tools)
+- [Program Overview](#program-overview)
+- [Program Structure](#program-structure)
+  - [Week 1: PyTorch & NLP Fundamentals](#week-1-pytorch--nlp-fundamentals)
+  - [Week 2: LLM Serving & Quantization](#week-2-llm-serving--quantization)
+  - [Week 3: Production Data Ingestion & Vector DBs](#week-3-production-data-ingestion--vector-dbs)
+  - [Week 4: Advanced RAG Engineering](#week-4-advanced-rag-engineering)
+  - [Week 5: LLM Evaluation & Guardrails](#week-5-llm-evaluation--guardrails)
+  - [Week 6: Agentic AI Orchestration](#week-6-agentic-ai-orchestration)
+  - [Week 7: MLOps & CI/CD Pipelines](#week-7-mlops--cicd-pipelines)
+  - [Week 8: Capstone: End-to-End GenAI Platform](#week-8-capstone-end-to-end-genai-platform)
+- [Portfolio Checklist](#portfolio-checklist)
+- [Technologies & Tools](#technologies--tools)
+- [Contact & Connect](#contact--connect)
 
 ---
 
@@ -49,129 +36,175 @@
 | **Organization** | Tech Prime Pvt Limited |
 | **Duration** | 8 Weeks |
 | **Commitment** | 9:00 AM – 5:00 PM (Monday – Friday) |
-| **Objective** | Architect, build, and deploy production-grade, resource-optimized LLM pipelines, local serving infrastructures, resilient RAG networks, and stateful agent systems using industrial-strength MLOps standards. |
+| **Objective** | Build production-grade proficiency in PyTorch, NLP, LLMs, RAG, Agentic AI, and MLOps through hands-on, project-based training. |
 
 ### Description
 
-This highly specialized program moves beyond basic theoretical AI modeling to train engineers in the real-world operational complexities of deploying Generative AI. Trainees focus on memory-efficiency formulas, multi-stage Docker optimization, local quantized serving structures, bulletproof exception-handling data pipelines, automated evaluation suites, and stateful multi-agent systems. Every week, developers deliver a working production service pushed to GitHub with clean architectural documentation.
+The 8-Week Advanced AI/ML Internship Program by Tech Prime Pvt Limited delivers hands-on training in deep learning, natural language processing, large language models, retrieval-augmented generation, agentic AI systems, and MLOps infrastructure through a structured, project-based curriculum. Participants use industry-standard tools and frameworks to complete one real-world project each week, building a professional portfolio. By the end of the program, trainees are equipped to design, fine-tune, deploy, and monitor modern GenAI systems, and to showcase their work on GitHub.
 
 ---
 
-## Revised Program Structure
+## Program Structure
 
-### Week 1: PyTorch Basics for NLP & LLM Mechanics
+### Week 1: PyTorch & NLP Fundamentals
 
 | **Component** | **Details** |
 |---------------|-------------|
-| **Focus** | PyTorch Fundamentals (on Text) + Mathematical Foundations of LLMs |
-| **Topics** | **Part A (Basics):** Tensors, Autograd, `nn.Module`, `DataLoader` for text datasets, `CrossEntropyLoss`, `AdamW` optimizer, training loops (`zero_grad()`, `backward()`, `step()`), `model.train()` vs `model.eval()`, `torch.no_grad()`. **Part B (LLM Math):** Under-the-hood mechanics of self-attention matrices; calculating KV-Cache memory footprints; mathematical estimation of VRAM for model serving; precision formats (FP32, FP16, BF16, INT8/INT4). |
-| **Weekly Project** | **Dual Deliverable:** <br> **1. PyTorch Text Classifier:** Train a tiny Transformer (e.g., DistilBERT or a custom 2-layer Transformer) on the AG News or IMDB dataset to practice the complete training loop on **text data** (NOT images). <br> **2. Multi-Model Token Profiler:** Build a separate Python utility that analyzes input documents, calculates token footprints across various tokenizers (Llama-3, Phi-3, Qwen), estimates exact runtime VRAM/RAM requirements, and projects API serving costs. |
-| **Deliverables** | Training logs of the text classifier, loss curves, source code for the profiler, mathematical verification logs, and a documented GitHub README explaining the training loop and VRAM formulas. |
+| **Focus** | PyTorch Fundamentals on Text Data |
+| **Topics** | Tensors, autograd, nn.Module, DataLoader (for text), loss functions, optimizers, training loops, GPU acceleration, Tokenization (HuggingFace). |
+| **Weekly Project** | **Text Classification System** – Build a Transformer-based classifier (DistilBERT) on the AG News or IMDB dataset. Practice the complete PyTorch loop (`zero_grad()`, `backward()`, `step()`) on text data. |
+| **Deliverables** | Training logs, loss curves, source code, GitHub README. |
+
+**Project Goals:**
+- Complete the project independently
+- Document findings
+- Push source code to GitHub
+- Prepare a short presentation
 
 ---
 
-### Week 2: Containerization & High-Performance Local Model Serving
+### Week 2: LLM Serving & Quantization
 
 | **Component** | **Details** |
 |---------------|-------------|
-| **Focus** | Containerizing AI Workloads & Hardware-Optimized Local Serving |
-| **Topics** | Multi-stage Dockerfile design for Python; isolating dependency trees; serving quantized models locally (GGUF format via Ollama or llama.cpp); handling hardware constraints (CPU threading, VRAM limits); asynchronous execution loops with FastAPI. **Lightweight Tip:** Use `Ollama` in CPU mode. Pull `phi3:3.8b-mini-4k-instruct-q4_K_M` or `qwen2.5:1.5b` which run smoothly on 8GB RAM without a GPU. |
-| **Weekly Project** | **Containerized Quantized LLM Gateway (CPU Optimized)**<br>Build and package a lightweight, highly quantized local LLM (specifically, Phi-3-Mini-3.8B or Qwen-1.5B 4-bit) inside a production-optimized Docker container. Expose asynchronous text generation and streaming endpoints via an optimized FastAPI wrapper. Test it on pure CPU to benchmark latency. |
-| **Deliverables** | Production-ready Dockerfile, optimized container build logs, API test suites, and system response-time benchmarks (document CPU inference speed). |
+| **Focus** | Efficient LLM Serving & Quantization |
+| **Topics** | Model quantization (GGUF/GPTQ), vLLM, HuggingFace Pipelines, Gradio/Streamlit interfaces, GPU memory optimization. |
+| **Weekly Project** | **Quantized Chatbot Interface** – Load a quantized LLM (e.g., Phi-3 or Qwen-1.5B) using HuggingFace Transformers, optimize with bitsandbytes (4-bit), and deploy a Gradio/Streamlit chat interface on Kaggle. |
+| **Deliverables** | Inference script, Gradio/Streamlit app, performance benchmarks, GitHub README. |
+
+**Project Goals:**
+- Complete the project independently
+- Document findings
+- Push source code to GitHub
+- Prepare a short presentation
 
 ---
 
-### Week 3: Production Data Ingestion & Resilient Vector DBs
+### Week 3: Production Data Ingestion & Vector DBs
 
 | **Component** | **Details** |
 |---------------|-------------|
-| **Focus** | Production Document Extraction, Advanced Chunking, & Vector Storage |
-| **Topics** | Multi-column PDF extraction; text cleaning pipelines (removing footers, headers, page numbers, and OCR noise); semantic splitters vs. parent-child chunking rules; local self-hosted Vector DB setup (Qdrant or ChromaDB) via Docker Compose. **Lightweight Focus:** Use the `all-MiniLM-L6-v2` sentence transformer for embeddings – it produces 384-dim vectors and runs extremely fast on CPU, keeping your pipeline lightweight. |
-| **Weekly Project** | **Resilient Document-to-Vector Pipeline (CPU Embeddings)**<br>Construct a fault-tolerant ingestion script that parses highly complex, multi-page PDFs, splits them dynamically with overlap constraints, generates embeddings via a local lightweight model (MiniLM), and loads the vectors into a containerized Vector DB using batch processing. |
-| **Deliverables** | Structured ingestion scripts, exception logs for broken files, collection schemas, and metadata extraction scripts. |
+| **Focus** | Document Extraction & Vector Storage |
+| **Topics** | PDF parsing (PyPDF/Unstructured), text chunking strategies, embeddings (Sentence Transformers), ChromaDB/Qdrant setup, metadata filtering. |
+| **Weekly Project** | **Document Ingestion Pipeline** – Build a pipeline that ingests PDFs, cleans text, chunks them with overlap, generates embeddings, and loads them into a Vector DB (Chroma/Qdrant). |
+| **Deliverables** | Ingestion scripts, exception logs, collection schemas, GitHub README. |
+
+**Project Goals:**
+- Complete the project independently
+- Document findings
+- Push source code to GitHub
+- Prepare a short presentation
 
 ---
 
-### Week 4: Advanced RAG Engineering & Real-Time Optimization
+### Week 4: Advanced RAG Engineering
 
 | **Component** | **Details** |
 |---------------|-------------|
-| **Focus** | Multi-Stage Retrieval, Re-ranking, and Context Pruning |
-| **Topics** | Dense vector search vs. Sparse text search (BM25 algorithms); reciprocal rank fusion (RRF); integration of deep Cross-Encoder re-rankers (e.g., BGE-Reranker); context compression strategies to minimize token cost and avoid hallucination. **Lightweight Focus:** Use the `cross-encoder/ms-marco-MiniLM-L-6-v2` for reranking, which is lightweight enough to run on CPU with sub-50ms latency. |
-| **Weekly Project** | **High-Performance Hybrid Search & Rerank Engine (CPU Reranking)**<br>Build a robust, two-stage retrieval pipeline that merges semantic vector search results with lexical search tokens, passes candidates to a local CPU-friendly re-ranker, compresses context nodes, and sends the optimal context pack to your local LLM. |
-| **Deliverables** | Modular retrieval code, latency evaluation metrics, and comparative search quality analysis report. |
+| **Focus** | Hybrid Search, Reranking, & Optimization |
+| **Topics** | Dense vs. Sparse retrieval (BM25), Reciprocal Rank Fusion (RRF), Cross-Encoder Rerankers (BGE-MiniLM), context compression. |
+| **Weekly Project** | **Optimized RAG Pipeline** – Build a two-stage retrieval engine (Hybrid Search + Reranker) with latency optimization. Connect it to the quantized LLM from Week 2. |
+| **Deliverables** | Modular retrieval code, latency metrics, accuracy comparison reports, GitHub README. |
+
+**Project Goals:**
+- Complete the project independently
+- Document findings
+- Push source code to GitHub
+- Prepare a short presentation
 
 ---
 
-### Week 5: LLM Evaluation & Defensive Guardrails
+### Week 5: LLM Evaluation & Guardrails
 
 | **Component** | **Details** |
 |---------------|-------------|
-| **Focus** | Automated Output Validation & System Security Guardrails |
-| **Topics** | Quantitative evaluation frameworks (Ragas metrics: Faithfulness, Answer Relevance, Context Recall); defensive guardrails against prompt injection and toxic generation; setting up validation layers over system input/output flows. **Lightweight Tip:** Evaluation datasets should be small and curated to run quickly on CPU. Use synthetic golden datasets to validate the pipeline logic, not just the model weights. |
-| **Weekly Project** | **Automated LLM Quality Assurance & Guardrail Gate**<br>Develop an offline QA module that benchmarks pipeline performance using metric suites. Wrap your production endpoint with input-filtering and output-policing guardrails, preventing unsafe prompts or hallucinated outputs from reaching consumers. |
-| **Deliverables** | Programmatic test scripts, synthetic golden datasets, and evaluation run logs tracking accuracy under variations. |
+| **Focus** | Automated Evaluation & Safety Guardrails |
+| **Topics** | Ragas metrics (Faithfulness, Answer Relevancy, Context Recall), prompt injection prevention, output validation (Pydantic), NeMo Guardrails basics. |
+| **Weekly Project** | **Evaluation & Guardrail Suite** – Develop an automated QA module to benchmark your RAG pipeline. Wrap your endpoint with input/output filters to block unsafe prompts and hallucinations. |
+| **Deliverables** | Test scripts, synthetic golden datasets, evaluation logs, GitHub README. |
+
+**Project Goals:**
+- Complete the project independently
+- Document findings
+- Push source code to GitHub
+- Prepare a short presentation
 
 ---
 
-### Week 6: Stateful Agentic AI Orchestration
+### Week 6: Agentic AI Orchestration
 
 | **Component** | **Details** |
 |---------------|-------------|
-| **Focus** | State Machines, Cyclic Graph Architectures, and Multi-Agent Collaboration |
-| **Topics** | Transitioning from linear LLM prompt chains to stateful graph execution models; managing states, conditional logic, loops, and custom tool-calling structures; human-in-the-loop validation configurations. **Lightweight Focus:** Agents call the light Qwen/Phi models you deployed in Week 2, ensuring even multi-agent loops don't max out your CPU. |
-| **Weekly Project** | **Autonomous State-Driven Code Review & Repair Loop**<br>Construct a multi-agent system using LangGraph or CrewAI. One agent acts as a Code Reviewer parsing code artifacts and highlighting syntax bugs; a second agent acts as a Developer correcting errors based on state outputs. The process loops dynamically until code compilation checks pass. |
-| **Deliverables** | Comprehensive state machine diagram, operational tool-execution schemas, and trace validation logs. |
+| **Focus** | Stateful Multi-Agent Systems |
+| **Topics** | LangGraph, state machines, conditional logic, tool-calling, human-in-the-loop validation, CrewAI basics. |
+| **Weekly Project** | **Autonomous Code Review Agent** – Build a LangGraph agent system where one agent reviews code and another fixes bugs. Implement state management and loop until the code passes checks. |
+| **Deliverables** | State machine diagram, agent code, trace logs, GitHub README. |
+
+**Project Goals:**
+- Complete the project independently
+- Document findings
+- Push source code to GitHub
+- Prepare a short presentation
 
 ---
 
-### Week 7: MLOps Infrastructure: Observability & Automated Workflows
+### Week 7: MLOps & CI/CD Pipelines
 
 | **Component** | **Details** |
 |---------------|-------------|
-| **Focus** | Logging, Run Tracking, and Automated Code Integration |
-| **Topics** | Integrating centralized monitoring frameworks (such as Weights & Biases or MLflow); tracking model inputs, tool latency, token consumption, and errors; configuring continuous integration (CI) workflows using GitHub Actions. |
-| **Weekly Project** | **Monitored Agent Pipeline with Automated CI**<br>Instrument your Week 6 Multi-Agent pipeline to log every step, tool latency, and prompt variation to an MLflow server. Write a GitHub Actions configuration that automatically executes linter checks and basic evaluation tests whenever new code changes are pushed. |
-| **Deliverables** | Configured GitHub Actions YAML workflow files, a fully integrated MLflow monitoring board, and execution trace logs. |
+| **Focus** | Observability, Tracking, & Automation |
+| **Topics** | MLflow for experiment tracking, GitHub Actions (CI/CD), automated testing (pytest), linting. |
+| **Weekly Project** | **Monitored Agent Pipeline with CI** – Instrument your Week 6 Agent pipeline with MLflow. Write a GitHub Actions YAML to automatically run linting and evaluation tests on every push. |
+| **Deliverables** | GitHub Actions YAML, MLflow dashboard screenshots, trace logs, GitHub README. |
+
+**Project Goals:**
+- Complete the project independently
+- Document findings
+- Push source code to GitHub
+- Prepare a short presentation
 
 ---
 
-### Week 8: Capstone: The Sovereign, Cost-Optimized GenAI Platform
+### Week 8: Capstone: End-to-End GenAI Platform
 
 | **Component** | **Details** |
 |---------------|-------------|
-| **Focus** | End-to-End Scalable GenAI Application Deployment |
-| **Topics** | High-availability hosting models; load balancing; prompt caching architectures using Redis; optimizing performance under simulated heavy loads; orchestrating complex network structures with Docker Compose. **Lightweight Focus:** The entire stack (FastAPI + CPU-based Qwen/Phi + MiniLM embeddings + Redis) is containerized and runs completely locally on a standard laptop without requiring cloud GPUs. |
-| **Weekly Project** | **High-Availability, Cache-Optimized Agentic RAG Platform (Local Deployment)**<br>Integrate your entire pipeline (FastAPI gateway, local quantized LLM, local Vector DB, LangGraph agents, and Redis-cache layer) into a single, cohesive Docker Compose structure. Utilize Redis to cache redundant queries, cutting API latency and load. |
-| **Deliverables** | Full Docker Compose orchestration scripts, automated load testing logs, project architecture diagram, and a portfolio-ready deployment repository. |
+| **Focus** | Full-Stack GenAI Deployment |
+| **Topics** | FastAPI integration, Redis for caching, Docker Compose orchestration, load testing, system architecture design. |
+| **Weekly Project** | **Complete GenAI Platform** – Integrate your Quantized LLM, RAG Pipeline, Agents, and Redis Cache into a single unified FastAPI application with Docker Compose. Run load tests and document architecture. |
+| **Deliverables** | FastAPI code, Docker Compose file, load testing results, architecture diagram, GitHub README. |
+
+**Project Goals:**
+- Complete the project independently
+- Document findings
+- Push source code to GitHub
+- Prepare a short presentation
 
 ---
 
 ## Portfolio Checklist
 
-- [ ] 8 working, locally tested GenAI & MLOps repositories.
-- [ ] Production-optimized Dockerfiles with multi-stage builds and small footprint profiles.
-- [ ] A resilient document pipeline handling extraction errors and edge cases without crashing.
-- [ ] Systematically benchmarked retrieval performance reports (Vector vs. Hybrid vs. Rerank).
-- [ ] Complete LangGraph state machine tracking loops and runtime variable logs.
-- [ ] GitHub Actions workflows with automated testing suites.
-- [ ] Professional architectural diagrams in every project README.
+- [ ] 8 completed production-grade GenAI & MLOps projects
+- [ ] Well-documented GitHub repository with READMEs
+- [ ] Professional architectural diagrams
+- [ ] Project demonstrations
+- [ ] Resume updated with projects
 
 ---
 
 ## Technologies & Tools
 
-### Core Production Tech Stack
+### Core Technologies
 | **Category** | **Technologies** |
 |--------------|------------------|
-| **Core DL** | PyTorch, HuggingFace Transformers, Datasets, Tokenizers |
-| **Local Serving** | Ollama, Llama.cpp, FastAPI, Uvicorn |
-| **Data Pipelines** | PyPDF, PDFPlumber, Unstructured, Pandas, NumPy |
-| **Vector DBs** | Qdrant, ChromaDB, SQLite |
-| **Orchestration** | LangGraph, CrewAI, Python Stateful Classes |
-| **Guardrails & Eval**| Ragas, Pydantic, Custom Regex filters |
-| **DevOps & MLOps**| Docker, Docker Compose, MLflow, GitHub Actions, Redis |
-| **Development** | Python 3.10+, Git, Markdown |
+| **Deep Learning** | PyTorch, HuggingFace Transformers, Tokenizers |
+| **LLM Serving** | vLLM, GGUF/GPTQ, Gradio, Streamlit |
+| **Data Pipelines** | PyPDF, Unstructured, Pandas, NumPy |
+| **Vector DBs** | ChromaDB, Qdrant, SQLite |
+| **RAG & Agents** | LangChain, LangGraph, CrewAI, BM25 |
+| **Eval & Guardrails**| Ragas, Pydantic, NeMo Guardrails |
+| **MLOps** | Docker, Docker Compose, MLflow, GitHub Actions, Redis |
+| **Data Science** | Matplotlib, Scikit-learn |
 
 ---
 
@@ -186,7 +219,7 @@ This highly specialized program moves beyond basic theoretical AI modeling to tr
 
 ## Acknowledgments
 
-Special thanks to **Tech Prime Pvt Limited** for providing this comprehensive, production-focused training opportunity and for the continuous guidance throughout the program.
+Special thanks to **Tech Prime Pvt Limited** for providing this comprehensive training opportunity and for the continuous guidance throughout the program.
 
 ---
 
@@ -194,6 +227,6 @@ Special thanks to **Tech Prime Pvt Limited** for providing this comprehensive, p
 
 **Tech Prime Pvt Limited** | 8-Week Production GenAI & MLOps Engineering Internship
 
-*Built with dedication, structural curiosity, and uncompromising engineering standards.*
+*Built with dedication, curiosity, and a commitment to excellence.*
 
 </div>
