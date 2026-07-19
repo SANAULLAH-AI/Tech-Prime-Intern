@@ -1255,7 +1255,7 @@ warnings.filterwarnings('ignore')
 class LLMConfig:
     """Configuration for LLM profiling"""
     
-    # Supported models
+    # Supported models - using only publicly available tokenizers
     MODELS = {
         'gpt2': {
             'name': 'GPT-2',
@@ -1277,35 +1277,45 @@ class LLMConfig:
             'vocab_size': 50257,
             'max_ctx': 1024
         },
-        'llama-7b': {
-            'name': 'LLaMA-7B',
-            'tokenizer': 'meta-llama/Llama-2-7b-hf',
-            'params_b': 7,
-            'layers': 32,
-            'heads': 32,
-            'head_dim': 128,
-            'vocab_size': 32000,
-            'max_ctx': 4096
+        'gpt2-large': {
+            'name': 'GPT-2 Large',
+            'tokenizer': 'gpt2-large',
+            'params_b': 0.77,
+            'layers': 36,
+            'heads': 20,
+            'head_dim': 64,
+            'vocab_size': 50257,
+            'max_ctx': 1024
         },
-        'llama-13b': {
-            'name': 'LLaMA-13B',
-            'tokenizer': 'meta-llama/Llama-2-13b-hf',
-            'params_b': 13,
-            'layers': 40,
-            'heads': 40,
-            'head_dim': 128,
-            'vocab_size': 32000,
-            'max_ctx': 4096
+        'bert-base': {
+            'name': 'BERT Base',
+            'tokenizer': 'bert-base-uncased',
+            'params_b': 0.11,
+            'layers': 12,
+            'heads': 12,
+            'head_dim': 64,
+            'vocab_size': 30522,
+            'max_ctx': 512
         },
-        'llama-70b': {
-            'name': 'LLaMA-70B',
-            'tokenizer': 'meta-llama/Llama-2-70b-hf',
-            'params_b': 70,
-            'layers': 80,
-            'heads': 64,
-            'head_dim': 128,
-            'vocab_size': 32000,
-            'max_ctx': 4096
+        'roberta-base': {
+            'name': 'RoBERTa Base',
+            'tokenizer': 'roberta-base',
+            'params_b': 0.125,
+            'layers': 12,
+            'heads': 12,
+            'head_dim': 64,
+            'vocab_size': 50265,
+            'max_ctx': 512
+        },
+        't5-small': {
+            'name': 'T5 Small',
+            'tokenizer': 't5-small',
+            'params_b': 0.06,
+            'layers': 6,
+            'heads': 8,
+            'head_dim': 64,
+            'vocab_size': 32128,
+            'max_ctx': 512
         },
         'mistral-7b': {
             'name': 'Mistral-7B',
@@ -1316,6 +1326,37 @@ class LLMConfig:
             'head_dim': 128,
             'vocab_size': 32000,
             'max_ctx': 8192
+        }
+    }
+    
+    # LLaMA models (for VRAM calculation only, not tokenization)
+    LLAMA_MODELS = {
+        'llama-7b': {
+            'name': 'LLaMA-7B',
+            'params_b': 7,
+            'layers': 32,
+            'heads': 32,
+            'head_dim': 128,
+            'vocab_size': 32000,
+            'max_ctx': 4096
+        },
+        'llama-13b': {
+            'name': 'LLaMA-13B',
+            'params_b': 13,
+            'layers': 40,
+            'heads': 40,
+            'head_dim': 128,
+            'vocab_size': 32000,
+            'max_ctx': 4096
+        },
+        'llama-70b': {
+            'name': 'LLaMA-70B',
+            'params_b': 70,
+            'layers': 80,
+            'heads': 64,
+            'head_dim': 128,
+            'vocab_size': 32000,
+            'max_ctx': 4096
         }
     }
     
@@ -1358,28 +1399,42 @@ class TokenProfiler:
             except Exception as e:
                 print(f"  ✗ Failed to load {config['name']}: {e}")
     
-    def count_tokens(self, text: str, model_key: str = 'llama-7b') -> Dict:
+    def count_tokens(self, text: str, model_key: str = 'gpt2') -> Dict:
         """Count tokens for a given text and model"""
         if model_key not in self.tokenizers:
-            raise ValueError(f"Model {model_key} not loaded")
+            # Try fallback to a model that is loaded
+            available_models = list(self.tokenizers.keys())
+            if available_models:
+                fallback = available_models[0]
+                print(f"  ⚠ Model {model_key} not loaded, using {fallback} as fallback")
+                model_key = fallback
+            else:
+                raise ValueError("No tokenizers loaded. Please check your internet connection.")
         
         tokenizer = self.tokenizers[model_key]
-        tokens = tokenizer.encode(text)
-        token_strings = tokenizer.convert_ids_to_tokens(tokens)
         
-        return {
-            'text': text[:100] + '...' if len(text) > 100 else text,
-            'model': LLMConfig.MODELS[model_key]['name'],
-            'token_count': len(tokens),
-            'token_ids': tokens[:10],  # First 10 tokens
-            'token_strings': token_strings[:10],
-            'vocab_size': tokenizer.vocab_size
-        }
+        try:
+            tokens = tokenizer.encode(text)
+            token_strings = tokenizer.convert_ids_to_tokens(tokens)
+            
+            return {
+                'text': text[:100] + '...' if len(text) > 100 else text,
+                'model': LLMConfig.MODELS.get(model_key, {}).get('name', model_key),
+                'token_count': len(tokens),
+                'token_ids': tokens[:10],  # First 10 tokens
+                'token_strings': token_strings[:10],
+                'vocab_size': tokenizer.vocab_size
+            }
+        except Exception as e:
+            return {
+                'error': str(e),
+                'model': model_key
+            }
     
     def profile_document(self, document: str, models: Optional[List[str]] = None) -> Dict:
         """Profile a document across multiple models"""
         if models is None:
-            models = list(LLMConfig.MODELS.keys())
+            models = list(self.tokenizers.keys())
         
         results = {}
         for model_key in models:
@@ -1403,17 +1458,17 @@ class TokenProfiler:
             "TOKENIZATION REPORT",
             "=" * 70,
             f"\nText Sample: {text[:200]}...\n",
-            f"{'Model':<15} {'Tokens':<10} {'Vocab Size':<15} {'Est. Cost (1000x)':<15}"
+            f"{'Model':<20} {'Tokens':<10} {'Vocab Size':<15} {'Est. Cost (1000x)':<15}"
         ]
         report.append("-" * 70)
         
         for model_key, result in results.items():
             if 'error' in result:
-                report.append(f"{LLMConfig.MODELS[model_key]['name']:<15} {'ERROR':<10}")
+                report.append(f"{model_key:<20} {'ERROR':<10}")
             else:
                 cost = self.estimate_cost(result['token_count'])
                 report.append(
-                    f"{result['model']:<15} "
+                    f"{result['model']:<20} "
                     f"{result['token_count']:<10} "
                     f"{result['vocab_size']:<15} "
                     f"${cost*1000:<14.4f}"
@@ -1430,7 +1485,7 @@ class MemoryMathEngine:
     """Calculate VRAM requirements for LLM inference"""
     
     def __init__(self):
-        self.model_configs = LLMConfig.MODELS
+        self.model_configs = {**LLMConfig.MODELS, **LLMConfig.LLAMA_MODELS}
         self.precisions = LLMConfig.PRECISIONS
     
     def calculate_model_weights(self, params_b: float, precision: str) -> Dict:
@@ -1485,6 +1540,9 @@ class MemoryMathEngine:
     def calculate_total_vram(self, model_key: str, seq_len: int, 
                            batch_size: int, precision: str = 'fp16') -> Dict:
         """Calculate total VRAM requirements"""
+        if model_key not in self.model_configs:
+            raise ValueError(f"Model {model_key} not found")
+        
         config = self.model_configs[model_key]
         
         # Model weights
@@ -1526,31 +1584,36 @@ class MemoryMathEngine:
     def compare_deployments(self, seq_len: int, batch_size: int = 1):
         """Compare VRAM across models and precisions"""
         
-        models = ['llama-7b', 'llama-13b', 'llama-70b']
+        models = ['llama-7b', 'llama-13b', 'llama-70b', 'mistral-7b']
         precisions = ['fp16', 'int8', 'int4']
         
         print("VRAM Comparison for Deployment")
         print("=" * 80)
         print(f"Sequence Length: {seq_len}, Batch Size: {batch_size}")
         print("-" * 80)
-        print(f"{'Model':<12} {'Precision':<10} {'Weights':<10} {'KV-Cache':<10} {'Total':<10}")
+        print(f"{'Model':<15} {'Precision':<10} {'Weights':<12} {'KV-Cache':<12} {'Total':<12}")
         print("-" * 80)
         
         results = []
         for model in models:
+            if model not in self.model_configs:
+                continue
             for prec in precisions:
-                mem = self.calculate_total_vram(model, seq_len, batch_size, prec)
-                results.append({
-                    'model': mem['model_name'],
-                    'precision': prec,
-                    'weights_gb': mem['model_weights']['GB'],
-                    'kv_cache_gb': mem['kv_cache']['GB'],
-                    'total_gb': mem['total_gb']
-                })
-                print(f"{mem['model_name']:<12} {prec:<10} "
-                      f"{mem['model_weights']['GB']:<10.2f} "
-                      f"{mem['kv_cache']['GB']:<10.2f} "
-                      f"{mem['total_gb']:<10.2f}")
+                try:
+                    mem = self.calculate_total_vram(model, seq_len, batch_size, prec)
+                    results.append({
+                        'model': mem['model_name'],
+                        'precision': prec,
+                        'weights_gb': mem['model_weights']['GB'],
+                        'kv_cache_gb': mem['kv_cache']['GB'],
+                        'total_gb': mem['total_gb']
+                    })
+                    print(f"{mem['model_name']:<15} {prec:<10} "
+                          f"{mem['model_weights']['GB']:<12.2f} "
+                          f"{mem['kv_cache']['GB']:<12.2f} "
+                          f"{mem['total_gb']:<12.2f}")
+                except Exception as e:
+                    print(f"{model:<15} {prec:<10} {'ERROR':<12}")
         
         print("=" * 80)
         return results
@@ -1569,9 +1632,21 @@ class CostEstimator:
                 'input': 30.00,
                 'output': 60.00
             },
+            'gpt-4-turbo': {
+                'input': 10.00,
+                'output': 30.00
+            },
             'gpt-3.5-turbo': {
                 'input': 0.50,
                 'output': 1.50
+            },
+            'claude-3-opus': {
+                'input': 15.00,
+                'output': 75.00
+            },
+            'claude-3-sonnet': {
+                'input': 3.00,
+                'output': 15.00
             },
             'llama-2-7b': {
                 'input': 0.20,
@@ -1588,6 +1663,10 @@ class CostEstimator:
             'mistral-7b': {
                 'input': 0.20,
                 'output': 0.20
+            },
+            'mixtral-8x7b': {
+                'input': 0.50,
+                'output': 0.50
             }
         }
     
@@ -1683,7 +1762,7 @@ class LLMProfiler:
         self.memory_engine = MemoryMathEngine()
         self.cost_estimator = CostEstimator()
     
-    def profile_pipeline(self, text: str, model_key: str = 'llama-7b',
+    def profile_pipeline(self, text: str, model_key: str = 'gpt2',
                         seq_len: int = 2048, precision: str = 'fp16'):
         """Run complete profiling pipeline"""
         
@@ -1695,6 +1774,9 @@ class LLMProfiler:
         print("\n1. TOKENIZATION")
         print("-" * 40)
         token_result = self.token_profiler.count_tokens(text, model_key)
+        if 'error' in token_result:
+            print(f"Error: {token_result['error']}")
+            return
         print(f"Model: {token_result['model']}")
         print(f"Token Count: {token_result['token_count']}")
         print(f"Vocab Size: {token_result['vocab_size']}")
@@ -1702,40 +1784,52 @@ class LLMProfiler:
         # 2. Memory Estimation
         print("\n2. MEMORY ESTIMATION")
         print("-" * 40)
-        mem_result = self.memory_engine.calculate_total_vram(
-            model_key, seq_len, 1, precision
-        )
-        print(f"Model: {mem_result['model_name']}")
-        print(f"Parameters: {mem_result['params_b']}B")
-        print(f"Precision: {mem_result['precision']}")
-        print(f"Model Weights: {mem_result['model_weights']['GB']:.2f} GB")
-        print(f"KV-Cache: {mem_result['kv_cache']['GB']:.2f} GB")
-        print(f"Activations: {mem_result['activations']['GB']:.2f} GB")
-        print(f"Total VRAM: {mem_result['total_gb']:.2f} GB")
+        try:
+            mem_result = self.memory_engine.calculate_total_vram(
+                model_key, seq_len, 1, precision
+            )
+            print(f"Model: {mem_result['model_name']}")
+            print(f"Parameters: {mem_result['params_b']}B")
+            print(f"Precision: {mem_result['precision']}")
+            print(f"Model Weights: {mem_result['model_weights']['GB']:.2f} GB")
+            print(f"KV-Cache: {mem_result['kv_cache']['GB']:.2f} GB")
+            print(f"Activations: {mem_result['activations']['GB']:.2f} GB")
+            print(f"Total VRAM: {mem_result['total_gb']:.2f} GB")
+        except Exception as e:
+            print(f"Error in memory estimation: {e}")
+            mem_result = None
         
         # 3. Cost Estimation
         print("\n3. COST ESTIMATION")
         print("-" * 40)
-        cost = self.cost_estimator.estimate_cost(
-            token_result['token_count'],
-            'gpt-3.5-turbo'
-        )
-        print(f"Model: {cost['model']}")
-        print(f"Input Tokens: {cost['input_tokens']:,}")
-        print(f"Output Tokens: {cost['output_tokens']:,}")
-        print(f"Total Cost: ${cost['total_cost']:.6f}")
+        try:
+            cost = self.cost_estimator.estimate_cost(
+                token_result['token_count'],
+                'gpt-3.5-turbo'
+            )
+            print(f"Model: {cost['model']}")
+            print(f"Input Tokens: {cost['input_tokens']:,}")
+            print(f"Output Tokens: {cost['output_tokens']:,}")
+            print(f"Total Cost: ${cost['total_cost']:.6f}")
+        except Exception as e:
+            print(f"Error in cost estimation: {e}")
+            cost = None
         
         # 4. Monthly Projection
         print("\n4. MONTHLY PROJECTION")
         print("-" * 40)
-        monthly = self.cost_estimator.monthly_cost_projection(
-            token_result['token_count'] * 100,  # 100 requests per day
-            'gpt-3.5-turbo'
-        )
-        print(f"Daily Requests: 100")
-        print(f"Daily Tokens: {monthly['daily_tokens']:,}")
-        print(f"Monthly Tokens: {monthly['monthly_tokens']:,}")
-        print(f"Monthly Cost: ${monthly['monthly_cost']:.2f}")
+        try:
+            monthly = self.cost_estimator.monthly_cost_projection(
+                token_result['token_count'] * 100,  # 100 requests per day
+                'gpt-3.5-turbo'
+            )
+            print(f"Daily Requests: 100")
+            print(f"Daily Tokens: {monthly['daily_tokens']:,}")
+            print(f"Monthly Tokens: {monthly['monthly_tokens']:,}")
+            print(f"Monthly Cost: ${monthly['monthly_cost']:.2f}")
+        except Exception as e:
+            print(f"Error in monthly projection: {e}")
+            monthly = None
         
         print("\n" + "=" * 80)
         
@@ -1751,7 +1845,7 @@ class LLMProfiler:
         """Generate comprehensive report"""
         
         if models is None:
-            models = ['llama-7b', 'llama-13b', 'llama-70b']
+            models = ['llama-7b', 'llama-13b', 'llama-70b', 'mistral-7b']
         
         if seq_lens is None:
             seq_lens = [512, 1024, 2048, 4096]
@@ -1776,14 +1870,14 @@ class LLMProfiler:
         # Cost comparison
         print("\nCOST COMPARISON")
         print("-" * 40)
-        models_cost = ['gpt-3.5-turbo', 'llama-2-7b', 'llama-2-70b']
-        print(f"{'Model':<20} {'Cost per 1M tokens':<25} {'Cost per 1k tokens':<20}")
-        print("-" * 60)
+        models_cost = ['gpt-3.5-turbo', 'gpt-4', 'claude-3-sonnet', 'llama-2-70b']
+        print(f"{'Model':<25} {'Cost per 1M tokens (avg)':<25} {'Cost per 1k tokens':<20}")
+        print("-" * 70)
         for model in models_cost:
             pricing = self.cost_estimator.pricing.get(model, {})
             if pricing:
                 avg_cost = (pricing['input'] + pricing['output']) / 2
-                print(f"{model:<20} ${avg_cost:<24.2f} ${avg_cost/1000:<19.4f}")
+                print(f"{model:<25} ${avg_cost:<24.2f} ${avg_cost/1000:<19.4f}")
         
         print("\n" + "=" * 80)
 
@@ -1816,8 +1910,8 @@ def main():
     output token.
     """
     
-    # Run profiling
-    profiler.profile_pipeline(sample_text)
+    # Run profiling using a working model
+    profiler.profile_pipeline(sample_text, model_key='gpt2')
     
     # Generate full report
     profiler.generate_full_report(sample_text)
