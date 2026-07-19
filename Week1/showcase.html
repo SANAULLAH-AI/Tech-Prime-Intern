@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyTorch Fundamentals - Week 1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a1a;
+            color: #ffffff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slides-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 60px 80px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.6s ease;
+            transform: scale(0.95);
+            overflow-y: auto;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            z-index: 10;
+        }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(100, 255, 218, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 50%, rgba(100, 255, 218, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .slide > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Typography - Scaled for large screens */
+        h1 {
+            font-size: 5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #64ffda, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            letter-spacing: -1.5px;
+        }
+
+        h2 {
+            font-size: 3.2em;
+            font-weight: 600;
+            color: #64ffda;
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
+        }
+
+        h3 {
+            font-size: 1.6em;
+            font-weight: 500;
+            color: #64ffda;
+            margin-bottom: 12px;
+        }
+
+        h4 {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            color: rgba(255,255,255,0.5);
+            font-weight: 300;
+        }
+
+        .accent {
+            color: #64ffda;
+        }
+
+        /* Grid */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 25px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 24px 28px;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .card:hover {
+            border-color: rgba(100, 255, 218, 0.15);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .card-title {
+            font-size: 0.75em;
+            color: #64ffda;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+        }
+
+        .card-value {
+            font-size: 1.05em;
+            color: rgba(255,255,255,0.85);
+            line-height: 1.6;
+        }
+
+        /* Architecture Flow */
+        .flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 18px 24px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(100,255,218,0.08);
+        }
+
+        .flow-item {
+            background: rgba(100,255,218,0.06);
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            color: rgba(255,255,255,0.8);
+            border: 1px solid rgba(100,255,218,0.08);
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .flow-arrow {
+            color: #64ffda;
+            font-size: 1.2em;
+            font-weight: 300;
+        }
+
+        /* Table */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: rgba(100,255,218,0.06);
+            color: #64ffda;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(100,255,218,0.12);
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.8);
+        }
+
+        tr:hover td {
+            background: rgba(100,255,218,0.02);
+        }
+
+        /* Status Tags */
+        .tag-excellent {
+            color: #4caf50;
+            font-weight: 600;
+        }
+        .tag-good {
+            color: #8bc34a;
+            font-weight: 600;
+        }
+        .tag-average {
+            color: #ffc107;
+            font-weight: 600;
+        }
+        .tag-weak {
+            color: #ff5722;
+            font-weight: 600;
+        }
+
+        /* Slide Number */
+        .slide-number {
+            position: absolute;
+            bottom: 25px;
+            right: 35px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.12);
+            font-weight: 300;
+            letter-spacing: 2px;
+            z-index: 20;
+        }
+
+        /* Navigation */
+        .nav-controls {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: rgba(255,255,255,0.03);
+            padding: 10px 22px;
+            border-radius: 50px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-btn {
+            background: rgba(100,255,218,0.08);
+            border: 1px solid rgba(100,255,218,0.12);
+            color: #64ffda;
+            padding: 6px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(100,255,218,0.15);
+            transform: translateY(-1px);
+        }
+
+        .dot-nav {
+            display: flex;
+            gap: 6px;
+            margin: 0 12px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: #64ffda;
+            width: 18px;
+            border-radius: 3px;
+        }
+
+        .dot:hover {
+            background: rgba(100,255,218,0.4);
+        }
+
+        /* Scrollbar */
+        .slide::-webkit-scrollbar {
+            width: 3px;
+        }
+        .slide::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .slide::-webkit-scrollbar-thumb {
+            background: rgba(100,255,218,0.12);
+            border-radius: 2px;
+        }
+
+        /* Large Screen Optimization */
+        @media (min-width: 1600px) {
+            .slide {
+                padding: 80px 120px;
+            }
+            h1 { font-size: 6em; }
+            h2 { font-size: 3.8em; }
+            h3 { font-size: 2em; }
+            .subtitle { font-size: 1.8em; }
+            .card { padding: 32px 36px; }
+            .card-value { font-size: 1.2em; }
+            .grid-2 { gap: 40px; }
+            .grid-3 { gap: 35px; }
+            .flow-item { font-size: 1em; padding: 12px 22px; }
+            table { font-size: 1em; }
+        }
+
+        @media (min-width: 1200px) and (max-width: 1599px) {
+            .slide {
+                padding: 60px 80px;
+            }
+            h1 { font-size: 4.5em; }
+            h2 { font-size: 2.8em; }
+            h3 { font-size: 1.6em; }
+            .subtitle { font-size: 1.4em; }
+            .card { padding: 22px 26px; }
+            .card-value { font-size: 1em; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1199px) {
+            .slide { padding: 40px 50px; }
+            h1 { font-size: 3.5em; }
+            h2 { font-size: 2.2em; }
+            h3 { font-size: 1.4em; }
+            .subtitle { font-size: 1.2em; }
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .flow { gap: 6px; padding: 12px; }
+            .flow-item { font-size: 0.7em; padding: 6px 12px; }
+        }
+
+        @media (max-width: 600px) {
+            .slide { padding: 20px 25px; }
+            h1 { font-size: 2.5em; }
+            h2 { font-size: 1.6em; }
+            h3 { font-size: 1.1em; }
+            .subtitle { font-size: 0.95em; }
+            .card { padding: 14px 16px; }
+            .card-value { font-size: 0.85em; }
+            .nav-controls { padding: 6px 12px; gap: 8px; }
+            .nav-btn { padding: 4px 12px; font-size: 10px; }
+        }
+
+        @media print {
+            .nav-controls { display: none !important; }
+            .slide {
+                position: relative !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                transform: none !important;
+                page-break-after: always;
+                padding: 50px 70px;
+                height: auto;
+                min-height: 100vh;
+                display: flex !important;
+                flex-direction: column;
+                justify-content: center;
+            }
+            body { overflow: visible; height: auto; }
+            .slides-container { height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="slides-container">
+
+    <!-- SLIDE 1: Title -->
+    <div class="slide active" data-slide="0">
+        <div class="slide-content">
+            <div style="color: #64ffda; font-size: 1.1em; letter-spacing: 5px; font-weight: 300; margin-bottom: 12px;">TECH PRIME PVT LIMITED</div>
+            <h1>PyTorch Fundamentals</h1>
+            <div style="font-size: 1.5em; color: rgba(255,255,255,0.45); font-weight: 300; margin-bottom: 8px;">Week 1 — Advanced AI/ML Internship</div>
+            <div style="font-size: 1.2em; color: rgba(255,255,255,0.3); margin-top: 6px;">CIFAR-10 Image Classifier · End-to-End Implementation</div>
+            <div style="margin-top: 35px; display: flex; gap: 15px; flex-wrap: wrap;">
+                <span style="background: rgba(100,255,218,0.08); color: #64ffda; padding: 5px 16px; border-radius: 20px; font-size: 0.85em; border: 1px solid rgba(100,255,218,0.1);">PyTorch</span>
+                <span style="background: rgba(100,255,218,0.08); color: #64ffda; padding: 5px 16px; border-radius: 20px; font-size: 0.85em; border: 1px solid rgba(100,255,218,0.1);">CNN</span>
+                <span style="background: rgba(100,255,218,0.08); color: #64ffda; padding: 5px 16px; border-radius: 20px; font-size: 0.85em; border: 1px solid rgba(100,255,218,0.1);">GPU Acceleration</span>
+                <span style="background: rgba(100,255,218,0.08); color: #64ffda; padding: 5px 16px; border-radius: 20px; font-size: 0.85em; border: 1px solid rgba(100,255,218,0.1);">CIFAR-10</span>
+            </div>
+            <div style="margin-top: 50px; color: rgba(255,255,255,0.2); font-size: 0.9em;">
+                <div>July 2026</div>
+                <div style="margin-top: 4px;">Advanced AI/ML Internship Program</div>
+            </div>
+        </div>
+        <div class="slide-number">01 / 10</div>
+    </div>
+
+    <!-- SLIDE 2: Week Overview -->
+    <div class="slide" data-slide="1">
+        <div class="slide-content">
+            <h2>Week 1 Overview</h2>
+            <div style="color: rgba(255,255,255,0.4); margin-bottom: 30px; font-size: 1.1em;">PyTorch Fundamentals — From Zero to Complete Image Classifier</div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-title">Focus</div>
+                    <div class="card-value" style="font-size: 1.15em;">PyTorch Fundamentals</div>
+                    <div style="color: rgba(255,255,255,0.35); font-size: 0.85em; margin-top: 5px;">Tensors · Autograd · nn.Module · Loss Functions · Optimizers · Training Loops · GPU</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Project</div>
+                    <div class="card-value" style="font-size: 1.15em;">CIFAR-10 Classifier</div>
+                    <div style="color: rgba(255,255,255,0.35); font-size: 0.85em; margin-top: 5px;">End-to-end CNN implementation in PyTorch</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Deliverables</div>
+                    <div class="card-value" style="font-size: 1.15em;">Lectures · GitHub · README</div>
+                    <div style="color: rgba(255,255,255,0.35); font-size: 0.85em; margin-top: 5px;">Exercises · Presentation</div>
+                </div>
+            </div>
+
+            <div class="grid-3" style="margin-top: 25px;">
+                <div class="card" style="text-align: center; padding: 20px;">
+                    <div style="font-size: 2.5em; color: #64ffda; font-weight: 700;">7</div>
+                    <div style="color: rgba(255,255,255,0.4); font-size: 0.85em;">Days of Learning</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 20px;">
+                    <div style="font-size: 2.5em; color: #64ffda; font-weight: 700;">100%</div>
+                    <div style="color: rgba(255,255,255,0.4); font-size: 0.85em;">Hands-on Code</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 20px; border-color: rgba(100,255,218,0.15);">
+                    <div style="font-size: 2.5em; color: #64ffda; font-weight: 700;">76.58%</div>
+                    <div style="color: rgba(255,255,255,0.4); font-size: 0.85em;">Best Validation Accuracy</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">02 / 10</div>
+    </div>
+
+    <!-- SLIDE 3: PyTorch & Tensors -->
+    <div class="slide" data-slide="2">
+        <div class="slide-content">
+            <h2>PyTorch & Tensors</h2>
+
+            <div class="grid-2">
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>What is PyTorch?</h3>
+                        <div style="color: rgba(255,255,255,0.6); line-height: 1.7; font-size: 1em;">
+                            Open-source machine learning framework developed by Meta AI Research. Industry standard used by Tesla, Meta, OpenAI, and other leading organizations.
+                        </div>
+                        <div style="margin-top: 15px; padding: 14px 18px; background: rgba(100,255,218,0.04); border-radius: 8px; border-left: 3px solid #64ffda;">
+                            <div style="font-size: 0.95em; color: rgba(255,255,255,0.45);">
+                                <span style="color: #64ffda;">Analogy:</span> Structural framework for AI development — each component connects to build complex systems
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; font-size: 0.85em; color: rgba(255,255,255,0.3); display: flex; gap: 20px; flex-wrap: wrap;">
+                            <span>Python Native</span>
+                            <span>Dynamic Graphs</span>
+                            <span>GPU Support</span>
+                            <span>Large Community</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>What is a Tensor?</h3>
+                        <div style="color: rgba(255,255,255,0.45); font-size: 1em; margin-bottom: 12px;">
+                            Multi-dimensional array of numbers — the fundamental data structure in PyTorch
+                        </div>
+                        <div style="display: grid; gap: 6px; font-size: 0.9em;">
+                            <div style="background: rgba(0,0,0,0.3); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">0D</span> Scalar → Single number
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">1D</span> Vector → List of numbers
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">2D</span> Matrix → Table of numbers
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">3D</span> Cube → Image (Height × Width × Channels)
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">4D</span> Batch → Multiple images
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">03 / 10</div>
+    </div>
+
+    <!-- SLIDE 4: Autograd & nn.Module -->
+    <div class="slide" data-slide="3">
+        <div class="slide-content">
+            <h2>Autograd & Neural Networks</h2>
+
+            <div class="grid-2">
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Autograd</h3>
+                        <div style="color: rgba(255,255,255,0.45); font-size: 0.95em; margin-bottom: 10px;">
+                            Automatic differentiation engine that computes gradients of tensor operations
+                        </div>
+                        <div style="padding: 12px 16px; background: rgba(100,255,218,0.04); border-radius: 6px; border-left: 3px solid #64ffda; margin-bottom: 14px;">
+                            <div style="font-size: 0.9em; color: rgba(255,255,255,0.45);">
+                                <span style="color: #64ffda;">Analogy:</span> Navigation system for optimization — provides directional guidance to minimize loss
+                            </div>
+                        </div>
+                        <div style="font-size: 0.9em; color: rgba(255,255,255,0.65); line-height: 1.8;">
+                            <div><span style="color: #64ffda;">1.</span> Forward Pass → Model produces predictions</div>
+                            <div><span style="color: #64ffda;">2.</span> Calculate Loss → Measure prediction error</div>
+                            <div><span style="color: #64ffda;">3.</span> Backward Pass → Autograd computes gradients</div>
+                            <div><span style="color: #64ffda;">4.</span> Update Weights → Optimize model parameters</div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>nn.Module</h3>
+                        <div style="color: rgba(255,255,255,0.45); font-size: 0.95em; margin-bottom: 10px;">
+                            Base class for all neural network modules in PyTorch
+                        </div>
+                        <div style="background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 6px; font-size: 0.85em; margin-bottom: 14px;">
+                            <div style="color: #64ffda; margin-bottom: 4px;">Two Required Methods:</div>
+                            <div style="color: rgba(255,255,255,0.65);">— <strong style="color: #fff;">__init__()</strong> Define neural network layers</div>
+                            <div style="color: rgba(255,255,255,0.65);">— <strong style="color: #fff;">forward()</strong> Define data flow through the network</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.8em;">
+                            <div style="background: rgba(100,255,218,0.04); padding: 6px 12px; border-radius: 4px; text-align: center; border: 1px solid rgba(100,255,218,0.06);">Linear</div>
+                            <div style="background: rgba(100,255,218,0.04); padding: 6px 12px; border-radius: 4px; text-align: center; border: 1px solid rgba(100,255,218,0.06);">Conv2d</div>
+                            <div style="background: rgba(100,255,218,0.04); padding: 6px 12px; border-radius: 4px; text-align: center; border: 1px solid rgba(100,255,218,0.06);">MaxPool2d</div>
+                            <div style="background: rgba(100,255,218,0.04); padding: 6px 12px; border-radius: 4px; text-align: center; border: 1px solid rgba(100,255,218,0.06);">BatchNorm2d</div>
+                            <div style="background: rgba(100,255,218,0.04); padding: 6px 12px; border-radius: 4px; text-align: center; border: 1px solid rgba(100,255,218,0.06);">Dropout</div>
+                            <div style="background: rgba(100,255,218,0.04); padding: 6px 12px; border-radius: 4px; text-align: center; border: 1px solid rgba(100,255,218,0.06);">ReLU</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">04 / 10</div>
+    </div>
+
+    <!-- SLIDE 5: Loss Functions & Optimizers -->
+    <div class="slide" data-slide="4">
+        <div class="slide-content">
+            <h2>Loss Functions & Optimizers</h2>
+
+            <div class="grid-2">
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Loss Functions</h3>
+                        <div style="color: rgba(255,255,255,0.4); font-size: 0.9em; margin-bottom: 12px;">
+                            Measure prediction error — lower values indicate better performance
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Loss Function</th>
+                                </tr>
+                                <tr>
+                                    <td>Multi-class Classification</td>
+                                    <td style="color: #64ffda;">CrossEntropyLoss</td>
+                                </tr>
+                                <tr>
+                                    <td>Binary Classification</td>
+                                    <td style="color: #64ffda;">BCEWithLogitsLoss</td>
+                                </tr>
+                                <tr>
+                                    <td>Regression</td>
+                                    <td style="color: #64ffda;">MSELoss</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="margin-top: 12px; padding: 10px 14px; background: rgba(100,255,218,0.04); border-radius: 6px; border-left: 3px solid #64ffda;">
+                            <div style="color: rgba(255,255,255,0.45); font-size: 0.85em;">
+                                <span style="color: #64ffda;">Analogy:</span> Performance score — the objective is to minimize this score through training
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Optimizers</h3>
+                        <div style="color: rgba(255,255,255,0.4); font-size: 0.9em; margin-bottom: 12px;">
+                            Update model weights to reduce loss over time
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <tr>
+                                    <th>Optimizer</th>
+                                    <th>Application</th>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64ffda;">Adam</td>
+                                    <td>General purpose — fast convergence</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64ffda;">SGD</td>
+                                    <td>Simple, well-understood approach</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64ffda;">AdamW</td>
+                                    <td>Improved regularization</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="margin-top: 12px; background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 6px; font-size: 0.8em; color: rgba(255,255,255,0.55);">
+                            <div style="color: #64ffda; margin-bottom: 3px;">Training Step Sequence:</div>
+                            Zero Grad → Forward Pass → Loss Calculation → Backward Pass → Weight Update
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">05 / 10</div>
+    </div>
+
+    <!-- SLIDE 6: Data Loading & Training -->
+    <div class="slide" data-slide="5">
+        <div class="slide-content">
+            <h2>Data Loading & Training Pipeline</h2>
+
+            <div class="grid-2">
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Data Loading</h3>
+                        <div style="color: rgba(255,255,255,0.4); font-size: 0.9em; margin-bottom: 10px;">
+                            CIFAR-10 Dataset — 60,000 images across 10 classes
+                        </div>
+                        <div style="background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 6px; font-size: 0.82em; margin-bottom: 10px;">
+                            <div style="color: #64ffda;">Data Augmentation:</div>
+                            <div style="color: rgba(255,255,255,0.55);">• Random Horizontal Flip</div>
+                            <div style="color: rgba(255,255,255,0.55);">• Random Rotation (up to 10 degrees)</div>
+                            <div style="color: rgba(255,255,255,0.55);">• Normalization (mean and standard deviation)</div>
+                        </div>
+                        <div style="font-size: 0.8em; color: rgba(255,255,255,0.3);">
+                            Batch Size: 64 · Shuffle: Enabled · Parallel Workers: 2
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Training Pipeline</h3>
+                        <div style="color: rgba(255,255,255,0.4); font-size: 0.9em; margin-bottom: 10px;">
+                            Complete end-to-end training workflow
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 5px; font-size: 0.82em;">
+                            <div style="background: rgba(100,255,218,0.03); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">1.</span> Load Data (Training + Test)
+                            </div>
+                            <div style="background: rgba(100,255,218,0.03); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">2.</span> Initialize Model Architecture
+                            </div>
+                            <div style="background: rgba(100,255,218,0.03); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">3.</span> Define Loss Function and Optimizer
+                            </div>
+                            <div style="background: rgba(100,255,218,0.03); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">4.</span> Train for Specified Epochs
+                            </div>
+                            <div style="background: rgba(100,255,218,0.03); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">5.</span> Validate and Save Best Model
+                            </div>
+                            <div style="background: rgba(100,255,218,0.03); padding: 8px 14px; border-radius: 4px; border-left: 3px solid #64ffda;">
+                                <span style="color: #64ffda;">6.</span> Evaluate and Visualize Results
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">06 / 10</div>
+    </div>
+
+    <!-- SLIDE 7: Model Architecture -->
+    <div class="slide" data-slide="6">
+        <div class="slide-content">
+            <h2>Model Architecture — CIFAR-10 CNN</h2>
+
+            <div class="flow" style="margin-bottom: 20px;">
+                <span class="flow-item">Input<br>3×32×32</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Conv2d<br>3 → 32</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">BN + ReLU</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">MaxPool<br>2×2</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Conv2d<br>32 → 64</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">BN + ReLU</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">MaxPool<br>2×2</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Conv2d<br>64 → 128</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">BN + ReLU</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">MaxPool<br>2×2</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Flatten<br>2048</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Linear<br>2048→256</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Dropout<br>0.5</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Linear<br>256→10</span>
+            </div>
+
+            <div class="grid-4">
+                <div class="card" style="text-align: center; padding: 16px;">
+                    <div style="font-size: 1.5em; color: #64ffda; font-weight: 700;">620,810</div>
+                    <div style="color: rgba(255,255,255,0.35); font-size: 0.7em;">Total Parameters</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 16px;">
+                    <div style="font-size: 1.5em; color: #64ffda; font-weight: 700;">64</div>
+                    <div style="color: rgba(255,255,255,0.35); font-size: 0.7em;">Batch Size</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 16px;">
+                    <div style="font-size: 1.5em; color: #64ffda; font-weight: 700;">0.001</div>
+                    <div style="color: rgba(255,255,255,0.35); font-size: 0.7em;">Learning Rate</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 16px; border-color: rgba(100,255,218,0.12);">
+                    <div style="font-size: 1.5em; color: #64ffda; font-weight: 700;">10</div>
+                    <div style="color: rgba(255,255,255,0.35); font-size: 0.7em;">Epochs</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">07 / 10</div>
+    </div>
+
+    <!-- SLIDE 8: Results -->
+    <div class="slide" data-slide="7">
+        <div class="slide-content">
+            <h2>Training Results</h2>
+
+            <div class="grid-2">
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Training Progress</h3>
+                        <div class="table-wrap">
+                            <table style="font-size: 0.78em;">
+                                <tr>
+                                    <th>Epoch</th>
+                                    <th>Train Acc</th>
+                                    <th>Val Acc</th>
+                                    <th>Best</th>
+                                </tr>
+                                <tr><td>1</td><td>44.48%</td><td>57.38%</td><td style="color: #64ffda;">✓</td></tr>
+                                <tr><td>2</td><td>57.47%</td><td>67.16%</td><td style="color: #64ffda;">✓</td></tr>
+                                <tr><td>3</td><td>62.35%</td><td>69.77%</td><td style="color: #64ffda;">✓</td></tr>
+                                <tr><td>4</td><td>64.94%</td><td>71.75%</td><td style="color: #64ffda;">✓</td></tr>
+                                <tr><td>5</td><td>67.61%</td><td>74.40%</td><td style="color: #64ffda;">✓</td></tr>
+                                <tr><td>6</td><td>69.07%</td><td>75.29%</td><td style="color: #64ffda;">✓</td></tr>
+                                <tr><td>7</td><td>70.38%</td><td>75.92%</td><td style="color: #64ffda;">✓</td></tr>
+                                <tr><td>8</td><td>71.67%</td><td>75.15%</td><td></td></tr>
+                                <tr style="background: rgba(100,255,218,0.04);">
+                                    <td><strong style="color: #64ffda;">9</strong></td>
+                                    <td>72.58%</td>
+                                    <td><strong style="color: #64ffda; font-size: 1.1em;">76.58%</strong></td>
+                                    <td style="color: #64ffda;">✓</td>
+                                </tr>
+                                <tr><td>10</td><td>73.49%</td><td>76.51%</td><td></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Key Metrics</h3>
+                        <div style="display: grid; gap: 12px;">
+                            <div style="background: rgba(100,255,218,0.04); padding: 16px 20px; border-radius: 8px; border-left: 4px solid #64ffda;">
+                                <div style="font-size: 2.2em; color: #64ffda; font-weight: 700;">76.58%</div>
+                                <div style="color: rgba(255,255,255,0.4); font-size: 0.85em;">Best Validation Accuracy</div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 6px; text-align: center;">
+                                    <div style="color: #64ffda; font-size: 1.3em; font-weight: 600;">2.23</div>
+                                    <div style="color: rgba(255,255,255,0.35); font-size: 0.7em;">Training Time (min)</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 6px; text-align: center;">
+                                    <div style="color: #64ffda; font-size: 1.3em; font-weight: 600;">3.9%</div>
+                                    <div style="color: rgba(255,255,255,0.35); font-size: 0.7em;">Val > Train Gap</div>
+                                </div>
+                            </div>
+                            <div style="padding: 10px 14px; background: rgba(76,175,80,0.05); border-radius: 6px; border-left: 3px solid #4caf50;">
+                                <div style="color: rgba(255,255,255,0.6); font-size: 0.85em;">
+                                    <span style="color: #4caf50;">Good Generalization</span> — Validation accuracy exceeds training accuracy
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">08 / 10</div>
+    </div>
+
+    <!-- SLIDE 9: Per-Class Performance -->
+    <div class="slide" data-slide="8">
+        <div class="slide-content">
+            <h2>Per-Class Performance</h2>
+
+            <div class="grid-2">
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Accuracy by Class</h3>
+                        <div class="table-wrap">
+                            <table style="font-size: 0.78em;">
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Accuracy</th>
+                                    <th>Status</th>
+                                </tr>
+                                <tr>
+                                    <td>Ship</td>
+                                    <td><strong style="color: #4caf50;">91.10%</strong></td>
+                                    <td class="tag-excellent">Excellent</td>
+                                </tr>
+                                <tr>
+                                    <td>Truck</td>
+                                    <td><strong style="color: #4caf50;">90.80%</strong></td>
+                                    <td class="tag-excellent">Excellent</td>
+                                </tr>
+                                <tr>
+                                    <td>Frog</td>
+                                    <td><strong style="color: #4caf50;">90.10%</strong></td>
+                                    <td class="tag-excellent">Excellent</td>
+                                </tr>
+                                <tr>
+                                    <td>Automobile</td>
+                                    <td><strong style="color: #8bc34a;">84.20%</strong></td>
+                                    <td class="tag-good">Good</td>
+                                </tr>
+                                <tr>
+                                    <td>Horse</td>
+                                    <td><strong style="color: #ffc107;">78.40%</strong></td>
+                                    <td class="tag-average">Average</td>
+                                </tr>
+                                <tr>
+                                    <td>Airplane</td>
+                                    <td><strong style="color: #ffc107;">73.50%</strong></td>
+                                    <td class="tag-average">Average</td>
+                                </tr>
+                                <tr>
+                                    <td>Deer</td>
+                                    <td><strong style="color: #ff9800;">68.50%</strong></td>
+                                    <td class="tag-average">Below Average</td>
+                                </tr>
+                                <tr>
+                                    <td>Cat</td>
+                                    <td><strong style="color: #ff5722;">67.70%</strong></td>
+                                    <td class="tag-weak">Weak</td>
+                                </tr>
+                                <tr>
+                                    <td>Bird</td>
+                                    <td><strong style="color: #ff5722;">66.50%</strong></td>
+                                    <td class="tag-weak">Weak</td>
+                                </tr>
+                                <tr>
+                                    <td>Dog</td>
+                                    <td><strong style="color: #ff5722;">55.00%</strong></td>
+                                    <td class="tag-weak">Weakest</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Performance Analysis</h3>
+
+                        <div style="margin: 10px 0; padding: 12px 16px; background: rgba(76,175,80,0.04); border-radius: 6px; border-left: 3px solid #4caf50;">
+                            <div style="color: #4caf50; font-weight: 600; font-size: 0.9em;">Strong Performance</div>
+                            <div style="color: rgba(255,255,255,0.55); font-size: 0.85em;">Ship (91.1%), Truck (90.8%), Frog (90.1%)</div>
+                        </div>
+
+                        <div style="margin: 10px 0; padding: 12px 16px; background: rgba(255,193,7,0.04); border-radius: 6px; border-left: 3px solid #ffc107;">
+                            <div style="color: #ffc107; font-weight: 600; font-size: 0.9em;">Moderate Performance</div>
+                            <div style="color: rgba(255,255,255,0.55); font-size: 0.85em;">Airplane (73.5%), Deer (68.5%)</div>
+                        </div>
+
+                        <div style="margin: 10px 0; padding: 12px 16px; background: rgba(255,87,34,0.04); border-radius: 6px; border-left: 3px solid #ff5722;">
+                            <div style="color: #ff5722; font-weight: 600; font-size: 0.9em;">Weak Performance</div>
+                            <div style="color: rgba(255,255,255,0.55); font-size: 0.85em;">Cat (67.7%), Bird (66.5%), Dog (55.0%)</div>
+                        </div>
+
+                        <div style="margin-top: 12px; padding: 12px 16px; background: rgba(100,255,218,0.03); border-radius: 6px;">
+                            <div style="font-size: 0.85em; color: rgba(255,255,255,0.45);">
+                                <span style="color: #64ffda;">Key Insight:</span> Confusion between visually similar classes (Cat-Dog, Bird-Airplane) presents the primary challenge
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">09 / 10</div>
+    </div>
+
+    <!-- SLIDE 10: Summary -->
+    <div class="slide" data-slide="9">
+        <div class="slide-content">
+            <h2>Week 1 Summary</h2>
+
+            <div class="grid-2">
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Concepts Covered</h3>
+                        <div style="font-size: 0.88em; color: rgba(255,255,255,0.65); line-height: 2;">
+                            <div>— PyTorch Basics — Tensors and Autograd</div>
+                            <div>— Neural Networks — nn.Module and Layers</div>
+                            <div>— Training — Loss Functions and Optimizers</div>
+                            <div>— Data — Loading and Augmentation</div>
+                            <div>— Training Pipeline — Complete Implementation</div>
+                            <div>— GPU Acceleration — Performance Optimization</div>
+                            <div>— Project — CIFAR-10 Classifier</div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="card" style="height: 100%;">
+                        <h3>Deliverables</h3>
+                        <div style="font-size: 0.88em; color: rgba(255,255,255,0.65); line-height: 2;">
+                            <div>— Complete Python Implementation</div>
+                            <div>— README Documentation</div>
+                            <div>— Trained Model (620 KB)</div>
+                            <div>— Training Curves (PNG)</div>
+                            <div>— Sample Predictions (PNG)</div>
+                            <div>— Presentation Deck</div>
+                            <div>— GitHub Repository</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center; padding: 18px; background: rgba(100,255,218,0.03); border-radius: 10px; border: 1px solid rgba(100,255,218,0.06);">
+                <div style="color: #64ffda; font-size: 1.8em; font-weight: 600;">76.58%</div>
+                <div style="color: rgba(255,255,255,0.3); font-size: 0.85em;">Best Validation Accuracy on CIFAR-10</div>
+            </div>
+        </div>
+        <div class="slide-number">10 / 10</div>
+    </div>
+
+</div>
+
+<!-- Navigation -->
+<div class="nav-controls">
+    <button class="nav-btn" onclick="prevSlide()">Previous</button>
+    <div class="dot-nav" id="dotNav"></div>
+    <button class="nav-btn" onclick="nextSlide()">Next</button>
+    <button class="nav-btn" onclick="toggleFullscreen()" style="background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2);">⛶</button>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    const dotNav = document.getElementById('dotNav');
+    for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.onclick = () => goToSlide(i);
+        dotNav.appendChild(dot);
+    }
+
+    function updateSlide() {
+        slides.forEach((slide, index) => {
+            slide.classList.toggle('active', index === currentSlide);
+        });
+        document.querySelectorAll('.dot').forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentSlide);
+        });
+    }
+
+    function goToSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= totalSlides) index = totalSlides - 1;
+        currentSlide = index;
+        updateSlide();
+    }
+
+    function nextSlide() { goToSlide(currentSlide + 1); }
+    function prevSlide() { goToSlide(currentSlide - 1); }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+            e.preventDefault(); nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault(); prevSlide();
+        } else if (e.key === 'f' || e.key === 'F') {
+            toggleFullscreen();
+        }
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', (e) => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) { if (diff > 0) nextSlide(); else prevSlide(); }
+    });
+
+    updateSlide();
+</script>
+
+</body>
+</html>
