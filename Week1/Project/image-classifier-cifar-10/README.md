@@ -8,6 +8,16 @@ Convolutional Neural Network for CIFAR-10 classification using PyTorch. Achieved
 
 **Kaggle Notebook:** [Link](https://www.kaggle.com/code/sanaullah03041417973/image-classifier-cifar-10)
 
+
+### Week 1 Presentation Preview
+
+<p align="center">
+  <a href="https://htmlpreview.github.io/?https://github.com/SANAULLAH-AI/Tech-Prime-Intern/blob/main/Week1/showcase.html">
+    <img src="https://img.shields.io/badge/Click_Here-Preview_Presentation-0a0a1a?style=for-the-badge&logo=github" alt="Preview Presentation">
+  </a>
+</p>
+
+
 ---
 
 ## Model Architecture
