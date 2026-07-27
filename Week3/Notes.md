@@ -1,278 +1,553 @@
-# Advanced Computer Vision - Week 3 Complete Notes
+# COMPLETE WEEK 3 NOTES - Advanced Computer Vision (ULTIMATE NOOB-FRIENDLY GUIDE)
 
 ## Professional Training Documentation
 **Tech Prime Pvt Limited - Advanced AI/ML Internship Program**
 
 ---
 
-## Table of Contents
+# 📑 TABLE OF CONTENTS
 
-1. [Introduction to Image Segmentation](#1-introduction-to-image-segmentation)
-2. [Types of Segmentation](#2-types-of-segmentation)
-3. [The U-Net Architecture](#3-the-u-net-architecture)
-4. [OpenCV for Image Preprocessing](#4-opencv-for-image-preprocessing)
-5. [Advanced Image Processing Techniques](#5-advanced-image-processing-techniques)
-6. [Medical Image Segmentation](#6-medical-image-segmentation)
-7. [Complete Implementation Guide](#7-complete-implementation-guide)
-8. [2026 Research Developments](#8-2026-research-developments)
-9. [Common Issues and Solutions](#9-common-issues-and-solutions)
-10. [Code Reference](#10-code-reference)
+1. [What is Image Segmentation? - For Absolute Beginners](#1-what-is-image-segmentation-for-absolute-beginners)
+2. [Types of Segmentation - Classification, Detection, and Segmentation](#2-types-of-segmentation-classification-detection-and-segmentation)
+3. [U-Net Architecture - The Most Important Segmentation Model](#3-u-net-architecture-the-most-important-segmentation-model)
+4. [OpenCV - Your Swiss Army Knife for Images](#4-opencv-your-swiss-army-knife-for-images)
+5. [Image Preprocessing - Cleaning Your Data](#5-image-preprocessing-cleaning-your-data)
+6. [Medical Image Segmentation - Real-World Application](#6-medical-image-segmentation-real-world-application)
+7. [Complete Working Code with Line-by-Line Explanation](#7-complete-working-code-with-line-by-line-explanation)
+8. [Common Issues and Solutions](#8-common-issues-and-solutions)
+9. [Quick Reference - All Code Patterns](#9-quick-reference-all-code-patterns)
 
 ---
 
-## 1. Introduction to Image Segmentation
+# 1. WHAT IS IMAGE SEGMENTATION? - FOR ABSOLUTE BEGINNERS
 
-### 1.1 What is Image Segmentation?
+## 1.1 The BIG Question: What is Segmentation?
 
-Image segmentation is a computer vision task that partitions a digital image into spatially coherent regions, each corresponding to a distinct object, surface, or structure. Unlike image classification which assigns a single label to an entire image, or object detection which places a bounding box around each object, segmentation assigns a label to every individual pixel.
+**Imagine this:** You're looking at a photo of a street. Let's compare different computer vision tasks:
 
-**Understanding the Difference:**
+```
+TASK 1: CLASSIFICATION
+"What is in this image?"
+Answer: "A car"
 
-| Task | Question | Output | Example |
-|------|----------|--------|---------|
-| Classification | "What is in this image?" | Single label | "Cat" |
-| Detection | "What is where?" | Bounding boxes + labels | "Cat at (100,100,200,200)" |
-| Segmentation | "What pixel belongs to what?" | Pixel-wise labels | "These 50,000 pixels are cat" |
+TASK 2: OBJECT DETECTION
+"What is where in this image?"
+Answer: "Car at (100, 100, 200, 150)" [Bounding Box]
 
-**Visual Comparison:**
+TASK 3: SEGMENTATION
+"What pixel belongs to what?"
+Answer: "These 5,000 pixels are the car,
+        These 3,000 pixels are the road,
+        These 2,000 pixels are the sky..."
+        [Every pixel gets a label!]
+```
+
+### Visual Comparison
 
 ```
 Original Image:                Classification:                 Detection:
 ┌─────────────────────┐        ┌─────────────────────┐        ┌─────────────────────┐
-│     Tree    House   │        │     Tree    House   │        │     Tree    House   │
+│     🌳     🏠       │        │     🌳     🏠       │        │     🌳     🏠       │
 │                     │        │                     │        │                     │
-│      Car            │  ->    │ "This is a street"  │  ->    │   ┌───┐              │
-│                     │        │                     │        │   │Car│              │
-│   Person    Dog     │        │                     │        │   └───┘              │
+│      🚗             │  →    │ "This is a street"  │  →    │   ┌───┐              │
+│                     │        │                     │        │   │🚗 │              │
+│   🧑         🐕     │        │                     │        │   └───┘              │
 └─────────────────────┘        └─────────────────────┘        │   ┌───┐              │
-                                                              │   │Per│              │
+                                                              │   │🧑 │              │
                                                               │   └───┘              │
                                                               └─────────────────────┘
 
 Segmentation:                           Semantic Segmentation:
 ┌─────────────────────┐                 ┌─────────────────────┐
-│  TreeTree  HouseHouse│                 │  GreenGreen BlueBlue │
-│  TreeTree  HouseHouse│                 │  GreenGreen BlueBlue │
-│    CarCarCar          │  ->              │    RedRedRed          │
-│  PersonPerson  DogDog │                 │  YellowYellow Purple  │
+│  🌳🌳🌳  🏠🏠🏠     │                 │  🟩🟩🟩  🟦🟦🟦     │
+│  🌳🌳🌳  🏠🏠🏠     │                 │  🟩🟩🟩  🟦🟦🟦     │
+│    🚗🚗🚗            │  →              │    🟥🟥🟥            │
+│  🧑🧑    🐕🐕🐕     │                 │  🟨🟨    🟪🟪🟪     │
+│  🧑🧑    🐕🐕🐕     │                 │  🟨🟨    🟪🟪🟪     │
 └─────────────────────┘                 └─────────────────────┘
                                          Each color = Different class
 ```
 
-**Key Characteristics:**
+## 1.2 Why Segmentation is Important?
 
-- Provides the finest-grained spatial description of image content
-- Requires integrating both local pixel-level cues (edges, textures, color gradients) and global context (object shape priors, semantic category constraints)
-- Output is a segmentation mask where each pixel is classified
+### Real-World Applications
 
-### 1.2 The Evolution of Segmentation
+```python
+# ============ APPLICATIONS OF SEGMENTATION ============
 
-**Traditional Approaches (Pre-Deep Learning):**
+# 1. MEDICAL IMAGING
+# - Find tumors in MRI scans
+# - Segment organs for surgery planning
+# - Detect cancer cells in microscopy images
+print("Medical: Finding tumors in brain scans")
 
-Before deep learning, segmentation relied on classical methods grounded in local image statistics and boundary detection:
+# 2. SELF-DRIVING CARS
+# - Separate road from sidewalk
+# - Detect pedestrians (every pixel)
+# - Identify traffic signs
+print("Autonomous Driving: Understanding road scenes")
 
-- **Threshold-based methods:** Partition images by intensity values
-- **Region-growing algorithms:** Iteratively merge pixels with similar properties around seed points
-- **Graph-cut methods:** Formulate segmentation as energy minimization over a graph of pixels connected by edge weights derived from local similarity
-- **Edge detection:** Identify boundaries where pixel intensity changes sharply
-- **Watershed algorithms:** Treat the gradient magnitude image as a topographic surface and find boundaries along ridgelines
-- **Statistical models (Gaussian Mixture Models):** Fit multi-component distributions to pixel feature vectors and assign each pixel to the most probable component
+# 3. AGRICULTURE
+# - Detect diseased plants
+# - Segment crops from weeds
+# - Count fruits on trees
+print("Agriculture: Detecting plant diseases")
 
-**Deep Learning Era:**
+# 4. SATELLITE IMAGERY
+# - Map forests, water, cities
+# - Detect flood areas
+# - Monitor deforestation
+print("Satellite: Mapping land use")
 
-The rise of deep learning transformed segmentation. Fully Convolutional Networks (FCNs), published in 2015, established the template for deep segmentation networks by replacing the fully connected layers of a classification CNN with convolution operations, enabling dense pixel-wise prediction at arbitrary image resolution.
+# 5. PHOTO EDITING
+# - Remove backgrounds
+# - Change object colors
+# - Apply effects to specific areas
+print("Photo Editing: Background removal")
+```
 
-### 1.3 Clustering Approaches to Segmentation
+## 1.3 Types of Segmentation - Understanding the Differences
 
-Segmentation can be viewed as a clustering problem where pixels sharing certain features such as color, intensity, or texture are grouped together.
+### Semantic Segmentation
 
-**Common Clustering Methods:**
+**Definition:** Label every pixel with a class (but all objects of same class get same label)
 
-**Hierarchical Agglomerative Clustering (HAC):**
-- Bottom-up algorithm that starts with each pixel as its own cluster and merges them based on similarity
-- Provides a hierarchy of clusters but requires specifying the number of clusters
-- Clusters may be imbalanced
-
-**K-Means Clustering:**
-- Top-down algorithm:
-  1. Initialize K cluster centers randomly
-  2. Assign each pixel to the closest center
-  3. Update cluster centers by computing the average of pixels in each cluster
-  4. Repeat until no pixels change cluster centers
-- Finds cluster centers that represent the data well
-- Prone to effects from outliers and local minima
-- Can be slow in runtime, rarely used for pixel segmentation
-
-**Mean Shift:**
-- Robust to outliers
-- Initialize a random seed and window W
-- Calculate the center of gravity (the "mean") of W
-- Shift W to the mean
-- Repeat until convergence
-- Output depends on window size
-- Computationally expensive
-
-### 1.4 Why Segmentation is Important
-
-**Real-World Applications:**
-
-1. **Medical Imaging**
-   - Find tumors in MRI scans
-   - Segment organs for surgery planning
-   - Detect cancer cells in microscopy images
-
-2. **Self-Driving Cars**
-   - Separate road from sidewalk
-   - Detect pedestrians (every pixel)
-   - Identify traffic signs
-
-3. **Agriculture**
-   - Detect diseased plants
-   - Segment crops from weeds
-   - Count fruits on trees
-
-4. **Satellite Imagery**
-   - Map forests, water, cities
-   - Detect flood areas
-   - Monitor deforestation
-
-5. **Photo Editing**
-   - Remove backgrounds
-   - Change object colors
-   - Apply effects to specific areas
-
----
-
-## 2. Types of Segmentation
-
-### 2.1 Semantic Segmentation
-
-**Definition:** Label every pixel with a class, but all objects of same class get same label.
-
-**What it does:**
+```python
+# ============ SEMANTIC SEGMENTATION ============
+"""
+What it does:
 - Every pixel gets a label (car, road, person, etc.)
 - ALL cars get the same label
 - ALL people get the same label
 
-**Example:**
-- Original: [Car 1, Car 2, Person 1]
-- Output: [Car, Car, Person] - Same label for all cars
+Example:
+Original: [Car 1, Car 2, Person 1]
+Output:   [Car, Car, Person]  ← Same label for all cars!
 
-**Output Format:** A single segmentation map where each pixel value represents a class ID.
+Visual:
+┌─────────────────────────────────┐
+│ 🟦 Sky (all sky pixels)         │
+│ 🟩 Grass (all grass pixels)     │
+│ 🟥 Car (all car pixels)         │
+│ 🟨 Person (all person pixels)   │
+└─────────────────────────────────┘
+"""
+```
 
-### 2.2 Instance Segmentation
+### Instance Segmentation
 
-**Definition:** Label every pixel with class AND distinguish different objects of same class.
+**Definition:** Label every pixel with class AND distinguish different objects of same class
 
-**What it does:**
+```python
+# ============ INSTANCE SEGMENTATION ============
+"""
+What it does:
 - Every pixel gets a label
 - DIFFERENT objects get DIFFERENT labels
 - Same type objects are separated
 
-**Example:**
-- Original: [Car 1, Car 2, Person 1]
-- Output: [Car_1, Car_2, Person_1] - Different labels for each
+Example:
+Original: [Car 1, Car 2, Person 1]
+Output:   [Car_1, Car_2, Person_1]  ← Different labels for each!
 
-**Key Architecture:** Mask R-CNN, published at ICCV 2017, extended Faster R-CNN to produce per-instance pixel masks alongside bounding boxes.
+Visual:
+┌─────────────────────────────────┐
+│ 🟦 Sky                          │
+│ 🟩 Grass                        │
+│ 🟥 Car #1                       │
+│ 🟧 Car #2                       │
+│ 🟨 Person #1                    │
+└─────────────────────────────────┘
+"""
+```
 
-### 2.3 Panoptic Segmentation
+### Panoptic Segmentation
 
-**Definition:** Combines semantic AND instance segmentation.
+**Definition:** Combines semantic AND instance segmentation
 
-**What it does:**
+```python
+# ============ PANOPTIC SEGMENTATION ============
+"""
+What it does:
 - For "stuff" (sky, road, grass): Semantic segmentation
 - For "things" (cars, people, animals): Instance segmentation
 
-**Example:**
+Example:
 - Sky: All sky pixels get label "Sky" (semantic)
 - Road: All road pixels get label "Road" (semantic)
 - Car 1: Gets label "Car_1" (instance)
 - Car 2: Gets label "Car_2" (instance)
-
-### 2.4 The Relationship Between Detection and Segmentation
-
-| Task | Description |
-|------|-------------|
-| Object Detection | Determine "what is where" using bounding boxes |
-| Semantic Segmentation | Determine "which pixels belong to which class" |
-| Instance Segmentation | Determine "which pixels belong to which object instance" |
-
-**Relationship:** Modern detection algorithms like YOLO, RetinaNet, and Faster R-CNN provide the foundation for instance segmentation. The process typically follows: pretrained classifier backbone -> detection head -> segmentation head.
-
-### 2.5 Key Terminology
-
-**1. Mask**
-A 2D array where each pixel has a label/class. Same size as the original image.
-
+- Person: Gets label "Person_1" (instance)
+"""
 ```
+
+### Understanding with Simple Code
+
+```python
+# ============ DEMONSTRATING DIFFERENT SEGMENTATION TYPES ============
+
+import torch
+import matplotlib.pyplot as plt
+import numpy as np
+
+def create_demo_image():
+    """Create a simple image for demonstration"""
+    # Create a 100x100 image with different objects
+    image = np.zeros((100, 100, 3), dtype=np.uint8)
+    
+    # Blue sky (top 40 rows)
+    image[0:40, :, :] = [135, 206, 235]  # Sky blue
+    
+    # Green grass (bottom 60 rows)
+    image[40:100, :, :] = [34, 139, 34]  # Forest green
+    
+    # Red car (center)
+    image[45:70, 20:50, :] = [255, 0, 0]  # Red
+    
+    # Another red car (right side)
+    image[45:70, 65:95, :] = [255, 0, 0]  # Red
+    
+    # Yellow person (left)
+    image[50:80, 5:15, :] = [255, 255, 0]  # Yellow
+    
+    return image
+
+def show_segmentation_types():
+    """Show different segmentation outputs"""
+    
+    original = create_demo_image()
+    
+    # ============ SEMANTIC SEGMENTATION OUTPUT ============
+    semantic_output = np.zeros((100, 100), dtype=np.int32)
+    semantic_output[0:40, :] = 0    # Sky
+    semantic_output[40:100, :] = 1  # Grass
+    semantic_output[45:70, 20:50] = 2  # Car (ALL cars are same)
+    semantic_output[45:70, 65:95] = 2  # Car (ALL cars are same)
+    semantic_output[50:80, 5:15] = 3   # Person
+    
+    # ============ INSTANCE SEGMENTATION OUTPUT ============
+    instance_output = np.zeros((100, 100), dtype=np.int32)
+    instance_output[0:40, :] = 0     # Sky (semantic for stuff)
+    instance_output[40:100, :] = 1   # Grass (semantic for stuff)
+    instance_output[45:70, 20:50] = 2  # Car 1 (instance)
+    instance_output[45:70, 65:95] = 3  # Car 2 (instance - DIFFERENT!)
+    instance_output[50:80, 5:15] = 4   # Person (instance)
+    
+    # Visualize
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    
+    axes[0].imshow(original)
+    axes[0].set_title("Original Image", fontsize=14)
+    axes[0].axis('off')
+    
+    axes[1].imshow(semantic_output, cmap='tab10')
+    axes[1].set_title("Semantic Segmentation\n(All cars are same color)", fontsize=14)
+    axes[1].axis('off')
+    
+    axes[2].imshow(instance_output, cmap='tab10')
+    axes[2].set_title("Instance Segmentation\n(Cars are different colors)", fontsize=14)
+    axes[2].axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    print("\n" + "="*60)
+    print("KEY DIFFERENCES")
+    print("="*60)
+    print("Semantic: ALL cars → Label 2")
+    print("Instance: Car 1 → Label 2, Car 2 → Label 3")
+    print("Panoptic: Sky → Label 0, Car 1 → Label 2, Car 2 → Label 3")
+
+# Run it!
+show_segmentation_types()
+```
+
+## 1.4 Segmentation vs. Classification vs. Detection
+
+```python
+# ============ COMPLETE COMPARISON ============
+
+comparison = {
+    "Task": ["Classification", "Detection", "Semantic Segmentation"],
+    "Question": [
+        "What is in this image?",
+        "What is where?",
+        "What pixel belongs to what?"
+    ],
+    "Output": [
+        "Single label",
+        "Bounding boxes + labels",
+        "Pixel-wise labels"
+    ],
+    "Example": [
+        '"Cat"',
+        '"Cat at (100,100,200,200)"',
+        '"These 50,000 pixels are cat"'
+    ],
+    "Use Case": [
+        "Image search",
+        "Self-driving cars",
+        "Medical imaging"
+    ]
+}
+
+print("="*70)
+print("SEGMENTATION VS CLASSIFICATION VS DETECTION")
+print("="*70)
+
+for key, values in comparison.items():
+    print(f"\n{key.upper()}:")
+    for i, val in enumerate(values):
+        print(f"  {['📌', '🔍', '🎯'][i]}: {val}")
+
+# ============ OUTPUT EXPLANATION ============
+"""
+Classification: 
+  ┌──────────────┐
+  │  🐱          │  → "This is a cat"
+  │              │
+  └──────────────┘
+
+Detection:
+  ┌──────────────┐
+  │  ┌──────┐    │  → "Cat at (50,50,150,150)"
+  │  │ 🐱   │    │
+  │  └──────┘    │
+  └──────────────┘
+
+Segmentation:
+  ┌──────────────┐
+  │  ████████    │  → "These pixels are cat"
+  │  ██🐱████    │
+  │  ████████    │
+  └──────────────┘
+"""
+```
+
+---
+
+# 2. TYPES OF SEGMENTATION - CLASSIFICATION, DETECTION, AND SEGMENTATION
+
+## 2.1 The Evolution from Classification to Segmentation
+
+```python
+# ============ EVOLUTION OF COMPUTER VISION TASKS ============
+
+"""
+LEVEL 1: CLASSIFICATION (Image-level)
+↓
+LEVEL 2: DETECTION (Bounding Box-level)
+↓
+LEVEL 3: SEMANTIC SEGMENTATION (Pixel-level)
+↓
+LEVEL 4: INSTANCE SEGMENTATION (Object-level)
+↓
+LEVEL 5: PANOPTIC SEGMENTATION (Both)
+"""
+
+# ============ VISUAL REPRESENTATION ============
+
+def visualize_evolution():
+    """Show how tasks become more detailed"""
+    
+    # Create a simple scene
+    scene = np.zeros((200, 200, 3), dtype=np.uint8)
+    scene[0:80, :] = [135, 206, 235]  # Sky
+    scene[80:200, :] = [34, 139, 34]  # Grass
+    scene[120:160, 70:130] = [255, 0, 0]  # Car
+    scene[100:180, 140:180] = [255, 255, 0]  # Person
+    
+    fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+    
+    # Level 1: Classification
+    axes[0, 0].imshow(scene)
+    axes[0, 0].set_title("Classification\n" + '"This is a street scene"', fontsize=12)
+    axes[0, 0].axis('off')
+    
+    # Level 2: Detection
+    axes[0, 1].imshow(scene)
+    axes[0, 1].add_patch(plt.Rectangle((70, 120), 60, 40, 
+                                      fill=False, edgecolor='red', linewidth=3))
+    axes[0, 1].add_patch(plt.Rectangle((140, 100), 40, 80, 
+                                      fill=False, edgecolor='yellow', linewidth=3))
+    axes[0, 1].set_title("Detection\n" + '"Car at (70,120), Person at (140,100)"', fontsize=12)
+    axes[0, 1].axis('off')
+    
+    # Level 3: Semantic Segmentation
+    semantic = np.zeros((200, 200, 3), dtype=np.uint8)
+    semantic[0:80, :] = [135, 206, 235]  # Sky
+    semantic[80:200, :] = [34, 139, 34]  # Grass
+    semantic[120:160, 70:130] = [255, 0, 0]  # Car
+    semantic[100:180, 140:180] = [255, 255, 0]  # Person
+    
+    axes[0, 2].imshow(semantic)
+    axes[0, 2].set_title("Semantic Segmentation\n" + '"Every pixel labeled by class"', fontsize=12)
+    axes[0, 2].axis('off')
+    
+    # Level 4: Instance Segmentation
+    instance = np.zeros((200, 200, 3), dtype=np.uint8)
+    instance[0:80, :] = [135, 206, 235]  # Sky
+    instance[80:200, :] = [34, 139, 34]  # Grass
+    instance[120:160, 70:130] = [200, 0, 0]  # Car 1
+    instance[100:180, 140:180] = [255, 255, 0]  # Person
+    
+    axes[1, 0].imshow(instance)
+    axes[1, 0].set_title("Instance Segmentation\n" + '"Each object has unique label"', fontsize=12)
+    axes[1, 0].axis('off')
+    
+    # Level 5: Panoptic
+    axes[1, 1].imshow(instance)
+    axes[1, 1].set_title("Panoptic Segmentation\n" + '"Stuff (sky,grass) + Things (car,person)"', fontsize=12)
+    axes[1, 1].axis('off')
+    
+    # Legend
+    axes[1, 2].axis('off')
+    legend_text = """
+    COMPARISON:
+    
+    🌅 Classification: Image-level
+       "What is this?"
+    
+    📦 Detection: Box-level
+       "What is where?"
+    
+    🎨 Semantic Seg: Pixel-level
+       "What pixel belongs to what class?"
+    
+    🎭 Instance Seg: Object-level
+       "Which object is this pixel from?"
+    
+    🎪 Panoptic: Both
+       Everything gets labeled!
+    """
+    axes[1, 2].text(0.1, 0.5, legend_text, transform=axes[1, 2].transAxes,
+                   fontsize=12, verticalalignment='center')
+    
+    plt.tight_layout()
+    plt.show()
+
+visualize_evolution()
+```
+
+## 2.2 Key Terminology You MUST Know
+
+```python
+# ============ ESSENTIAL SEGMENTATION TERMS ============
+
+# 1. MASK
+"""
+What is a mask?
+- A 2D array where each pixel has a label/class
+- Same size as the original image
+
 Example:
-Original Image (3x3):     Mask (3x3):
-[255, 255, 255]           [0, 0, 0]
-[255, 0, 0]      ->       [0, 1, 1]
-[255, 0, 0]               [0, 1, 1]
+Original Image (3×3):        Mask (3×3):
+┌─────────────┐              ┌─────────────┐
+│ 255 255 255 │              │ 0   0   0   │
+│ 255 0   0   │      →       │ 0   1   1   │
+│ 255 0   0   │              │ 0   1   1   │
+└─────────────┘              └─────────────┘
+                             0 = Background
+                             1 = Object
+"""
+mask = np.array([[0, 0, 0],
+                 [0, 1, 1],
+                 [0, 1, 1]])
 
-Where 0 = Background, 1 = Object
-```
+# 2. GROUND TRUTH
+"""
+The "correct answer" for training
+- Human-annotated masks
+- Used to calculate loss
+- The target we want to predict
+"""
 
-**2. Ground Truth**
-The "correct answer" for training. Human-annotated masks used to calculate loss. The target we want to predict.
-
-**3. IoU (Intersection over Union)**
-Measure of how well prediction matches ground truth.
-
-```
-Formula: IoU = Area of Overlap / Area of Union
+# 3. IOU (Intersection over Union)
+"""
+Measure of how well prediction matches ground truth
+IoU = Area of Overlap / Area of Union
 
 Example:
 Ground Truth:    Prediction:     Overlap:
-[█████]          [███  ]         [███  ]
-[█████]          [███  ]         [███  ]
-[█████]          [  ███]         [  █  ]
+┌─────┐          ┌─────┐         ┌─────┐
+│█████│          │███  │         │███  │
+│█████│          │███  │         │███  │
+│█████│          │  ███│         │  █  │
+└─────┘          └─────┘         └─────┘
 
 IoU = Overlap / (GT + Pred - Overlap)
-```
+"""
 
-**4. Dice Score (F1 Score for Segmentation)**
-Similar to IoU but more sensitive to overlap.
+def calculate_iou(gt_mask, pred_mask):
+    """Calculate Intersection over Union"""
+    intersection = np.logical_and(gt_mask, pred_mask).sum()
+    union = np.logical_or(gt_mask, pred_mask).sum()
+    iou = intersection / union if union > 0 else 0
+    return iou
 
-```
-Formula: Dice = 2 * Intersection / (GT_size + Pred_size)
-```
+# 4. DICE SCORE (F1 Score for Segmentation)
+"""
+Similar to IoU but more sensitive to overlap
+Dice = 2 × Intersection / (GT_size + Pred_size)
 
-**When to use:**
+When to use:
 - Medical imaging (prefers more overlap)
 - Imbalanced datasets
+"""
+def calculate_dice(gt_mask, pred_mask):
+    """Calculate Dice Score"""
+    intersection = np.logical_and(gt_mask, pred_mask).sum()
+    total = gt_mask.sum() + pred_mask.sum()
+    dice = 2 * intersection / total if total > 0 else 0
+    return dice
 
-**5. Confusion Matrix for Segmentation**
+# 5. CONFUSION MATRIX FOR SEGMENTATION
+"""
 For each pixel:
 - TP: Both say Object
 - TN: Both say Background
 - FP: Prediction says Object, GT says Background
 - FN: Prediction says Background, GT says Object
+"""
 
-### 2.6 The Evolution from Classification to Segmentation
+# ============ EXAMPLE CALCULATIONS ============
 
-```
-LEVEL 1: CLASSIFICATION (Image-level)
-    ↓
-LEVEL 2: DETECTION (Bounding Box-level)
-    ↓
-LEVEL 3: SEMANTIC SEGMENTATION (Pixel-level)
-    ↓
-LEVEL 4: INSTANCE SEGMENTATION (Object-level)
-    ↓
-LEVEL 5: PANOPTIC SEGMENTATION (Both)
+def example_metrics():
+    """Show how metrics work"""
+    
+    # Create example masks
+    gt = np.array([[1, 1, 1],
+                   [1, 1, 1],
+                   [1, 1, 0]])
+    
+    pred1 = np.array([[1, 1, 1],
+                      [1, 1, 1],
+                      [1, 1, 0]])  # Perfect
+    
+    pred2 = np.array([[1, 1, 0],
+                      [1, 1, 0],
+                      [1, 1, 0]])  # Missing some
+    
+    print("="*60)
+    print("SEGMENTATION METRICS EXAMPLE")
+    print("="*60)
+    print(f"Ground Truth:\n{gt}\n")
+    print(f"Prediction 1 (Perfect):\n{pred1}")
+    print(f"IoU: {calculate_iou(gt, pred1):.2f}")
+    print(f"Dice: {calculate_dice(gt, pred1):.2f}")
+    print()
+    print(f"Prediction 2 (Missing):\n{pred2}")
+    print(f"IoU: {calculate_iou(gt, pred2):.2f}")
+    print(f"Dice: {calculate_dice(gt, pred2):.2f}")
+
+example_metrics()
 ```
 
 ---
 
-## 3. The U-Net Architecture
+# 3. U-NET ARCHITECTURE - THE MOST IMPORTANT SEGMENTATION MODEL
 
-### 3.1 What is U-Net?
-
-U-Net is a deep learning architecture designed specifically for image segmentation. It was originally proposed in 2015 by Olaf Ronneberger, Philipp Fischer, and Thomas Brox for biomedical image segmentation but has since become a go-to architecture for tasks requiring pixel-wise classification.
-
-**Why "U-Net":** The architecture gets its name from its U-shaped design, with a contracting path (encoder) on the left and an expanding path (decoder) on the right.
+## 3.1 What is U-Net and Why is it Special?
 
 **Analogy:** Think of U-Net as a specialized detective agency:
 
@@ -295,189 +570,621 @@ EXPANSION PATH (Decoder) - "The Report Writers"
 └─────────────────────────────────────────────┘
 ```
 
-### 3.2 Key Components
-
-**1. Encoder (Contracting Path):**
-
-The encoder captures context and spatial features:
-- Composed of repeated blocks of two 3x3 convolutions, each followed by a ReLU activation and a 2x2 max pooling layer
-- At each downsampling step, the number of feature channels doubles, capturing richer representations at lower resolutions
-- Purpose: Extract context and spatial hierarchies
-- Each step reduces spatial resolution while increasing feature depth
-
-**2. Bottleneck:**
-
-- Acts as the bridge between encoder and decoder
-- Contains two convolutional layers with the highest number of filters
-- Represents the most abstracted features in the network
-
-**3. Decoder (Expanding Path):**
-
-The decoder reconstructs spatial dimensions and locates objects more precisely:
-- Uses transposed convolution (up-convolution) to upsample feature maps
-- Follows the same pattern as the encoder (two 3x3 convolutions + ReLU), but the number of channels halves at each step
-- Purpose: Restore spatial resolution and refine segmentation
-- Transposed convolution (also called "deconvolution") increases the dimension of the neural network back up
-
-**4. Skip Connections:**
-
-Skip connections are the defining feature of U-Net:
-- Feature maps from the encoder are concatenated with the upsampled output of the decoder at each level
-- These help recover spatial information lost during pooling and improve localization accuracy
-- The skip connection copies activations from the left side directly to the right side
-
-**5. Final Output Layer:**
-
-- A 1x1 convolution is applied to map the feature maps to the desired number of output channels (usually 1 for binary segmentation or n for multi-class)
-- Followed by a sigmoid or softmax activation depending on the segmentation type
-- For every pixel (HxW pixels), you get a vector of n classes numbers that tells you how likely that pixel belongs to each class
-
-### 3.3 Architecture Diagram Explanation
-
-The U-Net architecture follows this structure:
+### The U-Shaped Architecture
 
 ```
-Input (572x572)
-    |
-    v
-Encoder Path:
-    |
-    v
-Double Conv (3 -> 64)
-    |
-    v
-Max Pool (64 -> 64, size half)    -> Skip Connection 1
-    |
-    v
-Double Conv (64 -> 128)
-    |
-    v
-Max Pool (128 -> 128, size half)  -> Skip Connection 2
-    |
-    v
-Double Conv (128 -> 256)
-    |
-    v
-Max Pool (256 -> 256, size half)  -> Skip Connection 3
-    |
-    v
-Double Conv (256 -> 512)
-    |
-    v
-Max Pool (512 -> 512, size half)  -> Skip Connection 4
-    |
-    v
-Bottleneck:
-    |
-    v
-Double Conv (512 -> 1024)
-    |
-    v
-Decoder Path:
-    |
-    v
-Up Block (1024 -> 512) + skip (512)
-    |
-    v
-Up Block (512 -> 256) + skip (256)
-    |
-    v
-Up Block (256 -> 128) + skip (128)
-    |
-    v
-Up Block (128 -> 64) + skip (64)
-    |
-    v
-Final 1x1 Conv
-    |
-    v
-Output (1, 388, 388)
+Input Image                          Output Mask
+    (572×572)                           (388×388)
+       │                                   ▲
+       │   ┌──────────────────────────┐   │
+       │   │                          │   │
+       ▼   │   ┌──────────────────┐   │   │
+    ┌───┐  │   │                  │   │  ┌───┐
+    │C1 │  │   │   ┌──────────┐   │   │  │D1 │
+    └─┬─┘  │   │   │          │   │   │  └─┬─┘
+      │    │   │   │  ┌────┐  │   │   │    │
+      ▼    │   │   │  │    │  │   │   │    ▼
+   ┌───┐   │   │   │  │C4  │  │   │   │ ┌───┐
+   │P1 │   │   │   │  │    │  │   │   │ │U1 │
+   └─┬─┘   │   │   │  └────┘  │   │   │ └─┬─┘
+     │     │   │   │    │      │   │   │   │
+     ▼     │   │   │    ▼      │   │   │   ▼
+   ┌───┐   │   │   │  ┌────┐  │   │   │ ┌───┐
+   │C2 │   │   │   │  │C5  │  │   │   │ │U2 │
+   └─┬─┘   │   │   │  │    │  │   │   │ └─┬─┘
+     │     │   │   │  └────┘  │   │   │   │
+     ▼     │   │   │    │      │   │   │   ▼
+   ┌───┐   │   │   │    ▼      │   │   │ ┌───┐
+   │P2 │   │   │   │  ┌────┐  │   │   │ │U3 │
+   └─┬─┘   │   │   │  │C6  │  │   │   │ └─┬─┘
+     │     │   │   │  │    │  │   │   │   │
+     ▼     │   │   │  └────┘  │   │   │   ▼
+   ┌───┐   │   │   │    │      │   │   │ ┌───┐
+   │C3 │   │   │   │    ▼      │   │   │ │U4 │
+   └─┬─┘   │   │   │  ┌────┐  │   │   │ └─┬─┘
+     │     │   │   │  │C7  │  │   │   │   │
+     ▼     │   │   │  │    │  │   │   │   ▼
+   ┌───┐   │   │   │  └────┘  │   │   │ ┌───┐
+   │P3 │   │   │   │    │      │   │   │ │U5 │
+   └─┬─┘   │   │   │    ▼      │   │   │ └─┬─┘
+     │     │   │   │  ┌────┐  │   │   │   │
+     ▼     │   │   │  │C8  │  │   │   │   ▼
+   ┌───┐   │   │   │  │    │  │   │   │ ┌───┐
+   │C4 │   │   │   │  └────┘  │   │   │ │U6 │
+   └─┬─┘   │   │   │    │      │   │   │ └─┬─┘
+     │     │   │   │    ▼      │   │   │   │
+     ▼     │   │   │  ┌────┐  │   │   │   ▼
+   ┌───┐   │   │   │  │C9  │  │   │   │ ┌───┐
+   │P4 │   │   │   │  │    │  │   │   │ │U7 │
+   └─┬─┘   │   │   │  └────┘  │   │   │ └─┬─┘
+     │     │   │   │    │      │   │   │   │
+     ▼     │   │   │    ▼      │   │   │   ▼
+   ┌───┐   │   │   │  ┌────┐  │   │   │ ┌───┐
+   │C5 │   │   │   │  │C10 │  │   │   │ │U8 │
+   └───┘   │   │   │  │    │  │   │   │ └───┘
+           │   │   │  └────┘  │   │   │
+           │   │   │    │      │   │   │
+           │   │   └────┼──────┘   │   │
+           │   │        │          │   │
+           │   └────────┼──────────┘   │
+           │            │              │
+           └────────────┼──────────────┘
+                        │
 ```
 
-### 3.4 Component Details
+**Note:** C = Convolution, P = Pooling, U = Up-Convolution, D = Output
 
-**Double Convolution Block:**
+## 3.2 U-Net Architecture - Layer by Layer
 
-- Two convolution layers with ReLU activations
-- Each convolution has 3x3 kernel size
-- Padding=1 to keep size same
-- First conv: Extract features
-- Second conv: Extract more complex features
-
-**Parameter Calculation:**
-
-```
-Conv1: in_channels -> out_channels: (in_ch * 3 * 3 * out_ch) + out_ch parameters
-Conv2: out_ch -> out_ch: (out_ch * 3 * 3 * out_ch) + out_ch parameters
-Total: sum of both convolutions
-```
-
-**Skip Connections:**
-
-- Connect encoder layer to corresponding decoder layer
-- Pass high-resolution features directly
-- Preserve spatial information
-
-**Benefits:**
-- Better localization (knows where things are)
-- Sharper boundaries (fine details preserved)
-- Easier to train (gradients flow better)
-
-**Upsampling (Transposed Convolution):**
-
-- Each input pixel becomes a 2x2 block
-- Increases image size by factor of 2
-- Used in decoder path to restore spatial resolution
-
-```
-Input (2x2):        Kernel (2x2):
-[a, b]              [w1, w2]
-[c, d]              [w3, w4]
-
-Output (4x4):
-[a*w1, a*w2, b*w1, b*w2]
-[a*w3, a*w4, b*w3, b*w4]
-[c*w1, c*w2, d*w1, d*w2]
-[c*w3, c*w4, d*w3, d*w4]
-```
-
-### 3.5 Step-by-Step Working
-
-1. **Input Image:** U-Net starts with a 2D image, such as a medical scan or satellite photo. The goal is to assign a class label to every pixel.
-
-2. **Downsampling:** The image passes through convolutional layers that learn important visual features. As the image moves through different layers, its resolution decreases, and the model identifies broader patterns.
-
-3. **Bottleneck Layer:** At the center of the network, the feature maps reach their smallest spatial resolution while capturing high-level semantic features. This compressed representation is the overall context of the input.
-
-4. **Upsampling:** The network reconstructs the image by gradually increasing the resolution. Transposed convolutions help expand the feature maps back toward the original size.
-
-5. **Skip Connections:** Feature maps from the downsampling path are concatenated with those in the upsampling path, preserving fine-grained spatial details while integrating high-level contextual information.
-
-6. **Output:** The final output is a pixel-wise segmentation mask matching the input size.
-
-### 3.6 Why U-Net Works Well
-
-- **Efficient with limited data:** U-Net is ideal for medical imaging, where labeled data is often scarce
-- **Preserves spatial features:** Skip connections help retain edge and boundary information crucial for segmentation
-- **Symmetric architecture:** The mirrored encoder-decoder design ensures a balance between context and localization
-- **Faster training:** The architecture is relatively shallow compared to modern networks, which allows for faster training on limited hardware
-
-### 3.7 U-Net Variants
-
-Several variants have been proposed to improve performance:
-
-| Variant | Description |
-|---------|-------------|
-| U-Net++ | Introduces dense skip connections and nested U-shapes |
-| Attention U-Net | Incorporates attention gates to focus on relevant features |
-| 3D U-Net | Extends 2D convolutional layers to 3D convolutions for volumetric data |
-| Residual U-Net | Combines ResNet blocks with U-Net for improved gradient flow |
-| TransUNet | Combines U-Net with Transformer-based modules |
-| nnU-Net | A self-adapting framework for U-Net-based medical image segmentation |
-
-**Residual U-Net Example:**
+### The Complete Architecture
 
 ```python
+# ============ U-NET COMPLETE ARCHITECTURE ============
+
+import torch
+import torch.nn as nn
+
+class DoubleConv(nn.Module):
+    """
+    Double Convolution Block
+    
+    WHAT IT DOES:
+    - Two convolution layers with ReLU activations
+    - Each convolution has 3×3 kernel size
+    - Padding=1 to keep size same
+    
+    WHY TWO CONVOLUTIONS?
+    - First conv: Extract features
+    - Second conv: Extract more complex features
+    - Better than single conv for learning patterns
+    """
+    def __init__(self, in_channels, out_channels):
+        super(DoubleConv, self).__init__()
+        
+        # Two sequential convolutions
+        self.conv = nn.Sequential(
+            # Conv 1
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(out_channels),  # Helps training
+            nn.ReLU(inplace=True),         # Nonlinearity
+            
+            # Conv 2
+            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True)
+        )
+    
+    def forward(self, x):
+        return self.conv(x)
+
+class DownBlock(nn.Module):
+    """
+    Down Block - Encoder Path
+    
+    WHAT IT DOES:
+    1. Double convolution (feature extraction)
+    2. Max pooling (reduce size by half)
+    
+    WHY MAX POOLING?
+    - Reduces image size (makes computation faster)
+    - Increases receptive field (sees more context)
+    - Makes model robust to small translations
+    """
+    def __init__(self, in_channels, out_channels):
+        super(DownBlock, self).__init__()
+        
+        self.double_conv = DoubleConv(in_channels, out_channels)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+    
+    def forward(self, x):
+        # Store features for skip connection
+        conv_out = self.double_conv(x)
+        pooled = self.pool(conv_out)
+        return conv_out, pooled
+
+class UpBlock(nn.Module):
+    """
+    Up Block - Decoder Path
+    
+    WHAT IT DOES:
+    1. Upsample (increase size by 2×)
+    2. Concatenate with skip connection features
+    3. Double convolution
+    
+    WHY UPSAMPLING?
+    - Restores original image size
+    - Reconstructs spatial information
+    
+    WHY SKIP CONNECTIONS?
+    - Gives access to high-resolution features
+    - Helps recover fine details
+    - Makes segmentation more accurate
+    """
+    def __init__(self, in_channels, out_channels):
+        super(UpBlock, self).__init__()
+        
+        # Upsample: Transposed convolution
+        self.up = nn.ConvTranspose2d(
+            in_channels,           # Input channels
+            in_channels // 2,      # Output channels (half)
+            kernel_size=2, 
+            stride=2
+        )
+        
+        # After concatenation:
+        # in_channels // 2 (from up) + in_channels // 2 (from skip)
+        # = in_channels (total)
+        self.double_conv = DoubleConv(in_channels, out_channels)
+    
+    def forward(self, x1, x2):
+        """
+        x1: Features from decoder (up path)
+        x2: Features from encoder (skip connection)
+        """
+        # Upsample x1
+        x1 = self.up(x1)
+        
+        # Handle size mismatch (due to cropping)
+        diffY = x2.size()[2] - x1.size()[2]
+        diffX = x2.size()[3] - x1.size()[3]
+        x1 = nn.functional.pad(x1, [diffX // 2, diffX - diffX // 2,
+                                    diffY // 2, diffY - diffY // 2])
+        
+        # Concatenate: (batch, channels, height, width)
+        x = torch.cat([x2, x1], dim=1)
+        
+        # Double convolution
+        x = self.double_conv(x)
+        return x
+
+class UNet(nn.Module):
+    """
+    Complete U-Net Architecture
+    
+    STRUCTURE:
+    ┌─────────────────────────────────────────────┐
+    │ INPUT (3, 572, 572)                        │
+    │    ↓                                       │
+    │ ENCODER PATH (Contraction)                │
+    │    ↓                                       │
+    │    DoubleConv (3 → 64)                    │
+    │    ↓                                       │
+    │    MaxPool (64 → 64, size half)           │
+    │    ↓                                       │
+    │    DoubleConv (64 → 128)                  │
+    │    ↓                                       │
+    │    MaxPool (128 → 128, size half)         │
+    │    ↓                                       │
+    │    DoubleConv (128 → 256)                 │
+    │    ↓                                       │
+    │    MaxPool (256 → 256, size half)         │
+    │    ↓                                       │
+    │    DoubleConv (256 → 512)                 │
+    │    ↓                                       │
+    │    MaxPool (512 → 512, size half)         │
+    │    ↓                                       │
+    │ BOTTLENECK                                  │
+    │    ↓                                       │
+    │    DoubleConv (512 → 1024)                │
+    │    ↓                                       │
+    │ DECODER PATH (Expansion)                  │
+    │    ↓                                       │
+    │    UpBlock (1024 → 512) + skip (512)      │
+    │    ↓                                       │
+    │    UpBlock (512 → 256) + skip (256)       │
+    │    ↓                                       │
+    │    UpBlock (256 → 128) + skip (128)       │
+    │    ↓                                       │
+    │    UpBlock (128 → 64) + skip (64)         │
+    │    ↓                                       │
+    │ OUTPUT (1, 388, 388)                      │
+    └─────────────────────────────────────────────┘
+    """
+    def __init__(self, in_channels=3, out_channels=1, features=[64, 128, 256, 512]):
+        """
+        Args:
+            in_channels: Number of input channels (3 for RGB)
+            out_channels: Number of output channels (1 for binary)
+            features: Number of features at each level
+        """
+        super(UNet, self).__init__()
+        
+        # ============ ENCODER (Contraction Path) ============
+        self.downs = nn.ModuleList()
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        
+        # First block: in_channels → features[0]
+        self.downs.append(DoubleConv(in_channels, features[0]))
+        
+        # Subsequent blocks: features[i-1] → features[i]
+        for i in range(1, len(features)):
+            self.downs.append(DoubleConv(features[i-1], features[i]))
+        
+        # ============ BOTTLENECK ============
+        self.bottleneck = DoubleConv(features[-1], features[-1] * 2)
+        
+        # ============ DECODER (Expansion Path) ============
+        self.ups = nn.ModuleList()
+        
+        # Up blocks: features[i] → features[i-1]
+        for i in range(len(features)-1, 0, -1):
+            self.ups.append(UpBlock(features[i] * 2, features[i-1]))
+        
+        # Last up block: features[0] * 2 → features[0]
+        self.ups.append(UpBlock(features[0] * 2, features[0]))
+        
+        # ============ FINAL CONVOLUTION ============
+        self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
+    
+    def forward(self, x):
+        """
+        Forward pass through U-Net
+        
+        Returns:
+            Segmentation mask with same spatial dimensions as input
+        """
+        
+        # ============ ENCODER PATH ============
+        skip_connections = []
+        
+        # Store features and downsample
+        for down in self.downs:
+            x = down(x)
+            skip_connections.append(x)
+            x = self.pool(x)
+        
+        # ============ BOTTLENECK ============
+        x = self.bottleneck(x)
+        
+        # ============ DECODER PATH ============
+        skip_connections = skip_connections[::-1]  # Reverse for skip connections
+        
+        for idx, up in enumerate(self.ups):
+            x = up(x, skip_connections[idx])
+        
+        # ============ FINAL OUTPUT ============
+        x = self.final_conv(x)
+        
+        return x
+
+# ============ TEST THE ARCHITECTURE ============
+
+def test_unet():
+    """Print U-Net architecture details"""
+    
+    print("="*70)
+    print("U-NET ARCHITECTURE EXPLAINED")
+    print("="*70)
+    
+    # Create U-Net
+    model = UNet(in_channels=3, out_channels=1)
+    
+    # Create dummy input
+    dummy_input = torch.randn(1, 3, 572, 572)
+    
+    # Forward pass
+    output = model(dummy_input)
+    
+    print("\n📐 INPUT SHAPE:")
+    print(f"   {dummy_input.shape}")
+    print("   ↓")
+    print("   ║")
+    print("   ╠═══════════════════════════════════════════════╣")
+    print("   ║  ENCODER PATH (Contraction)                   ║")
+    print("   ║  - DoubleConv: Extract features               ║")
+    print("   ║  - MaxPool: Reduce size by half              ║")
+    print("   ╠═══════════════════════════════════════════════╣")
+    print("   ║  BOTTLENECK                                   ║")
+    print("   ║  - DoubleConv with max channels              ║")
+    print("   ╠═══════════════════════════════════════════════╣")
+    print("   ║  DECODER PATH (Expansion)                    ║")
+    print("   ║  - UpConv: Increase size by 2×               ║")
+    print("   ║  - Concatenate with skip connections         ║")
+    print("   ║  - DoubleConv: Refine features               ║")
+    print("   ╠═══════════════════════════════════════════════╣")
+    print("   ║  FINAL CONV: 1×1 to output channels          ║")
+    print("   ↓")
+    print(f"\n📐 OUTPUT SHAPE:")
+    print(f"   {output.shape}")
+    
+    print("\n" + "="*70)
+    print("KEY FEATURES:")
+    print("="*70)
+    print("1. 🏗️  Encoder-Decoder Structure")
+    print("   - Symmetrical U-shape")
+    print("   - Captures context and location")
+    print()
+    print("2. 🔗  Skip Connections")
+    print("   - Connects encoder to decoder")
+    print("   - Preserves fine details")
+    print("   - Crucial for accurate segmentation")
+    print()
+    print("3. 🎯  Pixel-wise Output")
+    print("   - Output has same size as input")
+    print("   - Each pixel gets a label")
+    print()
+    print("4. 💪  Designed for Medical Images")
+    print("   - Works with limited data")
+    print("   - Handles variable input sizes")
+    print("   - Accurate segmentation")
+
+test_unet()
+```
+
+## 3.3 Understanding Each Component in Detail
+
+### 1. Double Convolution Block
+
+```python
+# ============ DOUBLE CONVOLUTION EXPLAINED ============
+
+class DoubleConvDetailed(nn.Module):
+    """
+    Double Convolution Block - EVERYTHING YOU NEED TO KNOW
+    """
+    def __init__(self, in_channels, out_channels):
+        super(DoubleConvDetailed, self).__init__()
+        
+        # ============ LAYER 1 ============
+        self.conv1 = nn.Conv2d(
+            in_channels=in_channels,   # Input channels
+            out_channels=out_channels, # Output channels
+            kernel_size=3,             # 3×3 filter
+            stride=1,                  # Move 1 pixel at a time
+            padding=1                  # Keep size same
+        )
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.relu1 = nn.ReLU(inplace=True)
+        
+        # ============ LAYER 2 ============
+        self.conv2 = nn.Conv2d(
+            in_channels=out_channels,
+            out_channels=out_channels,
+            kernel_size=3,
+            stride=1,
+            padding=1
+        )
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.relu2 = nn.ReLU(inplace=True)
+        
+        print(f"DoubleConv: {in_channels} → {out_channels}")
+        print(f"  Total parameters: {(in_channels*3*3*out_channels) + out_channels + "
+              f"(out_channels*3*3*out_channels) + out_channels:,}")
+    
+    def forward(self, x):
+        # First layer
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu1(x)
+        
+        # Second layer
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu2(x)
+        
+        return x
+
+# Let's calculate parameters
+def calculate_doubleconv_params():
+    """Show parameter calculation"""
+    print("="*60)
+    print("DOUBLE CONV PARAMETER CALCULATION")
+    print("="*60)
+    
+    in_ch = 64
+    out_ch = 128
+    
+    # Conv1: in_ch → out_ch
+    params_conv1 = (in_ch * 3 * 3 * out_ch) + out_ch  # weights + bias
+    print(f"Conv1: {in_ch}→{out_ch}: {params_conv1:,} params")
+    
+    # Conv2: out_ch → out_ch
+    params_conv2 = (out_ch * 3 * 3 * out_ch) + out_ch
+    print(f"Conv2: {out_ch}→{out_ch}: {params_conv2:,} params")
+    
+    # Total
+    total = params_conv1 + params_conv2
+    print(f"Total: {total:,} params")
+    print("\n💡 Note: 3×3 convolution with {out_ch} channels")
+    print(f"   = {out_ch} filters × {in_ch} input channels × 3×3 kernel")
+
+calculate_doubleconv_params()
+```
+
+### 2. Skip Connections - The Magic of U-Net
+
+```python
+# ============ SKIP CONNECTIONS EXPLAINED ============
+
+def explain_skip_connections():
+    """
+    Why are skip connections important?
+    
+    PROBLEM WITHOUT SKIP CONNECTIONS:
+    ┌────────────────────────────────────────────────────┐
+    │ Input → Conv → Conv → Pool → Conv → Conv → Pool  │
+    │                                                  │
+    │ After pooling: Lost fine details!               │
+    │ ┌────────────────────────────────────────┐      │
+    │ │ 🐱 (blurry, no whiskers!)             │      │
+    │ └────────────────────────────────────────┘      │
+    │                                                  │
+    │ Conv → Conv → UpConv → UpConv → Output         │
+    │                                                  │
+    │ Output: Blurry edges, missing details           │
+    └────────────────────────────────────────────────────┘
+    
+    SOLUTION WITH SKIP CONNECTIONS:
+    ┌────────────────────────────────────────────────────┐
+    │ Input → Conv → Conv → Pool                       │
+    │    │                   │                         │
+    │    └─── Skip ──────────┤                         │
+    │                        ↓                         │
+    │                   UpConv → Conv → Conv → Output │
+    │                                                  │
+    │ Output: Sharp edges, all details preserved!     │
+    └────────────────────────────────────────────────────┘
+    """
+    
+    print("="*60)
+    print("SKIP CONNECTIONS - WHY THEY'RE AMAZING")
+    print("="*60)
+    print()
+    print("🔍 WHAT SKIP CONNECTIONS DO:")
+    print("  1. Connect encoder layer to corresponding decoder layer")
+    print("  2. Pass high-resolution features directly")
+    print("  3. Preserve spatial information")
+    print()
+    print("🎯 BENEFITS:")
+    print("  1. Better localization (knows where things are)")
+    print("  2. Sharper boundaries (fine details preserved)")
+    print("  3. Easier to train (gradients flow better)")
+    print()
+    print("📊 VISUALIZATION:")
+    print("  ┌─────────────────────────────────────────────┐")
+    print("  │ Encoder → Pool → 64×64   │  Decoder ← Up  │")
+    print("  │  (128×128)    │           │    (128×128)   │")
+    print("  │     ───────────┼───────────┤               │")
+    print("  │                │           │                │")
+    print("  │  Encoder → 32×32  │  Decoder ← Up         │")
+    print("  │  (64×64)        │     (64×64)            │")
+    print("  │     ────────────┼───────────┤             │")
+    print("  │                 │           │              │")
+    print("  │  Encoder → 16×16    │  Decoder ← Up      │")
+    print("  │  (32×32)          │     (32×32)         │")
+    print("  └─────────────────────────────────────────────┘")
+
+explain_skip_connections()
+```
+
+### 3. Upsampling (Transposed Convolution)
+
+```python
+# ============ UPSAMPLING EXPLAINED ============
+
+class UpsampleDetailed(nn.Module):
+    """
+    Transposed Convolution - Increase Image Size
+    """
+    def __init__(self, in_channels, out_channels):
+        super(UpsampleDetailed, self).__init__()
+        
+        # ============ TRANS CONV ============
+        self.up = nn.ConvTranspose2d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=2,
+            stride=2
+        )
+        """
+        HOW TRANS CONV WORKS:
+        
+        Input (2×2):        Kernel (2×2):
+        ┌─────────┐         ┌─────────┐
+        │ a    b  │         │ w1  w2  │
+        │ c    d  │         │ w3  w4  │
+        └─────────┘         └─────────┘
+        
+        Output (4×4):
+        ┌─────────────────────────┐
+        │ a*w1  a*w2  b*w1  b*w2 │
+        │ a*w3  a*w4  b*w3  b*w4 │
+        │ c*w1  c*w2  d*w1  d*w2 │
+        │ c*w3  c*w4  d*w3  d*w4 │
+        └─────────────────────────┘
+        
+        Each input pixel becomes a 2×2 block!
+        """
+    
+    def forward(self, x):
+        return self.up(x)
+
+def visualize_upsampling():
+    """Show how upsampling works"""
+    import numpy as np
+    
+    # Simple 2×2 input
+    input_2x2 = np.array([[1, 2],
+                          [3, 4]])
+    
+    print("="*60)
+    print("UPSAMPLING VISUALIZATION")
+    print("="*60)
+    print("Input (2×2):")
+    print(input_2x2)
+    print()
+    print("After upsampling (4×4):")
+    print("┌─────────────────────────┐")
+    print("│ 1   1   2   2          │")
+    print("│ 1   1   2   2          │")
+    print("│ 3   3   4   4          │")
+    print("│ 3   3   4   4          │")
+    print("└─────────────────────────┘")
+    print()
+    print("💡 Each 2×2 block comes from one input pixel")
+
+visualize_upsampling()
+```
+
+## 3.4 U-Net Variants
+
+```python
+# ============ U-NET VARIANTS ============
+
+"""
+1. ORIGINAL U-NET (2015)
+- 23 convolutional layers
+- Designed for medical images
+- Works with small datasets
+
+2. RESIDUAL U-NET
+- Adds residual connections
+- Easier to train deeper
+- Better gradient flow
+
+3. ATTENTION U-NET
+- Adds attention mechanisms
+- Focuses on important regions
+- Better for complex images
+
+4. 3D U-NET
+- Processes 3D volumes (MRI, CT)
+- Uses 3D convolutions
+- Medical imaging
+
+5. U-NET++ (Nested U-Net)
+- Dense skip connections
+- More flexible architecture
+- Better performance
+
+6. TRANSFORMER U-NET
+- Combines CNN with Transformers
+- Captures global context
+- State-of-the-art performance
+"""
+
+# ============ RESIDUAL U-NET ============
+
 class ResidualBlock(nn.Module):
     """
     Residual Block for UNet
@@ -503,14 +1210,12 @@ class ResidualBlock(nn.Module):
         x = self.relu(x)
         x = self.conv2(x)
         x = self.bn2(x)
-        x = x + self.shortcut(residual)  # Add residual connection
+        x = x + self.shortcut(residual)
         x = self.relu(x)
         return x
-```
 
-**Attention U-Net Example:**
+# ============ ATTENTION U-NET ============
 
-```python
 class AttentionGate(nn.Module):
     """
     Attention Gate - Helps focus on important regions
@@ -556,690 +1261,1586 @@ class AttentionGate(nn.Module):
         return x * psi
 ```
 
-### 3.8 U-Net vs Vision Transformer (ViT)
-
-**U-Net:**
-- Processes images at the pixel level through convolutional layers
-- Often used for tasks requiring precise segmentation like medical scans
-- Performs well with smaller datasets
-- Quicker to train and requires less training time
-
-**Vision Transformer (ViT):**
-- Breaks images into patches and processes them simultaneously through attention mechanisms
-- Uses self-attention to weigh the importance of different parts of the image relative to each other
-- Generally needs more data to work well
-- Great at picking up complex patterns
-
 ---
 
-## 4. OpenCV for Image Preprocessing
+# 4. OPENCV - YOUR SWISS ARMY KNIFE FOR IMAGES
 
-### 4.1 Introduction to OpenCV
+## 4.1 What is OpenCV and Why Do You Need It?
 
-OpenCV (Open Source Computer Vision Library) is a comprehensive library for computer vision tasks. For segmentation and medical imaging, preprocessing is critical for achieving high-quality results.
-
-**What OpenCV Can Do:**
-
-1. Read and write images (JPEG, PNG, etc.)
-2. Resize, crop, rotate images
-3. Convert color spaces (RGB, Grayscale, HSV)
-4. Apply filters (blur, sharpen, edge detection)
-5. Draw shapes and text on images
-6. Detect edges, corners, blobs
-7. Find contours and boundaries
-8. Match templates and patterns
-9. Video processing and motion detection
-10. Camera calibration and 3D reconstruction
-
-### 4.2 Basic Operations
-
-**Reading and Writing Images:**
+**OpenCV** (Open Source Computer Vision Library) is like a Swiss Army knife for images. It has hundreds of tools for:
+- Reading/writing images
+- Resizing, cropping, rotating
+- Drawing shapes and text
+- Image filtering and enhancement
+- Feature detection
+- And much more!
 
 ```python
+# ============ OPENCV INTRODUCTION ============
+
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
-# Read image (returns BGR format)
-# cv2.imread() loads an image from file
-# Returns a numpy array of shape (height, width, channels)
-image = cv2.imread('image_path.jpg')
+print("="*70)
+print("OPENCV - THE COMPUTER VISION SWISS ARMY KNIFE")
+print("="*70)
 
-# Check if image loaded successfully
-if image is None:
-    print("Image not found!")
-
-# Display image in a window
-# cv2.imshow() creates a window with the given name and displays the image
-cv2.imshow('Window Name', image)
-
-# cv2.waitKey(0) waits for a key press indefinitely
-# 0 means wait forever until a key is pressed
-cv2.waitKey(0)
-
-# Close all OpenCV windows
-cv2.destroyAllWindows()
-
-# Save image to file
-# cv2.imwrite() saves the image to the specified path
-cv2.imwrite('output.jpg', image)
+print("\n📚 WHAT OPENCV CAN DO:")
+print("  1. Read and write images (JPEG, PNG, etc.)")
+print("  2. Resize, crop, rotate images")
+print("  3. Convert color spaces (RGB, Grayscale, HSV)")
+print("  4. Apply filters (blur, sharpen, edge detection)")
+print("  5. Draw shapes and text on images")
+print("  6. Detect edges, corners, blobs")
+print("  7. Find contours and boundaries")
+print("  8. Match templates and patterns")
+print("  9. Video processing and motion detection")
+print(" 10. Camera calibration and 3D reconstruction")
 ```
 
-**Color Space Conversions:**
+## 4.2 Basic OpenCV Operations
+
+### Reading and Writing Images
 
 ```python
-# BGR to Grayscale
-# cv2.cvtColor() converts image from one color space to another
-# COLOR_BGR2GRAY is the conversion code for BGR to grayscale
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# ============ READING AND WRITING IMAGES ============
 
-# BGR to RGB (for matplotlib)
-# Matplotlib expects RGB format, OpenCV uses BGR
-rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-# BGR to HSV
-# HSV = Hue, Saturation, Value
-# Useful for color-based segmentation
-hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-# BGR to LAB
-# LAB = Lightness, A, B
-# Perceptually uniform color space
-lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-```
-
-**Image Resizing:**
-
-```python
-# Resize with different interpolation methods
-# cv2.resize() changes image dimensions
-# INTER_LINEAR is good for zooming
-resized = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
-
-# Interpolation options:
-# INTER_NEAREST - Nearest neighbor (fastest, lowest quality)
-# INTER_LINEAR - Bilinear (good for zoom)
-# INTER_CUBIC - Bicubic (best quality)
-# INTER_AREA - Area-based (good for shrinking)
-```
-
-**Image Transformations:**
-
-```python
-# Crop - array indexing
-# Cropping is just slicing the numpy array
-# Format: [y_start:y_end, x_start:x_end]
-cropped = image[y_start:y_end, x_start:x_end]
-
-# Rotate - rotation matrix
-# Get image dimensions
-height, width = image.shape[:2]
-
-# Calculate center point
-center = (width//2, height//2)
-
-# Create rotation matrix
-# cv2.getRotationMatrix2D(center, angle, scale)
-# angle is in degrees, scale is zoom factor
-rotation_matrix = cv2.getRotationMatrix2D(center, 45, 1.0)
-
-# Apply rotation
-# cv2.warpAffine() applies the affine transformation
-rotated = cv2.warpAffine(image, rotation_matrix, (width, height))
-
-# Flip
-# cv2.flip() flips the image
-# 1 = horizontal flip, 0 = vertical flip, -1 = both
-flip_horizontal = cv2.flip(image, 1)  # Left-right flip
-flip_vertical = cv2.flip(image, 0)    # Top-bottom flip
-flip_both = cv2.flip(image, -1)       # Both directions
-```
-
-### 4.3 Drawing on Images
-
-```python
-# Draw Line
-# cv2.line(image, start_point, end_point, color, thickness)
-# Color is in BGR format: (Blue, Green, Red)
-cv2.line(image, (x1, y1), (x2, y2), (0, 0, 255), 3)  # Red line
-
-# Draw Rectangle
-# cv2.rectangle(image, top_left, bottom_right, color, thickness)
-# thickness=-1 fills the rectangle
-cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Green rectangle
-
-# Draw Circle
-# cv2.circle(image, center, radius, color, thickness)
-# thickness=-1 fills the circle
-cv2.circle(image, (cx, cy), radius, (255, 0, 0), -1)  # Blue filled circle
-
-# Put Text
-# cv2.putText(image, text, position, font, scale, color, thickness)
-cv2.putText(image, 'Hello OpenCV', (x, y), 
-            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-```
-
-### 4.4 Image Filtering
-
-**Smoothing/Blurring:**
-
-```python
-# Gaussian blur - reduces Gaussian noise
-# cv2.GaussianBlur(image, kernel_size, sigma)
-# kernel_size must be odd (5, 7, 9, etc.)
-gaussian_blur = cv2.GaussianBlur(image, (5, 5), 0)
-
-# Median blur - good for salt-and-pepper noise
-# cv2.medianBlur(image, kernel_size)
-# kernel_size must be odd
-median_blur = cv2.medianBlur(image, 5)
-
-# Bilateral filter - preserves edges
-# cv2.bilateralFilter(image, diameter, sigma_color, sigma_space)
-# sigma_color: Larger value means more colors will be considered
-# sigma_space: Larger value means pixels farther away will influence
-bilateral = cv2.bilateralFilter(image, 9, 75, 75)
-```
-
-**Sharpening:**
-
-```python
-# Sharpening kernel
-# This kernel enhances edges by increasing contrast
-# The center value 5 emphasizes the current pixel
-# The -1 values around it de-emphasize neighboring pixels
-kernel = np.array([[0, -1, 0],
-                   [-1, 5, -1],
-                   [0, -1, 0]])
-
-# Apply the kernel to the image
-# cv2.filter2D() applies a custom kernel to the image
-sharpened = cv2.filter2D(image, -1, kernel)
-```
-
-**Edge Detection:**
-
-```python
-# Canny edge detector
-# cv2.Canny(image, threshold1, threshold2)
-# threshold1: Lower threshold for edge detection
-# threshold2: Higher threshold for edge detection
-edges = cv2.Canny(image, 100, 200)
-```
-
-### 4.5 Contour Detection
-
-```python
-# Find contours
-# cv2.findContours() finds boundaries of objects in binary images
-# Returns contours (list of points) and hierarchy
-# RETR_EXTERNAL: Only external contours
-# CHAIN_APPROX_SIMPLE: Compress contour points
-contours, hierarchy = cv2.findContours(binary, 
-                                       cv2.RETR_EXTERNAL, 
-                                       cv2.CHAIN_APPROX_SIMPLE)
-
-# Draw contours
-# cv2.drawContours() draws contours on the image
-# -1 means draw all contours
-cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
-
-# Calculate contour properties
-for contour in contours:
-    # Area of the contour
-    area = cv2.contourArea(contour)
+def opencv_basic_io():
+    """
+    How to read, display, and save images with OpenCV
+    """
     
-    # Perimeter (arc length) of the contour
-    # True means the contour is closed
-    perimeter = cv2.arcLength(contour, True)
+    print("="*60)
+    print("OPENCV - BASIC I/O OPERATIONS")
+    print("="*60)
     
-    print(f"Area: {area}, Perimeter: {perimeter}")
+    # ============ READ IMAGE ============
+    # cv2.imread() reads an image from file
+    # Returns: numpy array of shape (height, width, channels)
+    image = cv2.imread('sample_image.jpg')
+    # Note: OpenCV reads images in BGR format (not RGB!)
+    
+    if image is None:
+        print("❌ Image not found! Creating a dummy image...")
+        # Create a dummy image for demonstration
+        image = np.zeros((200, 200, 3), dtype=np.uint8)
+        # Draw a rectangle
+        cv2.rectangle(image, (50, 50), (150, 150), (0, 255, 0), 2)
+        cv2.putText(image, 'OpenCV', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 
+                   1, (255, 255, 255), 2)
+    
+    print(f"📐 Image shape: {image.shape}")  # (height, width, channels)
+    print(f"💾 Image dtype: {image.dtype}")
+    print(f"📊 Min value: {image.min()}, Max value: {image.max()}")
+    
+    # ============ DISPLAY IMAGE ============
+    # cv2.imshow() displays an image in a window
+    cv2.imshow('Original Image', image)
+    cv2.waitKey(0)  # Wait for key press
+    cv2.destroyAllWindows()  # Close all windows
+    
+    # ============ SAVE IMAGE ============
+    cv2.imwrite('output_image.jpg', image)
+    print("💾 Image saved as 'output_image.jpg'")
+    
+    return image
+
+# ============ COLOR SPACE CONVERSIONS ============
+
+def color_space_conversions():
+    """
+    Convert between different color spaces
+    """
+    
+    # Create a test image
+    image = np.zeros((200, 200, 3), dtype=np.uint8)
+    image[50:150, 50:150] = [0, 255, 0]  # Green square (BGR format)
+    
+    print("="*60)
+    print("COLOR SPACE CONVERSIONS")
+    print("="*60)
+    
+    # ============ BGR TO RGB ============
+    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    print("✅ BGR → RGB (for matplotlib)")
+    
+    # ============ BGR TO GRAYSCALE ============
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    print("✅ BGR → Grayscale")
+    
+    # ============ BGR TO HSV ============
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    print("✅ BGR → HSV (Hue, Saturation, Value)")
+    
+    # ============ BGR TO LAB ============
+    lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    print("✅ BGR → LAB (Lightness, A, B)")
+    
+    # Visualize
+    fig, axes = plt.subplots(2, 2, figsize=(10, 10))
+    
+    axes[0, 0].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    axes[0, 0].set_title('RGB Image')
+    axes[0, 0].axis('off')
+    
+    axes[0, 1].imshow(gray_image, cmap='gray')
+    axes[0, 1].set_title('Grayscale')
+    axes[0, 1].axis('off')
+    
+    axes[1, 0].imshow(hsv_image)
+    axes[1, 0].set_title('HSV Image')
+    axes[1, 0].axis('off')
+    
+    axes[1, 1].imshow(lab_image)
+    axes[1, 1].set_title('LAB Image')
+    axes[1, 1].axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    return rgb_image, gray_image, hsv_image, lab_image
+```
+
+### Image Transformations
+
+```python
+# ============ IMAGE TRANSFORMATIONS ============
+
+def image_transformations():
+    """
+    Resize, crop, rotate, flip images
+    """
+    
+    # Create a test image
+    image = np.zeros((300, 300, 3), dtype=np.uint8)
+    cv2.rectangle(image, (50, 50), (250, 250), (0, 255, 0), -1)  # Green square
+    cv2.circle(image, (150, 150), 50, (0, 0, 255), -1)  # Red circle
+    
+    print("="*60)
+    print("IMAGE TRANSFORMATIONS")
+    print("="*60)
+    
+    # ============ RESIZE ============
+    # cv2.resize() changes image size
+    # Interpolation methods:
+    # - cv2.INTER_LINEAR: Bilinear (good for zoom)
+    # - cv2.INTER_NEAREST: Nearest neighbor (fast)
+    # - cv2.INTER_CUBIC: Bicubic (best quality)
+    # - cv2.INTER_AREA: Area-based (good for shrinking)
+    
+    resized_linear = cv2.resize(image, (150, 150), interpolation=cv2.INTER_LINEAR)
+    resized_cubic = cv2.resize(image, (150, 150), interpolation=cv2.INTER_CUBIC)
+    resized_area = cv2.resize(image, (150, 150), interpolation=cv2.INTER_AREA)
+    
+    print("✅ Resized to 150×150")
+    
+    # ============ CROP ============
+    # Cropping is just array indexing
+    cropped = image[50:250, 50:250]  # [y_start:y_end, x_start:x_end]
+    print("✅ Cropped region (50:250, 50:250)")
+    
+    # ============ ROTATE ============
+    # Need rotation matrix
+    height, width = image.shape[:2]
+    center = (width//2, height//2)
+    rotation_matrix = cv2.getRotationMatrix2D(center, 45, 1.0)  # 45 degrees
+    rotated = cv2.warpAffine(image, rotation_matrix, (width, height))
+    print("✅ Rotated 45 degrees")
+    
+    # ============ FLIP ============
+    # cv2.flip() flips the image
+    flip_horizontal = cv2.flip(image, 1)  # 1 = horizontal
+    flip_vertical = cv2.flip(image, 0)    # 0 = vertical
+    flip_both = cv2.flip(image, -1)       # -1 = both
+    print("✅ Flipped")
+    
+    # Visualize
+    fig, axes = plt.subplots(2, 3, figsize=(12, 8))
+    
+    axes[0, 0].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    axes[0, 0].set_title('Original')
+    axes[0, 0].axis('off')
+    
+    axes[0, 1].imshow(cv2.cvtColor(resized_linear, cv2.COLOR_BGR2RGB))
+    axes[0, 1].set_title('Resized (Linear)')
+    axes[0, 1].axis('off')
+    
+    axes[0, 2].imshow(cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB))
+    axes[0, 2].set_title('Cropped')
+    axes[0, 2].axis('off')
+    
+    axes[1, 0].imshow(cv2.cvtColor(rotated, cv2.COLOR_BGR2RGB))
+    axes[1, 0].set_title('Rotated 45°')
+    axes[1, 0].axis('off')
+    
+    axes[1, 1].imshow(cv2.cvtColor(flip_horizontal, cv2.COLOR_BGR2RGB))
+    axes[1, 1].set_title('Flipped Horizontal')
+    axes[1, 1].axis('off')
+    
+    axes[1, 2].imshow(cv2.cvtColor(flip_vertical, cv2.COLOR_BGR2RGB))
+    axes[1, 2].set_title('Flipped Vertical')
+    axes[1, 2].axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+```
+
+### Drawing on Images
+
+```python
+# ============ DRAWING ON IMAGES ============
+
+def draw_on_images():
+    """
+    Draw shapes, text, and annotations
+    """
+    
+    # Create blank image
+    image = np.ones((400, 400, 3), dtype=np.uint8) * 255  # White background
+    
+    print("="*60)
+    print("DRAWING ON IMAGES")
+    print("="*60)
+    
+    # ============ DRAW LINES ============
+    # cv2.line(image, start_point, end_point, color, thickness)
+    cv2.line(image, (50, 50), (350, 50), (0, 0, 255), 3)  # Red line
+    
+    # ============ DRAW RECTANGLES ============
+    # cv2.rectangle(image, top_left, bottom_right, color, thickness)
+    cv2.rectangle(image, (50, 100), (350, 200), (0, 255, 0), 2)  # Green rectangle
+    
+    # ============ DRAW CIRCLES ============
+    # cv2.circle(image, center, radius, color, thickness)
+    cv2.circle(image, (200, 300), 50, (255, 0, 0), -1)  # Blue filled circle
+    
+    # ============ DRAW ELLIPSES ============
+    # cv2.ellipse(image, center, axes, angle, start_angle, end_angle, color, thickness)
+    cv2.ellipse(image, (100, 300), (50, 25), 0, 0, 360, (0, 255, 255), 2)
+    
+    # ============ DRAW POLYGONS ============
+    pts = np.array([[300, 100], [350, 100], [375, 150], [325, 150]], np.int32)
+    cv2.polylines(image, [pts], True, (255, 0, 255), 2)
+    
+    # ============ PUT TEXT ============
+    # cv2.putText(image, text, position, font, scale, color, thickness)
+    cv2.putText(image, 'OpenCV Drawing', (100, 380), 
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+    
+    print("✅ Drew various shapes on image")
+    
+    # Display
+    cv2.imshow('Drawing', image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
+    return image
+```
+
+## 4.3 Image Filtering and Enhancement
+
+```python
+# ============ IMAGE FILTERING ============
+
+def image_filtering():
+    """
+    Apply various filters to images
+    """
+    
+    # Create a test image with noise
+    image = np.zeros((200, 200), dtype=np.uint8)
+    cv2.rectangle(image, (50, 50), (150, 150), 255, -1)  # White square
+    
+    # Add salt and pepper noise
+    noise = np.random.random(image.shape)
+    image[noise < 0.05] = 0
+    image[noise > 0.95] = 255
+    
+    print("="*60)
+    print("IMAGE FILTERING")
+    print("="*60)
+    
+    # ============ GAUSSIAN BLUR ============
+    # Smooths image, reduces noise
+    gaussian = cv2.GaussianBlur(image, (5, 5), 0)
+    print("✅ Gaussian Blur applied")
+    
+    # ============ MEDIAN BLUR ============
+    # Better for salt and pepper noise
+    median = cv2.medianBlur(image, 5)
+    print("✅ Median Blur applied")
+    
+    # ============ BILATERAL FILTER ============
+    # Preserves edges while smoothing
+    bilateral = cv2.bilateralFilter(image, 9, 75, 75)
+    print("✅ Bilateral Filter applied")
+    
+    # ============ SHARPENING ============
+    # Kernel for sharpening
+    kernel = np.array([[0, -1, 0],
+                      [-1, 5, -1],
+                      [0, -1, 0]])
+    sharpened = cv2.filter2D(image, -1, kernel)
+    print("✅ Sharpening applied")
+    
+    # ============ EDGE DETECTION ============
+    # Canny edge detection
+    edges = cv2.Canny(image, 100, 200)
+    print("✅ Edge detection applied")
+    
+    # Visualize
+    fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+    
+    axes[0, 0].imshow(image, cmap='gray')
+    axes[0, 0].set_title('Original (with noise)')
+    axes[0, 0].axis('off')
+    
+    axes[0, 1].imshow(gaussian, cmap='gray')
+    axes[0, 1].set_title('Gaussian Blur')
+    axes[0, 1].axis('off')
+    
+    axes[0, 2].imshow(median, cmap='gray')
+    axes[0, 2].set_title('Median Blur')
+    axes[0, 2].axis('off')
+    
+    axes[1, 0].imshow(bilateral, cmap='gray')
+    axes[1, 0].set_title('Bilateral Filter')
+    axes[1, 0].axis('off')
+    
+    axes[1, 1].imshow(sharpened, cmap='gray')
+    axes[1, 1].set_title('Sharpened')
+    axes[1, 1].axis('off')
+    
+    axes[1, 2].imshow(edges, cmap='gray')
+    axes[1, 2].set_title('Edges (Canny)')
+    axes[1, 2].axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    return gaussian, median, bilateral, sharpened, edges
+```
+
+## 4.4 Contour Detection
+
+```python
+# ============ CONTOUR DETECTION ============
+
+def contour_detection():
+    """
+    Find and draw contours in images
+    """
+    
+    # Create a test image
+    image = np.zeros((300, 300), dtype=np.uint8)
+    
+    # Draw some shapes
+    cv2.rectangle(image, (50, 50), (100, 100), 255, -1)
+    cv2.circle(image, (200, 200), 40, 255, -1)
+    cv2.ellipse(image, (200, 80), (50, 30), 0, 0, 360, 255, -1)
+    
+    print("="*60)
+    print("CONTOUR DETECTION")
+    print("="*60)
+    
+    # ============ FIND CONTOURS ============
+    # cv2.findContours() finds boundaries of objects
+    # Returns: contours (list of points) and hierarchy
+    contours, hierarchy = cv2.findContours(
+        image, 
+        cv2.RETR_EXTERNAL,  # Only external contours
+        cv2.CHAIN_APPROX_SIMPLE  # Compress contour points
+    )
+    
+    print(f"✅ Found {len(contours)} contours")
+    
+    # ============ DRAW CONTOURS ============
+    # Create color image for visualization
+    contour_image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    
+    # Draw contours
+    cv2.drawContours(contour_image, contours, -1, (0, 255, 0), 2)
+    
+    # ============ CONTOUR PROPERTIES ============
+    for i, contour in enumerate(contours):
+        area = cv2.contourArea(contour)
+        perimeter = cv2.arcLength(contour, True)
+        print(f"  Contour {i+1}: Area={area:.0f}, Perimeter={perimeter:.1f}")
+    
+    # Visualize
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    
+    axes[0].imshow(image, cmap='gray')
+    axes[0].set_title('Original')
+    axes[0].axis('off')
+    
+    axes[1].imshow(cv2.cvtColor(contour_image, cv2.COLOR_BGR2RGB))
+    axes[1].set_title('Contours Detected')
+    axes[1].axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    return contours
 ```
 
 ---
 
-## 5. Advanced Image Processing Techniques
+# 5. IMAGE PREPROCESSING - CLEANING YOUR DATA
 
-### 5.1 Why Preprocessing is Important
+## 5.1 Why Preprocessing is Important
 
 **Analogy:** You can't bake a cake with dirty ingredients. Similarly, you can't train a model with messy images.
 
-**Problems in Raw Images:**
+```python
+# ============ WHY PREPROCESSING ============
 
-- Different sizes (model expects fixed size)
-- Different brightness/contrast (inconsistent data)
-- Noise and artifacts (distractions)
-- Unwanted background (irrelevant information)
-- Color variations (lighting differences)
+print("="*70)
+print("WHY IMAGE PREPROCESSING IS CRUCIAL")
+print("="*70)
 
-**What Preprocessing Does:**
+print("""
+🔴 PROBLEMS IN RAW IMAGES:
+   1. Different sizes (model expects fixed size)
+   2. Different brightness/contrast (inconsistent data)
+   3. Noise and artifacts (distractions)
+   4. Unwanted background (irrelevant information)
+   5. Color variations (lighting differences)
 
-- Standardizes images (same size, format)
-- Enhances important features
-- Removes noise and artifacts
-- Normalizes pixel values
-- Makes model training more stable
+✅ WHAT PREPROCESSING DOES:
+   1. Standardizes images (same size, format)
+   2. Enhances important features
+   3. Removes noise and artifacts
+   4. Normalizes pixel values
+   5. Makes model training more stable
 
-### 5.2 Histogram Equalization
+📊 BEFORE AND AFTER:
+   Before: [Random sizes, different brightness, noise, uneven lighting]
+   After:  [Same size, consistent brightness, clean, normalized]
+""")
+```
 
-Histogram equalization improves image contrast by redistributing intensity values. It is widely used in medical imaging, OCR, and document enhancement.
-
-**Grayscale Histogram Equalization:**
+## 5.2 Complete Preprocessing Pipeline
 
 ```python
-# Convert to grayscale
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# ============ COMPLETE PREPROCESSING PIPELINE ============
 
-# Apply histogram equalization
-# cv2.equalizeHist() improves contrast by spreading out intensity values
-equalized = cv2.equalizeHist(gray)
-```
-
-**Color Histogram Equalization (Y channel only):**
-
-```python
-# Convert to YUV color space
-# YUV separates luminance (Y) from color (U, V)
-yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
-
-# Equalize the Y channel (luminance) only
-# This preserves color while improving contrast
-yuv[:, :, 0] = cv2.equalizeHist(yuv[:, :, 0])
-
-# Convert back to BGR
-equalized_color = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
-```
-
-### 5.3 Thresholding
-
-Thresholding converts a grayscale image to a binary image.
-
-**Simple Thresholding:**
-
-```python
-# Binary threshold
-# cv2.threshold(image, threshold_value, max_value, threshold_type)
-# THRESH_BINARY: Pixels above threshold become max_value, others become 0
-_, binary = cv2.threshold(gray, threshold_value, max_value, cv2.THRESH_BINARY)
-
-# Inverse binary threshold
-# THRESH_BINARY_INV: Pixels above threshold become 0, others become max_value
-_, binary_inv = cv2.threshold(gray, threshold_value, max_value, cv2.THRESH_BINARY_INV)
-```
-
-**Otsu's Thresholding:**
-
-Otsu's method automatically determines the optimal threshold value.
-
-```python
-# Otsu thresholding
-# THRESH_OTSU flag tells OpenCV to use Otsu's method
-# The threshold value is calculated automatically
-_, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-```
-
-**Adaptive Thresholding:**
-
-Adaptive thresholding handles varying lighting conditions by calculating a threshold for each pixel based on its neighborhood.
-
-```python
-# Adaptive thresholding
-# cv2.adaptiveThreshold(image, max_value, adaptive_method, 
-#                       threshold_type, block_size, C)
-# ADAPTIVE_THRESH_GAUSSIAN_C: Gaussian weighted sum
-# block_size: Size of pixel neighborhood
-# C: Constant subtracted from the mean
-binary = cv2.adaptiveThreshold(gray, 255, 
-                               cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                               cv2.THRESH_BINARY, 11, 2)
-```
-
-### 5.4 Morphological Operations
-
-Morphological operations process images based on shapes.
-
-**Structuring Element:**
-
-```python
-# Create a structuring element (kernel)
-# np.ones() creates a square kernel of 1s
-# This defines the neighborhood used in morphological operations
-kernel = np.ones((kernel_size, kernel_size), np.uint8)
-```
-
-**Operations:**
-
-```python
-# Erosion - shrinks objects
-# Removes pixels on object boundaries
-eroded = cv2.erode(binary, kernel, iterations=1)
-
-# Dilation - enlarges objects
-# Adds pixels to object boundaries
-dilated = cv2.dilate(binary, kernel, iterations=1)
-
-# Opening - removes small objects
-# Erosion followed by dilation
-# Good for removing noise
-opening = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
-
-# Closing - fills small holes
-# Dilation followed by erosion
-# Good for filling gaps
-closing = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
-```
-
-**Applications:**
-
-- **Opening:** Removes small noise objects, useful for denoising binary masks
-- **Closing:** Fills small holes in objects, useful for completing segmented regions
-- **Erosion:** Separates touching objects, useful for separating connected components
-- **Dilation:** Connects broken parts of objects
-
-### 5.5 CLAHE (Contrast Limited Adaptive Histogram Equalization)
-
-CLAHE is an advanced contrast enhancement technique that prevents over-amplification of noise.
-
-```python
-# Create CLAHE object
-# clipLimit: Limits contrast amplification (higher = more contrast)
-# tileGridSize: Size of tiles for local histogram equalization
-clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-
-# Apply to grayscale image
-enhanced = clahe.apply(gray)
-
-# Apply to color image (LAB color space)
-# LAB separates luminance (L) from color (A, B)
-lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-
-# Split into channels
-l, a, b = cv2.split(lab)
-
-# Apply CLAHE to L channel only
-l = clahe.apply(l)
-
-# Merge channels back
-lab = cv2.merge((l, a, b))
-
-# Convert back to BGR
-enhanced_color = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
-```
-
-### 5.6 Complete Preprocessing Pipeline
-
-A complete preprocessing pipeline typically includes:
-
-```python
-def preprocess_image(image_path, target_size=(256, 256)):
-    # 1. Load image from file
-    image = cv2.imread(image_path)
-    if image is None:
-        raise ValueError(f"Could not load image: {image_path}")
-    
-    # 2. Resize to target size
-    image = cv2.resize(image, target_size, interpolation=cv2.INTER_LINEAR)
-    
-    # 3. Convert to grayscale (if applicable)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-    # 4. Remove noise using median filter
-    denoised = cv2.medianBlur(gray, 3)
-    
-    # 5. Enhance contrast using CLAHE
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    enhanced = clahe.apply(denoised)
-    
-    # 6. Normalize pixel values to [0, 1]
-    normalized = enhanced.astype(np.float32) / 255.0
-    
-    # 7. Standardize to mean=0, std=1
-    mean = np.mean(normalized)
-    std = np.std(normalized)
-    standardized = (normalized - mean) / (std + 1e-8)
-    
-    return standardized
-```
-
-### 5.7 Advanced Preprocessing Techniques
-
-**Shadow Removal:**
-
-```python
-def remove_shadows(image):
-    """Remove shadows using morphological operations"""
-    
-    # Convert to grayscale if needed
-    if len(image.shape) == 3:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    else:
-        gray = image
-    
-    # Create shadow mask using morphological opening
-    kernel = np.ones((5, 5), np.uint8)
-    opening = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel)
-    
-    # Identify shadow regions
-    shadow_mask = cv2.subtract(gray, opening)
-    _, shadow_mask = cv2.threshold(shadow_mask, 20, 255, cv2.THRESH_BINARY)
-    
-    # Remove shadows
-    result = gray.copy()
-    result[shadow_mask > 0] = opening[shadow_mask > 0]
-    
-    return result
-```
-
-**Unsharp Masking:**
-
-```python
-def unsharp_masking(image, sigma=1.0, amount=1.5):
-    """
-    Unsharp masking for sharpening
-    
-    Parameters:
-    - sigma: Standard deviation for Gaussian blur
-    - amount: Strength of sharpening effect
-    """
-    
-    # Blur the image
-    blurred = cv2.GaussianBlur(image, (0, 0), sigma)
-    
-    # Apply unsharp mask
-    # Add weighted original and subtract weighted blurred
-    sharpened = cv2.addWeighted(image, 1.0 + amount, blurred, -amount, 0)
-    
-    # Clip values to valid range
-    return np.clip(sharpened, 0, 255).astype(np.uint8)
-```
-
-**Non-Local Means Denoising:**
-
-```python
-def denoise_nlm(image, h=10):
-    """
-    Non-local means denoising
-    
-    h: Filter strength (higher = more smoothing)
-    """
-    
-    if len(image.shape) == 3:
-        # Color image
-        return cv2.fastNlMeansDenoisingColored(image, None, h, h, 7, 21)
-    else:
-        # Grayscale image
-        return cv2.fastNlMeansDenoising(image, None, h, 7, 21)
-```
-
----
-
-## 6. Medical Image Segmentation
-
-### 6.1 Why Medical Image Segmentation?
-
-Medical image segmentation is vital for comprehending anatomical structures and identifying pathological abnormalities for diagnosis and treatment planning.
-
-**Clinical Applications:**
-
-1. **Brain MRI Segmentation**
-   - Segmentation of gray matter (GM), white matter (WM), and cerebrospinal fluid (CSF)
-   - Identification of tumor regions
-   - Surgical planning
-
-2. **Tumor Delineation**
-   - Identifying and outlining tumors for radiation therapy planning
-   - Tracking tumor growth over time
-
-3. **Cardiac Segmentation**
-   - Segmenting heart structures for diagnosis
-   - Measuring cardiac function
-
-4. **Organ Contouring**
-   - Outlining organs for surgical planning
-   - Radiation therapy planning
-
-5. **Computer Aided Diagnosis (CAD)**
-   - Detecting suspicious structures to aid radiologists
-   - Automated screening
-
-**Why Automation Matters:**
-- Manual tracing is labor-intensive, costly, and prone to significant intra- and interobserver inconsistencies
-- Machine learning-based techniques greatly accelerate the segmentation process
-- Reduce time and costs
-- Make large-scale clinical studies feasible
-
-### 6.2 Medical Image Formats
-
-| Format | Description | Extension | Common In |
-|--------|-------------|-----------|-----------|
-| DICOM | Standard for storing and transmitting medical images | .dcm, .dicom | MRI, CT, Ultrasound, X-ray |
-| NIfTI | Neuroimaging data format | .nii, .nii.gz | MRI, fMRI, PET |
-| MHD | Medical image with separate header and data | .mhd, .raw | CT, MRI |
-| PNG/JPG | Conventional image formats | .png, .jpg | Processed images |
-
-**DICOM (Digital Imaging and Communications in Medicine):**
-- Contains patient information, metadata, and pixel data
-- Requires specialized libraries (pydicom) for handling
-- Standard for medical imaging
-
-**NIfTI (Neuroimaging Informatics Technology Initiative):**
-- Combines image and header data
-- Common in neuroimaging research
-- Requires nibabel library
-
-**MHD (MetaImage):**
-- Header describes image properties
-- Data stored in separate .raw file
-- Common in CT and MRI
-
-**PNG/JPG:**
-- Widely supported, easy to handle
-- Loses medical metadata
-- Good for processed images
-
-### 6.3 Challenges in Medical Segmentation
-
-**Data Scarcity and Bias:**
-
-Medical images can vary greatly due to different imaging modalities, protocols, and patient demographics, necessitating a broad dataset for robust models.
-
-Key challenges include:
-- Strict privacy and regulatory constraints limit availability of diverse medical images
-- High expertise requirement for annotation
-- Limited labeled data (pixel-wise annotations are difficult to obtain)
-
-**Class Imbalance:**
-
-Medical images often have small regions of interest. For example, tumors may occupy less than 1% of the image. This class imbalance makes training challenging.
-
-**Poor Contrast / Low Quality:**
-
-Medical images often have low contrast and noise, requiring extensive preprocessing.
-
-**Variability in Anatomy:**
-
-Different patients have different anatomies, and variations in imaging protocols affect the appearance of images.
-
-### 6.4 Loss Functions for Medical Segmentation
-
-**Dice Loss:**
-
-The Dice loss directly optimizes overlap with the ground-truth mask:
-
-```
-Dice Loss = 1 - (2 * |P ∩ G|) / (|P| + |G|)
-```
-
-Where P is the prediction, G is the ground truth, and |P ∩ G| is the intersection.
-
-**Why Dice Loss:**
-- Handles class imbalance well
-- Directly optimizes the Dice coefficient
-- Good for medical images with small objects
-
-**Focal Loss:**
-- Down-weights easy pixels and focuses on hard ones
-- Helps with class imbalance
-
-**Combined BCE + Dice Loss:**
-- In practice, training with BCE (Binary Cross-Entropy) + Dice Loss (sum of the two) provides stable convergence on imbalanced masks
-
-**Weighted Loss Functions:**
-- For highly unbalanced segmentations, the Generalized Dice overlap loss can be used
-
-### 6.5 Evaluation Metrics
-
-**Dice Score (F1 Score for Segmentation):**
-
-Measures overlap between prediction and ground truth:
-
-```
-Dice = 2 * |P ∩ G| / (|P| + |G|)
-```
-
-**IoU (Intersection over Union - Jaccard Index):**
-
-```
-IoU = |P ∩ G| / |P ∪ G|
-```
-
-Where |P ∪ G| is the union of prediction and ground truth.
-
-**Comparison:**
-
-| Metric | Formula | When to Use |
-|--------|---------|-------------|
-| Dice Score | 2*Overlap/(Pred+GT) | Medical imaging, imbalanced data |
-| IoU | Overlap/(Pred∪GT) | General segmentation tasks |
-| Pixel Accuracy | Correct/Total | Balanced datasets |
-
-### 6.6 Dataset Structure
-
-For medical image segmentation, the dataset should be organized as:
-
-```
-medical_data/
-├── images/
-│   ├── image_001.png
-│   ├── image_002.png
-│   └── ...
-└── masks/
-    ├── mask_001.png
-    ├── mask_002.png
-    └── ...
-```
-
----
-
-## 7. Complete Implementation Guide
-
-### 7.1 Custom Dataset Class
-
-```python
-import torch
-from torch.utils.data import Dataset
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy import ndimage
+
+class ImagePreprocessor:
+    """
+    Complete image preprocessing pipeline for medical images
+    """
+    
+    def __init__(self):
+        self.operations = []
+    
+    def load_image(self, image_path):
+        """
+        Load image from file
+        """
+        image = cv2.imread(image_path)
+        if image is None:
+            raise ValueError(f"Could not load image: {image_path}")
+        return image
+    
+    def resize_image(self, image, target_size=(256, 256)):
+        """
+        Resize image to target size
+        """
+        return cv2.resize(image, target_size, interpolation=cv2.INTER_LINEAR)
+    
+    def convert_to_grayscale(self, image):
+        """
+        Convert to grayscale if not already
+        """
+        if len(image.shape) == 3:
+            return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        return image
+    
+    def normalize_pixels(self, image):
+        """
+        Normalize pixel values to [0, 1]
+        """
+        return image.astype(np.float32) / 255.0
+    
+    def standardize(self, image):
+        """
+        Standardize to mean=0, std=1
+        """
+        mean = np.mean(image)
+        std = np.std(image)
+        return (image - mean) / (std + 1e-8)
+    
+    def enhance_contrast(self, image):
+        """
+        Enhance contrast using CLAHE
+        """
+        if len(image.shape) == 3:
+            # Convert to LAB
+            lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+            l, a, b = cv2.split(lab)
+            
+            # Apply CLAHE to L channel
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            l = clahe.apply(l)
+            
+            # Merge back
+            lab = cv2.merge((l, a, b))
+            return cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+        else:
+            # Grayscale
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            return clahe.apply(image)
+    
+    def remove_noise(self, image):
+        """
+        Remove noise using median filter
+        """
+        if len(image.shape) == 3:
+            # Apply to each channel
+            result = np.zeros_like(image)
+            for i in range(3):
+                result[:, :, i] = cv2.medianBlur(image[:, :, i], 3)
+            return result
+        else:
+            return cv2.medianBlur(image, 3)
+    
+    def remove_background(self, image, threshold=0.5):
+        """
+        Simple background removal using thresholding
+        """
+        if len(image.shape) == 3:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = image
+        
+        # Threshold
+        _, mask = cv2.threshold(gray, int(threshold * 255), 255, cv2.THRESH_BINARY)
+        
+        # Apply mask
+        if len(image.shape) == 3:
+            result = image.copy()
+            result[mask == 0] = 0
+            return result
+        else:
+            return cv2.bitwise_and(image, mask)
+    
+    def apply_gaussian_blur(self, image, kernel_size=(5, 5)):
+        """
+        Apply Gaussian blur
+        """
+        return cv2.GaussianBlur(image, kernel_size, 0)
+    
+    def detect_edges(self, image):
+        """
+        Detect edges using Canny
+        """
+        if len(image.shape) == 3:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = image
+        return cv2.Canny(gray, 50, 150)
+    
+    def morphological_operations(self, image, operation='open', kernel_size=3):
+        """
+        Apply morphological operations
+        """
+        kernel = np.ones((kernel_size, kernel_size), np.uint8)
+        
+        if operation == 'open':
+            # Remove small objects
+            return cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+        elif operation == 'close':
+            # Fill small holes
+            return cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
+        elif operation == 'dilate':
+            # Enlarge objects
+            return cv2.dilate(image, kernel, iterations=1)
+        elif operation == 'erode':
+            # Shrink objects
+            return cv2.erode(image, kernel, iterations=1)
+    
+    def preprocess_pipeline(self, image_path, visualize=True):
+        """
+        Complete preprocessing pipeline
+        """
+        print("="*60)
+        print("IMAGE PREPROCESSING PIPELINE")
+        print("="*60)
+        
+        # Step 1: Load image
+        print("1. Loading image...")
+        image = self.load_image(image_path)
+        results = [('Original', image.copy())]
+        
+        # Step 2: Resize
+        print("2. Resizing to 256×256...")
+        image = self.resize_image(image, (256, 256))
+        results.append(('Resized', image.copy()))
+        
+        # Step 3: Convert to grayscale
+        print("3. Converting to grayscale...")
+        image = self.convert_to_grayscale(image)
+        results.append(('Grayscale', image.copy()))
+        
+        # Step 4: Remove noise
+        print("4. Removing noise...")
+        image = self.remove_noise(image)
+        results.append(('Denoised', image.copy()))
+        
+        # Step 5: Enhance contrast
+        print("5. Enhancing contrast...")
+        image = self.enhance_contrast(image)
+        results.append(('Enhanced Contrast', image.copy()))
+        
+        # Step 6: Normalize
+        print("6. Normalizing pixels...")
+        image = self.normalize_pixels(image)
+        results.append(('Normalized', image.copy()))
+        
+        # Step 7: Standardize
+        print("7. Standardizing...")
+        image = self.standardize(image)
+        results.append(('Standardized', image.copy()))
+        
+        # Step 8: Edge detection (for visualization)
+        print("8. Detecting edges...")
+        edges = self.detect_edges(image)
+        results.append(('Edges', edges))
+        
+        print("✅ Preprocessing complete!")
+        
+        if visualize:
+            self.visualize_pipeline(results)
+        
+        return image
+    
+    def visualize_pipeline(self, results):
+        """
+        Visualize each step of the pipeline
+        """
+        n = len(results)
+        cols = 3
+        rows = (n + cols - 1) // cols
+        
+        fig, axes = plt.subplots(rows, cols, figsize=(15, 5*rows))
+        axes = axes.flatten()
+        
+        for i, (name, img) in enumerate(results):
+            if len(img.shape) == 3:
+                axes[i].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+            else:
+                axes[i].imshow(img, cmap='gray')
+            axes[i].set_title(name, fontsize=12)
+            axes[i].axis('off')
+        
+        # Hide unused subplots
+        for i in range(n, len(axes)):
+            axes[i].axis('off')
+        
+        plt.tight_layout()
+        plt.show()
+
+# ============ EXAMPLE USAGE ============
+
+def demonstrate_preprocessing():
+    """
+    Demonstrate complete preprocessing
+    """
+    # Create a dummy image with artifacts
+    image = np.zeros((300, 300, 3), dtype=np.uint8)
+    
+    # Add a shape with noise
+    cv2.rectangle(image, (50, 50), (250, 250), (0, 255, 0), -1)
+    
+    # Add salt and pepper noise
+    noise = np.random.random((300, 300))
+    image[noise < 0.05] = 0
+    image[noise > 0.95] = 255
+    
+    # Add random brightness variation
+    brightness = np.random.randint(-50, 50, (300, 300, 3))
+    image = np.clip(image.astype(np.int16) + brightness, 0, 255).astype(np.uint8)
+    
+    # Save temporary image
+    cv2.imwrite('temp_image.jpg', image)
+    
+    # Preprocess
+    preprocessor = ImagePreprocessor()
+    processed = preprocessor.preprocess_pipeline('temp_image.jpg', visualize=True)
+    
+    return processed
+
+# Run the demonstration
+demonstrate_preprocessing()
+```
+
+## 5.3 Advanced Preprocessing Techniques
+
+```python
+# ============ ADVANCED PREPROCESSING ============
+
+class AdvancedPreprocessor:
+    """
+    Advanced preprocessing techniques for medical images
+    """
+    
+    def histogram_equalization(self, image):
+        """
+        Global histogram equalization
+        """
+        if len(image.shape) == 3:
+            # Convert to YUV
+            yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
+            yuv[:, :, 0] = cv2.equalizeHist(yuv[:, :, 0])
+            return cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
+        else:
+            return cv2.equalizeHist(image)
+    
+    def adaptive_thresholding(self, image):
+        """
+        Adaptive thresholding for varying lighting
+        """
+        if len(image.shape) == 3:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = image
+        
+        # Adaptive thresholding
+        binary = cv2.adaptiveThreshold(
+            gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY, 11, 2
+        )
+        return binary
+    
+    def remove_shadows(self, image):
+        """
+        Remove shadows using morphological operations
+        """
+        if len(image.shape) == 3:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = image
+        
+        # Create shadow mask
+        kernel = np.ones((5, 5), np.uint8)
+        opening = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel)
+        
+        # Shadow regions
+        shadow_mask = cv2.subtract(gray, opening)
+        _, shadow_mask = cv2.threshold(shadow_mask, 20, 255, cv2.THRESH_BINARY)
+        
+        # Remove shadows
+        result = gray.copy()
+        result[shadow_mask > 0] = opening[shadow_mask > 0]
+        
+        return result
+    
+    def unsharp_masking(self, image, sigma=1.0, amount=1.5):
+        """
+        Unsharp masking for sharpening
+        """
+        # Blur the image
+        blurred = cv2.GaussianBlur(image, (0, 0), sigma)
+        
+        # Apply unsharp mask
+        sharpened = cv2.addWeighted(image, 1.0 + amount, blurred, -amount, 0)
+        return np.clip(sharpened, 0, 255).astype(np.uint8)
+    
+    def denoise_nlm(self, image, h=10):
+        """
+        Non-local means denoising
+        """
+        if len(image.shape) == 3:
+            return cv2.fastNlMeansDenoisingColored(image, None, h, h, 7, 21)
+        else:
+            return cv2.fastNlMeansDenoising(image, None, h, 7, 21)
+```
+
+---
+
+# 6. MEDICAL IMAGE SEGMENTATION - REAL-WORLD APPLICATION
+
+## 6.1 Understanding Medical Image Segmentation
+
+```python
+# ============ MEDICAL IMAGE SEGMENTATION ============
+
+def medical_segmentation_intro():
+    """
+    Introduction to medical image segmentation
+    """
+    
+    print("="*70)
+    print("MEDICAL IMAGE SEGMENTATION")
+    print("="*70)
+    
+    print("""
+    🏥 WHAT IS MEDICAL IMAGE SEGMENTATION?
+    ========================================
+    - Identifying and outlining anatomical structures
+    - Separating organs, tissues, or abnormalities
+    - Pixel-level classification in medical scans
+    
+    📋 COMMON APPLICATION AREAS:
+    =============================
+    1. Brain MRI Segmentation
+       - Separate gray matter, white matter, CSF
+       - Detect tumors and lesions
+       - Plan surgery
+    
+    2. CT Scan Segmentation
+       - Identify organs (liver, kidneys, lungs)
+       - Detect fractures and abnormalities
+       - Radiation therapy planning
+    
+    3. Cell Microscopy Segmentation
+       - Detect and count cells
+       - Identify cell nuclei
+       - Cancer detection
+    
+    4. X-ray Segmentation
+       - Bones and joints
+       - Dental imaging
+       - Chest X-ray analysis
+    
+    5. Retinal Imaging
+       - Blood vessel segmentation
+       - Diabetic retinopathy detection
+       - Glaucoma screening
+    
+    🔬 WHY IS IT CHALLENGING?
+    =========================
+    1. Low contrast between tissues
+    2. Variability in anatomy
+    3. Noise and artifacts
+    4. Limited labeled data
+    5. High resolution (requires memory)
+    6. 3D data (volumetric analysis)
+    """)
+
+medical_segmentation_intro()
+```
+
+## 6.2 Medical Image Formats
+
+```python
+# ============ MEDICAL IMAGE FORMATS ============
+
+def medical_image_formats():
+    """
+    Understanding medical image formats
+    """
+    
+    print("="*60)
+    print("MEDICAL IMAGE FORMATS")
+    print("="*60)
+    
+    formats = {
+        "DICOM": {
+            "Full Name": "Digital Imaging and Communications in Medicine",
+            "Extension": ".dcm, .dicom",
+            "Description": "Standard for storing and transmitting medical images",
+            "Features": "Contains patient info, metadata, and pixel data",
+            "Common in": "MRI, CT, Ultrasound, X-ray",
+            "Challenges": "Complex format, need specialized libraries"
+        },
+        "NIfTI": {
+            "Full Name": "Neuroimaging Informatics Technology Initiative",
+            "Extension": ".nii, .nii.gz",
+            "Description": "Neuroimaging data format",
+            "Features": "Combines image and header data",
+            "Common in": "MRI, fMRI, PET",
+            "Challenges": "Less widely supported"
+        },
+        "MHD": {
+            "Full Name": "MetaImage",
+            "Extension": ".mhd, .raw",
+            "Description": "Medical image with separate header and data",
+            "Features": "Header describes image properties",
+            "Common in": "CT, MRI",
+            "Challenges": "Two files to manage"
+        },
+        "PNG/JPG": {
+            "Full Name": "Standard image formats",
+            "Extension": ".png, .jpg",
+            "Description": "Conventional image formats",
+            "Features": "Widely supported, easy to handle",
+            "Common in": "Processed images",
+            "Challenges": "Loses medical metadata"
+        }
+    }
+    
+    for name, info in formats.items():
+        print(f"\n📁 {name}")
+        print(f"   Full Name: {info['Full Name']}")
+        print(f"   Extension: {info['Extension']}")
+        print(f"   Description: {info['Description']}")
+        print(f"   Common in: {info['Common in']}")
+        print(f"   Challenges: {info['Challenges']}")
+    
+    print("\n" + "="*60)
+    print("💡 TIPS FOR WORKING WITH MEDICAL IMAGES:")
+    print("  1. Use specialized libraries (pydicom, nibabel)")
+    print("  2. Check orientation (RAS, LPS coordinates)")
+    print("  3. Understand intensity units (HU for CT)")
+    print("  4. Handle large volumes carefully")
+    print("  5. Preserve spatial information")
+```
+
+## 6.3 Complete Medical Segmentation Project
+
+```python
+# ============ COMPLETE MEDICAL SEGMENTATION PROJECT ============
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import Dataset, DataLoader
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
 import os
+from sklearn.model_selection import train_test_split
+
+# ============================================
+# 1. DATASET CLASS FOR MEDICAL IMAGES
+# ============================================
+
+class MedicalSegmentationDataset(Dataset):
+    """
+    Dataset for medical image segmentation
+    
+    Assumes directory structure:
+    data/
+      images/
+        image_001.png
+        image_002.png
+        ...
+      masks/
+        mask_001.png
+        mask_002.png
+        ...
+    """
+    
+    def __init__(self, images_dir, masks_dir, transform=None, target_size=(256, 256)):
+        """
+        Args:
+            images_dir: Directory containing input images
+            masks_dir: Directory containing ground truth masks
+            transform: Optional transforms
+            target_size: Desired image size (height, width)
+        """
+        self.images_dir = images_dir
+        self.masks_dir = masks_dir
+        self.transform = transform
+        self.target_size = target_size
+        
+        # Get all image files
+        self.image_files = sorted([f for f in os.listdir(images_dir) 
+                                   if f.endswith(('.png', '.jpg', '.jpeg'))])
+        
+        # Check if corresponding masks exist
+        self.mask_files = []
+        for img_file in self.image_files:
+            mask_file = img_file  # Assuming same name
+            if os.path.exists(os.path.join(masks_dir, mask_file)):
+                self.mask_files.append(mask_file)
+            else:
+                print(f"⚠️  Mask not found for: {img_file}")
+                self.mask_files.append(None)
+        
+        print(f"✅ Loaded {len(self.image_files)} image-mask pairs")
+    
+    def __len__(self):
+        return len(self.image_files)
+    
+    def __getitem__(self, idx):
+        # Load image
+        img_path = os.path.join(self.images_dir, self.image_files[idx])
+        image = cv2.imread(img_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        
+        # Resize image
+        image = cv2.resize(image, self.target_size, interpolation=cv2.INTER_LINEAR)
+        image = image.astype(np.float32) / 255.0
+        image = np.transpose(image, (2, 0, 1))  # (H, W, C) → (C, H, W)
+        
+        # Load mask if exists
+        if self.mask_files[idx] is not None:
+            mask_path = os.path.join(self.masks_dir, self.mask_files[idx])
+            mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+            mask = cv2.resize(mask, self.target_size, interpolation=cv2.INTER_NEAREST)
+            mask = (mask > 127).astype(np.float32)  # Binary mask
+            mask = np.expand_dims(mask, axis=0)  # (H, W) → (1, H, W)
+        else:
+            # Dummy mask
+            mask = np.zeros((1, *self.target_size), dtype=np.float32)
+        
+        return torch.from_numpy(image), torch.from_numpy(mask)
+
+# ============================================
+# 2. U-NET MODEL FOR MEDICAL SEGMENTATION
+# ============================================
+
+class DoubleConv(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(DoubleConv, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True)
+        )
+    
+    def forward(self, x):
+        return self.conv(x)
+
+class UNetMedical(nn.Module):
+    """
+    U-Net optimized for medical image segmentation
+    """
+    def __init__(self, in_channels=3, out_channels=1, features=[64, 128, 256, 512]):
+        super(UNetMedical, self).__init__()
+        
+        # Encoder
+        self.encoders = nn.ModuleList()
+        self.pools = nn.ModuleList()
+        
+        # First encoder
+        self.encoders.append(DoubleConv(in_channels, features[0]))
+        
+        # Subsequent encoders
+        for i in range(1, len(features)):
+            self.encoders.append(DoubleConv(features[i-1], features[i]))
+            self.pools.append(nn.MaxPool2d(kernel_size=2, stride=2))
+        
+        # Bottleneck
+        self.bottleneck = DoubleConv(features[-1], features[-1] * 2)
+        
+        # Decoder
+        self.decoders = nn.ModuleList()
+        self.ups = nn.ModuleList()
+        
+        for i in range(len(features)-1, 0, -1):
+            self.ups.append(nn.ConvTranspose2d(features[i] * 2, features[i], 
+                                               kernel_size=2, stride=2))
+            self.decoders.append(DoubleConv(features[i] + features[i-1], features[i-1]))
+        
+        # Last decoder
+        self.ups.append(nn.ConvTranspose2d(features[0] * 2, features[0], 
+                                           kernel_size=2, stride=2))
+        self.decoders.append(DoubleConv(features[0] + features[0], features[0]))
+        
+        # Final convolution
+        self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
+        
+        # Sigmoid for binary segmentation
+        self.sigmoid = nn.Sigmoid()
+    
+    def forward(self, x):
+        skip_connections = []
+        
+        # Encoder path
+        for i, encoder in enumerate(self.encoders):
+            x = encoder(x)
+            skip_connections.append(x)
+            if i < len(self.encoders) - 1:
+                x = self.pools[i](x)
+        
+        # Bottleneck
+        x = self.bottleneck(x)
+        
+        # Decoder path
+        skip_connections = skip_connections[::-1]
+        
+        for i, (up, decoder) in enumerate(zip(self.ups, self.decoders)):
+            x = up(x)
+            
+            # Handle size mismatch
+            if x.shape[2:] != skip_connections[i].shape[2:]:
+                diff_y = skip_connections[i].size(2) - x.size(2)
+                diff_x = skip_connections[i].size(3) - x.size(3)
+                x = nn.functional.pad(x, [diff_x // 2, diff_x - diff_x // 2,
+                                          diff_y // 2, diff_y - diff_y // 2])
+            
+            x = torch.cat([skip_connections[i], x], dim=1)
+            x = decoder(x)
+        
+        # Final convolution
+        x = self.final_conv(x)
+        x = self.sigmoid(x)
+        
+        return x
+
+# ============================================
+# 3. TRAINING FUNCTIONS
+# ============================================
+
+def dice_loss(pred, target):
+    """
+    Dice Loss for medical image segmentation
+    """
+    smooth = 1e-6
+    
+    # Flatten tensors
+    pred_flat = pred.view(-1)
+    target_flat = target.view(-1)
+    
+    intersection = (pred_flat * target_flat).sum()
+    union = pred_flat.sum() + target_flat.sum()
+    
+    dice = (2. * intersection + smooth) / (union + smooth)
+    return 1 - dice
+
+def combined_loss(pred, target):
+    """
+    Combined BCE + Dice Loss
+    """
+    bce_loss = nn.BCELoss()(pred, target)
+    dice_loss_value = dice_loss(pred, target)
+    return bce_loss + dice_loss_value
+
+def train_epoch(model, dataloader, optimizer, device):
+    """
+    Train for one epoch
+    """
+    model.train()
+    total_loss = 0
+    total_dice = 0
+    
+    for images, masks in dataloader:
+        images = images.to(device)
+        masks = masks.to(device)
+        
+        # Forward pass
+        predictions = model(images)
+        loss = combined_loss(predictions, masks)
+        
+        # Backward pass
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        # Metrics
+        total_loss += loss.item()
+        
+        # Calculate Dice score
+        pred_binary = (predictions > 0.5).float()
+        dice = 1 - dice_loss(pred_binary, masks)
+        total_dice += dice.item()
+    
+    avg_loss = total_loss / len(dataloader)
+    avg_dice = total_dice / len(dataloader)
+    
+    return avg_loss, avg_dice
+
+def validate_epoch(model, dataloader, device):
+    """
+    Validate for one epoch
+    """
+    model.eval()
+    total_loss = 0
+    total_dice = 0
+    
+    with torch.no_grad():
+        for images, masks in dataloader:
+            images = images.to(device)
+            masks = masks.to(device)
+            
+            predictions = model(images)
+            loss = combined_loss(predictions, masks)
+            
+            total_loss += loss.item()
+            
+            pred_binary = (predictions > 0.5).float()
+            dice = 1 - dice_loss(pred_binary, masks)
+            total_dice += dice.item()
+    
+    avg_loss = total_loss / len(dataloader)
+    avg_dice = total_dice / len(dataloader)
+    
+    return avg_loss, avg_dice
+
+def train_model(model, train_loader, val_loader, epochs=50, lr=1e-4, device='cuda'):
+    """
+    Complete training pipeline
+    """
+    model = model.to(device)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    
+    history = {
+        'train_loss': [],
+        'train_dice': [],
+        'val_loss': [],
+        'val_dice': []
+    }
+    
+    best_dice = 0
+    
+    print("="*60)
+    print("TRAINING MEDICAL SEGMENTATION MODEL")
+    print("="*60)
+    
+    for epoch in range(epochs):
+        # Train
+        train_loss, train_dice = train_epoch(model, train_loader, optimizer, device)
+        
+        # Validate
+        val_loss, val_dice = validate_epoch(model, val_loader, device)
+        
+        # Save history
+        history['train_loss'].append(train_loss)
+        history['train_dice'].append(train_dice)
+        history['val_loss'].append(val_loss)
+        history['val_dice'].append(val_dice)
+        
+        # Print progress
+        print(f"Epoch {epoch+1}/{epochs}")
+        print(f"  Train Loss: {train_loss:.4f}, Train Dice: {train_dice:.4f}")
+        print(f"  Val Loss: {val_loss:.4f}, Val Dice: {val_dice:.4f}")
+        
+        # Save best model
+        if val_dice > best_dice:
+            best_dice = val_dice
+            torch.save(model.state_dict(), 'best_medical_segmentation.pth')
+            print(f"  ✅ Best model saved! (Dice: {best_dice:.4f})")
+    
+    print(f"\n✅ Training complete! Best Dice: {best_dice:.4f}")
+    
+    return model, history
+
+# ============================================
+# 4. EVALUATION AND VISUALIZATION
+# ============================================
+
+def evaluate_model(model, dataloader, device, num_samples=5):
+    """
+    Evaluate model and visualize results
+    """
+    model.eval()
+    
+    # Get a batch of data
+    images, masks = next(iter(dataloader))
+    images = images[:num_samples].to(device)
+    masks = masks[:num_samples]
+    
+    with torch.no_grad():
+        predictions = model(images)
+        predictions = (predictions > 0.5).float()
+    
+    # Move to CPU for visualization
+    images = images.cpu().numpy()
+    masks = masks.numpy()
+    predictions = predictions.cpu().numpy()
+    
+    fig, axes = plt.subplots(num_samples, 3, figsize=(12, 4*num_samples))
+    
+    for i in range(num_samples):
+        # Image
+        img = np.transpose(images[i], (1, 2, 0))
+        axes[i, 0].imshow(img)
+        axes[i, 0].set_title(f'Image {i+1}')
+        axes[i, 0].axis('off')
+        
+        # Ground Truth
+        mask = masks[i, 0]
+        axes[i, 1].imshow(mask, cmap='gray')
+        axes[i, 1].set_title('Ground Truth')
+        axes[i, 1].axis('off')
+        
+        # Prediction
+        pred = predictions[i, 0]
+        axes[i, 2].imshow(pred, cmap='gray')
+        axes[i, 2].set_title('Prediction')
+        axes[i, 2].axis('off')
+    
+    plt.tight_layout()
+    plt.savefig('segmentation_results.png', dpi=300)
+    plt.show()
+    
+    # Calculate metrics on entire dataset
+    all_dice = []
+    all_iou = []
+    
+    with torch.no_grad():
+        for images, masks in dataloader:
+            images = images.to(device)
+            masks = masks.to(device)
+            
+            predictions = model(images)
+            predictions = (predictions > 0.5).float()
+            
+            for i in range(predictions.size(0)):
+                pred_flat = predictions[i].view(-1)
+                mask_flat = masks[i].view(-1)
+                
+                # Dice
+                intersection = (pred_flat * mask_flat).sum()
+                union = pred_flat.sum() + mask_flat.sum()
+                dice = (2. * intersection + 1e-6) / (union + 1e-6)
+                all_dice.append(dice.item())
+                
+                # IoU
+                iou = (intersection + 1e-6) / (union - intersection + 1e-6)
+                all_iou.append(iou.item())
+    
+    mean_dice = np.mean(all_dice)
+    mean_iou = np.mean(all_iou)
+    
+    print(f"\n📊 Final Metrics:")
+    print(f"  Mean Dice Score: {mean_dice:.4f}")
+    print(f"  Mean IoU: {mean_iou:.4f}")
+    
+    return mean_dice, mean_iou
+
+# ============================================
+# 5. MAIN FUNCTION
+# ============================================
+
+def main():
+    """
+    Complete medical image segmentation pipeline
+    """
+    
+    print("="*70)
+    print("MEDICAL IMAGE SEGMENTATION SYSTEM")
+    print("Tech Prime Pvt Limited - Advanced AI/ML Internship")
+    print("="*70)
+    
+    # ============================================
+    # DATA PREPARATION
+    # ============================================
+    
+    print("\n[1/5] Loading and preparing data...")
+    
+    # Create dummy data for demonstration
+    # In practice, you would load actual medical images
+    os.makedirs('data/images', exist_ok=True)
+    os.makedirs('data/masks', exist_ok=True)
+    
+    # Generate dummy images and masks
+    for i in range(100):
+        # Random image
+        img = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
+        cv2.imwrite(f'data/images/image_{i:03d}.png', img)
+        
+        # Random mask (circle in center)
+        mask = np.zeros((256, 256), dtype=np.uint8)
+        cx, cy = np.random.randint(50, 200, 2)
+        r = np.random.randint(30, 80)
+        cv2.circle(mask, (cx, cy), r, 255, -1)
+        cv2.imwrite(f'data/masks/mask_{i:03d}.png', mask)
+    
+    print("✅ Created dummy dataset with 100 images and masks")
+    
+    # Create dataset
+    dataset = MedicalSegmentationDataset(
+        images_dir='data/images',
+        masks_dir='data/masks',
+        target_size=(256, 256)
+    )
+    
+    # Split into train and validation
+    train_size = int(0.8 * len(dataset))
+    val_size = len(dataset) - train_size
+    train_dataset, val_dataset = torch.utils.data.random_split(
+        dataset, [train_size, val_size]
+    )
+    
+    # Create dataloaders
+    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=2)
+    val_loader = DataLoader(val_dataset, batch_size=8, shuffle=False, num_workers=2)
+    
+    print(f"✅ Train samples: {len(train_dataset)}")
+    print(f"✅ Validation samples: {len(val_dataset)}")
+    
+    # ============================================
+    # MODEL SETUP
+    # ============================================
+    
+    print("\n[2/5] Setting up U-Net model...")
+    
+    model = UNetMedical(in_channels=3, out_channels=1)
+    
+    # Count parameters
+    total_params = sum(p.numel() for p in model.parameters())
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    
+    print(f"✅ Model created")
+    print(f"   Total parameters: {total_params:,}")
+    print(f"   Trainable parameters: {trainable_params:,}")
+    
+    # ============================================
+    # TRAINING
+    # ============================================
+    
+    print("\n[3/5] Training model...")
+    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model, history = train_model(
+        model, train_loader, val_loader,
+        epochs=20, lr=1e-4, device=device
+    )
+    
+    # ============================================
+    # EVALUATION
+    # ============================================
+    
+    print("\n[4/5] Evaluating model...")
+    
+    # Load best model
+    model.load_state_dict(torch.load('best_medical_segmentation.pth'))
+    
+    # Evaluate
+    mean_dice, mean_iou = evaluate_model(model, val_loader, device)
+    
+    # ============================================
+    # PLOT HISTORY
+    # ============================================
+    
+    print("\n[5/5] Generating plots...")
+    
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    
+    # Loss plot
+    axes[0].plot(history['train_loss'], label='Train Loss', linewidth=2)
+    axes[0].plot(history['val_loss'], label='Validation Loss', linewidth=2)
+    axes[0].set_xlabel('Epoch')
+    axes[0].set_ylabel('Loss')
+    axes[0].set_title('Training and Validation Loss')
+    axes[0].legend()
+    axes[0].grid(True, alpha=0.3)
+    
+    # Dice plot
+    axes[1].plot(history['train_dice'], label='Train Dice', linewidth=2)
+    axes[1].plot(history['val_dice'], label='Validation Dice', linewidth=2)
+    axes[1].set_xlabel('Epoch')
+    axes[1].set_ylabel('Dice Score')
+    axes[1].set_title('Training and Validation Dice Score')
+    axes[1].legend()
+    axes[1].grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig('training_history.png', dpi=300)
+    plt.show()
+    
+    print("\n" + "="*70)
+    print("✅ PROJECT COMPLETED SUCCESSFULLY!")
+    print("="*70)
+    print("\n📁 Output files:")
+    print("  - best_medical_segmentation.pth (model weights)")
+    print("  - segmentation_results.png (visual results)")
+    print("  - training_history.png (training plots)")
+    print("\n📊 Final Metrics:")
+    print(f"  - Dice Score: {mean_dice:.4f}")
+    print(f"  - IoU: {mean_iou:.4f}")
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+# 7. COMPLETE WORKING CODE WITH LINE-BY-LINE EXPLANATION
+
+## 7.1 Complete Medical Segmentation Pipeline
+
+```python
+# ============================================
+# COMPLETE MEDICAL SEGMENTATION SYSTEM
+# EVERY LINE EXPLAINED FOR BEGINNERS
+# ============================================
+
+# ============================================
+# 1. IMPORTS - Understanding Each One
+# ============================================
+
+import torch
+# PyTorch - Main deep learning library
+
+import torch.nn as nn
+# Neural network modules (layers, activations, etc.)
+
+import torch.optim as optim
+# Optimization algorithms (Adam, SGD, etc.)
+
+from torch.utils.data import Dataset, DataLoader
+# Data loading utilities
+
+import numpy as np
+# Numerical computations
+
+import cv2
+# OpenCV - Image processing
+
+import matplotlib.pyplot as plt
+# Plotting and visualization
+
+import os
+# Operating system operations
+
+from sklearn.model_selection import train_test_split
+# For splitting datasets
+
+import warnings
+warnings.filterwarnings('ignore')
+# Suppress warnings for cleaner output
+
+# ============================================
+# 2. CONFIGURATION - Settings We Can Change
+# ============================================
+
+class MedicalConfig:
+    """
+    Configuration for medical image segmentation
+    
+    All settings in one place for easy modification
+    """
+    
+    # ----- Data Settings -----
+    IMAGE_SIZE = (256, 256)    # Target image size (height, width)
+    BATCH_SIZE = 8             # Images per batch (reduce if out of memory)
+    NUM_WORKERS = 4            # Parallel data loading threads
+    
+    # ----- Model Settings -----
+    IN_CHANNELS = 3            # Input channels (RGB)
+    OUT_CHANNELS = 1           # Output channels (binary segmentation)
+    FEATURES = [64, 128, 256, 512]  # Features at each U-Net level
+    
+    # ----- Training Settings -----
+    EPOCHS = 50                # Number of training epochs
+    LEARNING_RATE = 1e-4       # Learning rate for optimizer
+    WEIGHT_DECAY = 1e-5        # L2 regularization strength
+    
+    # ----- Data Split -----
+    TRAIN_SPLIT = 0.8          # Percentage of data for training
+    VAL_SPLIT = 0.2            # Percentage for validation
+    
+    # ----- Paths -----
+    DATA_DIR = './medical_data'           # Directory containing data
+    IMAGES_DIR = './medical_data/images'  # Input images directory
+    MASKS_DIR = './medical_data/masks'    # Ground truth masks directory
+    MODEL_SAVE_PATH = 'best_medical_segmentation.pth'  # Model save path
+    LOG_DIR = './logs'                     # Log directory
+    
+    # ----- Device -----
+    DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # Auto-select GPU if available, else use CPU
+    
+    # ----- Visualization -----
+    NUM_VISUAL_SAMPLES = 5    # Number of images to show in visualization
+
+# ============================================
+# 3. MEDICAL SEGMENTATION DATASET
+# ============================================
 
 class MedicalSegmentationDataset(Dataset):
     """
@@ -1249,7 +2850,8 @@ class MedicalSegmentationDataset(Dataset):
     1. Loading images and masks
     2. Resizing to target size
     3. Normalization
-    4. Converting to PyTorch tensors
+    4. Data augmentation (optional)
+    5. Converting to PyTorch tensors
     
     Directory Structure Expected:
     data/
@@ -1263,38 +2865,59 @@ class MedicalSegmentationDataset(Dataset):
         ...
     """
     
-    def __init__(self, images_dir, masks_dir, target_size=(256, 256), transform=None):
+    def __init__(self, images_dir, masks_dir, 
+                 transform=None, target_size=(256, 256)):
         """
         Initialize the dataset
         
         Args:
-            images_dir: Directory containing input images
-            masks_dir: Directory containing ground truth masks
+            images_dir: Path to directory containing input images
+            masks_dir: Path to directory containing ground truth masks
+            transform: Optional transformations (augmentations)
             target_size: Desired image size (height, width)
-            transform: Optional data augmentation transformations
         """
+        super(MedicalSegmentationDataset, self).__init__()
+        
+        # Store parameters
         self.images_dir = images_dir
         self.masks_dir = masks_dir
-        self.target_size = target_size
         self.transform = transform
+        self.target_size = target_size
         
-        # Get sorted list of image files
-        # Only include common image formats
+        # Get list of image files (sorted for consistency)
         self.image_files = sorted([f for f in os.listdir(images_dir) 
                                    if f.endswith(('.png', '.jpg', '.jpeg'))])
         
-        # Check for corresponding masks
+        # Verify masks exist for each image
         self.mask_files = []
+        missing_masks = 0
+        
         for img_file in self.image_files:
-            mask_path = os.path.join(masks_dir, img_file)
+            # Assume mask has same name as image
+            mask_file = img_file
+            
+            # Check if mask exists
+            mask_path = os.path.join(masks_dir, mask_file)
             if os.path.exists(mask_path):
-                self.mask_files.append(img_file)
+                self.mask_files.append(mask_file)
             else:
+                # No mask found, use None (will create dummy mask)
                 self.mask_files.append(None)
-                print(f"Warning: Mask not found for {img_file}")
+                missing_masks += 1
+        
+        print(f"📊 Dataset Statistics:")
+        print(f"  - Total images: {len(self.image_files)}")
+        print(f"  - Images with masks: {len(self.image_files) - missing_masks}")
+        print(f"  - Images without masks: {missing_masks}")
+        
+        if missing_masks > 0:
+            print(f"  ⚠️  {missing_masks} images have no corresponding masks!")
+            print(f"  → These will use dummy masks for demonstration.")
     
     def __len__(self):
-        """Return total number of images in dataset"""
+        """
+        Return total number of images in dataset
+        """
         return len(self.image_files)
     
     def __getitem__(self, idx):
@@ -1306,56 +2929,69 @@ class MedicalSegmentationDataset(Dataset):
             mask: Tensor of shape (1, H, W) binary mask
         """
         
-        # Load image
+        # ----- Load Image -----
+        # Read image using OpenCV
         img_path = os.path.join(self.images_dir, self.image_files[idx])
+        image = cv2.imread(img_path)  # OpenCV reads in BGR format
         
-        # cv2.imread() reads image in BGR format
-        image = cv2.imread(img_path)
+        # Check if image loaded successfully
+        if image is None:
+            print(f"⚠️  Could not load image: {img_path}")
+            # Return dummy data
+            dummy = np.zeros((self.target_size[0], self.target_size[1], 3), 
+                           dtype=np.uint8)
+            return torch.zeros(3, *self.target_size), torch.zeros(1, *self.target_size)
         
-        # Convert BGR to RGB (standard format for deep learning)
+        # Convert BGR to RGB (standard format)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
         # Resize image to target size
-        # INTER_LINEAR is good for upscaling
-        image = cv2.resize(image, self.target_size, interpolation=cv2.INTER_LINEAR)
+        image = cv2.resize(image, self.target_size, 
+                          interpolation=cv2.INTER_LINEAR)
         
         # Normalize pixel values to [0, 1]
-        # Convert to float32 for better precision
         image = image.astype(np.float32) / 255.0
         
         # Change from (H, W, C) to (C, H, W) for PyTorch
-        # PyTorch expects channels first
         image = np.transpose(image, (2, 0, 1))
         
-        # Load mask
+        # ----- Load Mask -----
         if self.mask_files[idx] is not None:
+            # Load mask
             mask_path = os.path.join(self.masks_dir, self.mask_files[idx])
-            
-            # Read mask as grayscale
             mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
             
-            # Resize mask using nearest neighbor interpolation
-            # This preserves the binary values
-            mask = cv2.resize(mask, self.target_size, interpolation=cv2.INTER_NEAREST)
-            
-            # Convert to binary (0 or 1)
-            # Pixels with value > 127 are considered foreground
-            mask = (mask > 127).astype(np.float32)
-            
-            # Add channel dimension: (H, W) -> (1, H, W)
-            mask = np.expand_dims(mask, axis=0)
+            if mask is not None:
+                # Resize mask (using nearest neighbor for binary data)
+                mask = cv2.resize(mask, self.target_size, 
+                                 interpolation=cv2.INTER_NEAREST)
+                
+                # Convert to binary (0 or 1)
+                mask = (mask > 127).astype(np.float32)
+            else:
+                # Create dummy mask
+                mask = np.zeros(self.target_size, dtype=np.float32)
         else:
-            # Create dummy mask if no mask exists
-            mask = np.zeros((1, *self.target_size), dtype=np.float32)
+            # No mask available, create dummy mask
+            mask = np.zeros(self.target_size, dtype=np.float32)
         
-        return torch.from_numpy(image), torch.from_numpy(mask)
-```
+        # Add channel dimension: (H, W) → (1, H, W)
+        mask = np.expand_dims(mask, axis=0)
+        
+        # ----- Apply Transformations -----
+        if self.transform is not None:
+            # Apply data augmentation
+            image, mask = self.transform(image, mask)
+        
+        # Convert to PyTorch tensors
+        image = torch.from_numpy(image)
+        mask = torch.from_numpy(mask)
+        
+        return image, mask
 
-### 7.2 Data Augmentation for Medical Images
-
-```python
-import numpy as np
-import cv2
+# ============================================
+# 4. DATA AUGMENTATION FOR MEDICAL IMAGES
+# ============================================
 
 class MedicalAugmentation:
     """
@@ -1372,12 +3008,6 @@ class MedicalAugmentation:
                  brightness_range=0.1, contrast_range=0.1):
         """
         Initialize augmentation parameters
-        
-        Args:
-            rotation_range: Maximum rotation angle in degrees
-            flip_prob: Probability of horizontal flip
-            brightness_range: Range for random brightness adjustment
-            contrast_range: Range for random contrast adjustment
         """
         self.rotation_range = rotation_range
         self.flip_prob = flip_prob
@@ -1387,115 +3017,102 @@ class MedicalAugmentation:
     def __call__(self, image, mask):
         """
         Apply augmentations to both image and mask
-        
-        Args:
-            image: Image array of shape (C, H, W)
-            mask: Mask array of shape (1, H, W)
-        
-        Returns:
-            Augmented image and mask
         """
         
-        # Convert from (C, H, W) to (H, W, C) for OpenCV operations
-        image_hwc = np.transpose(image, (1, 2, 0))
-        mask_hw = np.squeeze(mask, axis=0)
-        
-        # Random Horizontal Flip
+        # ----- Random Horizontal Flip -----
         if np.random.random() < self.flip_prob:
             # Flip image horizontally
-            # axis=1 means flip along width dimension
-            image_hwc = np.flip(image_hwc, axis=1)
-            mask_hw = np.flip(mask_hw, axis=1)
+            image = np.flip(image, axis=2)  # Flip along width axis
+            mask = np.flip(mask, axis=2)
         
-        # Random Rotation
+        # ----- Random Rotation -----
         if self.rotation_range > 0:
-            # Random angle between -rotation_range and rotation_range
+            # Random angle
             angle = np.random.uniform(-self.rotation_range, self.rotation_range)
             
             # Get image dimensions
-            h, w = image_hwc.shape[0], image_hwc.shape[1]
+            h, w = image.shape[1], image.shape[2]
             
-            # Calculate rotation matrix
+            # Rotation matrix
             center = (w // 2, h // 2)
             M = cv2.getRotationMatrix2D(center, angle, 1.0)
             
             # Rotate image
-            image_hwc = cv2.warpAffine(image_hwc, M, (w, h))
+            image = cv2.warpAffine(np.transpose(image, (1, 2, 0)), M, (w, h))
+            image = np.transpose(image, (2, 0, 1))
             
-            # Rotate mask with nearest neighbor interpolation
-            mask_hw = cv2.warpAffine(mask_hw, M, (w, h), 
-                                    flags=cv2.INTER_NEAREST)
+            # Rotate mask
+            mask = cv2.warpAffine(np.transpose(mask, (1, 2, 0)), M, (w, h))
+            mask = np.transpose(mask, (2, 0, 1))
         
-        # Random Brightness
+        # ----- Random Brightness -----
         if self.brightness_range > 0:
-            # Random brightness factor between (1-range) and (1+range)
+            # Random brightness factor
             brightness = 1 + np.random.uniform(-self.brightness_range, 
                                                self.brightness_range)
-            image_hwc = np.clip(image_hwc * brightness, 0, 1)
+            image = np.clip(image * brightness, 0, 1)
         
-        # Random Contrast
+        # ----- Random Contrast -----
         if self.contrast_range > 0:
-            # Random contrast factor between (1-range) and (1+range)
+            # Random contrast factor
             contrast = 1 + np.random.uniform(-self.contrast_range, 
                                              self.contrast_range)
             
-            # Apply contrast by adjusting around the mean
-            mean = np.mean(image_hwc)
-            image_hwc = np.clip((image_hwc - mean) * contrast + mean, 0, 1)
-        
-        # Convert back to (C, H, W) format
-        image = np.transpose(image_hwc, (2, 0, 1))
-        mask = np.expand_dims(mask_hw, axis=0)
+            # Apply contrast
+            mean = np.mean(image)
+            image = np.clip((image - mean) * contrast + mean, 0, 1)
         
         return image, mask
-```
 
-### 7.3 U-Net Implementation
-
-```python
-import torch
-import torch.nn as nn
+# ============================================
+# 5. U-NET MODEL (MEDICAL VERSION)
+# ============================================
 
 class DoubleConv(nn.Module):
     """
-    Double Convolution Block
+    Double Convolution Block for U-Net
     
     Two consecutive convolution layers with:
     - Batch Normalization (stabilizes training)
     - ReLU activation (nonlinearity)
     - Same padding (preserves spatial dimensions)
     """
+    
     def __init__(self, in_channels, out_channels):
         super(DoubleConv, self).__init__()
         
         # Sequential container for two convolutions
         self.conv = nn.Sequential(
             # First convolution
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),  # Stabilizes training
-            nn.ReLU(inplace=True),         # Nonlinearity, inplace saves memory
+            nn.Conv2d(in_channels, out_channels, 
+                     kernel_size=3, padding=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
             
             # Second convolution
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+            nn.Conv2d(out_channels, out_channels, 
+                     kernel_size=3, padding=1),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
         )
     
     def forward(self, x):
-        """Forward pass through double convolution"""
         return self.conv(x)
 
-class UNet(nn.Module):
+class UNetMedical(nn.Module):
     """
-    U-Net architecture for image segmentation
+    U-Net architecture optimized for medical image segmentation
     
     Key Features:
     1. Symmetrical encoder-decoder structure
     2. Skip connections for detail preservation
     3. Contracting path (encoder) for context
     4. Expanding path (decoder) for localization
+    5. Sigmoid output for binary segmentation
     """
-    def __init__(self, in_channels=3, out_channels=1, features=[64, 128, 256, 512]):
+    
+    def __init__(self, in_channels=3, out_channels=1, 
+                 features=[64, 128, 256, 512]):
         """
         Initialize U-Net
         
@@ -1504,7 +3121,7 @@ class UNet(nn.Module):
             out_channels: Number of output channels (1 for binary)
             features: Number of feature maps at each level
         """
-        super(UNet, self).__init__()
+        super(UNetMedical, self).__init__()
         
         # ============================================
         # ENCODER (Contracting Path)
@@ -1513,12 +3130,12 @@ class UNet(nn.Module):
         self.encoders = nn.ModuleList()
         self.pools = nn.ModuleList()
         
-        # First encoder: in_channels -> features[0]
+        # First encoder: in_channels → features[0]
         self.encoders.append(DoubleConv(in_channels, features[0]))
         
         # Subsequent encoders
         for i in range(1, len(features)):
-            # Encoder: features[i-1] -> features[i]
+            # Encoder: features[i-1] → features[i]
             self.encoders.append(DoubleConv(features[i-1], features[i]))
             
             # Pooling: reduce size by half
@@ -1529,7 +3146,7 @@ class UNet(nn.Module):
         # ============================================
         
         # Deepest part of U-Net
-        # features[-1] -> features[-1] * 2
+        # features[-1] → features[-1] * 2
         self.bottleneck = DoubleConv(features[-1], features[-1] * 2)
         
         # ============================================
@@ -1541,13 +3158,13 @@ class UNet(nn.Module):
         
         # For each level (going up)
         for i in range(len(features)-1, 0, -1):
-            # Upsample: features[i] * 2 -> features[i]
+            # Upsample: features[i] * 2 → features[i]
             self.ups.append(
                 nn.ConvTranspose2d(features[i] * 2, features[i],
                                   kernel_size=2, stride=2)
             )
             
-            # Decoder: features[i] + features[i-1] -> features[i-1]
+            # Decoder: features[i] + features[i-1] → features[i-1]
             self.decoders.append(
                 DoubleConv(features[i] + features[i-1], features[i-1])
             )
@@ -1558,7 +3175,7 @@ class UNet(nn.Module):
                               kernel_size=2, stride=2)
         )
         
-        # Last decoder: features[0] + features[0] -> features[0]
+        # Last decoder: features[0] + features[0] → features[0]
         self.decoders.append(
             DoubleConv(features[0] + features[0], features[0])
         )
@@ -1567,7 +3184,7 @@ class UNet(nn.Module):
         # FINAL LAYER
         # ============================================
         
-        # 1x1 convolution to get desired output channels
+        # 1×1 convolution to get desired output channels
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
         
         # Sigmoid activation for binary segmentation
@@ -1641,12 +3258,12 @@ class UNet(nn.Module):
         x = self.sigmoid(x)
         
         return x
-```
 
-### 7.4 Loss Functions
+# ============================================
+# 6. LOSS FUNCTIONS FOR MEDICAL SEGMENTATION
+# ============================================
 
-```python
-def dice_loss(pred, target, smooth=1e-6):
+def dice_loss(pred, target):
     """
     Dice Loss for medical image segmentation
     
@@ -1656,15 +3273,8 @@ def dice_loss(pred, target, smooth=1e-6):
     - Good for medical images with small objects
     
     Formula: 1 - (2 * |X ∩ Y|) / (|X| + |Y|)
-    
-    Args:
-        pred: Prediction tensor
-        target: Ground truth tensor
-        smooth: Small value to avoid division by zero
-    
-    Returns:
-        Dice loss value
     """
+    smooth = 1e-6  # To avoid division by zero
     
     # Flatten tensors to 1D
     pred_flat = pred.view(-1)
@@ -1680,6 +3290,23 @@ def dice_loss(pred, target, smooth=1e-6):
     # Dice loss = 1 - Dice
     return 1 - dice
 
+def iou_loss(pred, target):
+    """
+    IoU (Jaccard) Loss
+    
+    Formula: 1 - |X ∩ Y| / |X ∪ Y|
+    """
+    smooth = 1e-6
+    
+    pred_flat = pred.view(-1)
+    target_flat = target.view(-1)
+    
+    intersection = (pred_flat * target_flat).sum()
+    union = pred_flat.sum() + target_flat.sum() - intersection
+    
+    iou = (intersection + smooth) / (union + smooth)
+    return 1 - iou
+
 def combined_loss(pred, target):
     """
     Combined Binary Cross-Entropy + Dice Loss
@@ -1688,15 +3315,7 @@ def combined_loss(pred, target):
     - BCE: Good for per-pixel classification
     - Dice: Good for overall overlap
     - Combined: Best of both worlds
-    
-    Args:
-        pred: Prediction tensor
-        target: Ground truth tensor
-    
-    Returns:
-        Combined loss value
     """
-    
     # Binary Cross-Entropy Loss
     bce_loss = nn.BCELoss()(pred, target)
     
@@ -1705,11 +3324,11 @@ def combined_loss(pred, target):
     
     # Combined (equal weight)
     return bce_loss + dice_loss_value
-```
 
-### 7.5 Training Functions
+# ============================================
+# 7. TRAINING FUNCTIONS
+# ============================================
 
-```python
 def train_epoch(model, dataloader, optimizer, device):
     """
     Train model for one epoch
@@ -1720,16 +3339,6 @@ def train_epoch(model, dataloader, optimizer, device):
     3. Computes loss
     4. Backpropagates and updates weights
     5. Returns average loss and Dice score
-    
-    Args:
-        model: The neural network model
-        dataloader: DataLoader for training data
-        optimizer: Optimization algorithm
-        device: 'cuda' or 'cpu'
-    
-    Returns:
-        avg_loss: Average loss for the epoch
-        avg_dice: Average Dice score for the epoch
     """
     
     # Set model to training mode
@@ -1777,15 +3386,6 @@ def validate_epoch(model, dataloader, device):
     2. Iterates through all batches
     3. Computes loss (no gradients)
     4. Returns average loss and Dice score
-    
-    Args:
-        model: The neural network model
-        dataloader: DataLoader for validation data
-        device: 'cuda' or 'cpu'
-    
-    Returns:
-        avg_loss: Average loss for the epoch
-        avg_dice: Average Dice score for the epoch
     """
     
     # Set model to evaluation mode
@@ -1820,7 +3420,8 @@ def validate_epoch(model, dataloader, device):
     
     return avg_loss, avg_dice
 
-def train_model(model, train_loader, val_loader, epochs, lr=1e-4, device='cuda'):
+def train_model(model, train_loader, val_loader, 
+                epochs=50, lr=1e-4, device='cuda'):
     """
     Complete training pipeline
     
@@ -1830,25 +3431,13 @@ def train_model(model, train_loader, val_loader, epochs, lr=1e-4, device='cuda')
     3. Validates each epoch
     4. Saves best model
     5. Tracks training history
-    
-    Args:
-        model: The neural network model
-        train_loader: DataLoader for training data
-        val_loader: DataLoader for validation data
-        epochs: Number of training epochs
-        lr: Learning rate
-        device: 'cuda' or 'cpu'
-    
-    Returns:
-        model: Trained model
-        history: Dictionary of training metrics
     """
     
     # Move model to device
     model = model.to(device)
     
     # Setup optimizer
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
     
     # For tracking history
     history = {
@@ -1861,20 +3450,24 @@ def train_model(model, train_loader, val_loader, epochs, lr=1e-4, device='cuda')
     # Track best model
     best_dice = 0
     
-    print("="*60)
+    print("="*70)
     print("TRAINING MEDICAL SEGMENTATION MODEL")
-    print("="*60)
+    print("="*70)
     print(f"Device: {device}")
     print(f"Epochs: {epochs}")
     print(f"Learning Rate: {lr}")
-    print("="*60)
+    print("="*70)
     
     for epoch in range(epochs):
         # Train one epoch
-        train_loss, train_dice = train_epoch(model, train_loader, optimizer, device)
+        train_loss, train_dice = train_epoch(
+            model, train_loader, optimizer, device
+        )
         
         # Validate one epoch
-        val_loss, val_dice = validate_epoch(model, val_loader, device)
+        val_loss, val_dice = validate_epoch(
+            model, val_loader, device
+        )
         
         # Save history
         history['train_loss'].append(train_loss)
@@ -1890,90 +3483,32 @@ def train_model(model, train_loader, val_loader, epochs, lr=1e-4, device='cuda')
         # Save best model
         if val_dice > best_dice:
             best_dice = val_dice
-            torch.save(model.state_dict(), 'best_model.pth')
-            print(f"  Best model saved! Dice: {best_dice:.4f}")
+            torch.save(model.state_dict(), 'best_medical_segmentation.pth')
+            print(f"  ✅ Best model saved! (Dice: {best_dice:.4f})")
     
-    print(f"\nTraining complete! Best Dice: {best_dice:.4f}")
+    print(f"\n✅ Training complete! Best Dice: {best_dice:.4f}")
     
     return model, history
-```
 
-### 7.6 Evaluation Functions
+# ============================================
+# 8. EVALUATION FUNCTIONS
+# ============================================
 
-```python
-def compute_metrics(pred, target):
+def evaluate_model(model, dataloader, device, num_samples=5):
     """
-    Compute Dice score and IoU for segmentation
+    Evaluate model and visualize results
     
-    Args:
-        pred: Prediction tensor (binary)
-        target: Ground truth tensor (binary)
-    
-    Returns:
-        dice: Dice score
-        iou: IoU (Intersection over Union)
+    This function:
+    1. Gets a batch of data
+    2. Generates predictions
+    3. Visualizes images, masks, and predictions
+    4. Calculates metrics on entire dataset
     """
     
-    # Ensure binary predictions
-    pred = (pred > 0.5).float()
-    
-    # Dice score
-    intersection = (pred * target).sum()
-    union = pred.sum() + target.sum()
-    dice = (2 * intersection + 1e-6) / (union + 1e-6)
-    
-    # IoU
-    iou = (intersection + 1e-6) / (union - intersection + 1e-6)
-    
-    return dice, iou
-
-def evaluate_model(model, dataloader, device):
-    """
-    Evaluate model on entire dataset
-    
-    Args:
-        model: Trained model
-        dataloader: DataLoader for evaluation
-        device: 'cuda' or 'cpu'
-    
-    Returns:
-        mean_dice: Average Dice score
-        mean_iou: Average IoU
-    """
-    
-    model.eval()
-    all_dice = []
-    all_iou = []
-    
-    with torch.no_grad():
-        for images, masks in dataloader:
-            images = images.to(device)
-            masks = masks.to(device)
-            
-            predictions = model(images)
-            predictions = (predictions > 0.5).float()
-            
-            for i in range(predictions.size(0)):
-                dice, iou = compute_metrics(predictions[i], masks[i])
-                all_dice.append(dice.item())
-                all_iou.append(iou.item())
-    
-    return np.mean(all_dice), np.mean(all_iou)
-
-def visualize_predictions(model, dataloader, device, num_samples=5):
-    """
-    Visualize model predictions
-    
-    Args:
-        model: Trained model
-        dataloader: DataLoader for visualization
-        device: 'cuda' or 'cpu'
-        num_samples: Number of samples to visualize
-    """
-    
+    # Set model to evaluation mode
     model.eval()
     
-    # Get a batch of data
+    # Get a batch of data for visualization
     images, masks = next(iter(dataloader))
     images = images[:num_samples].to(device)
     masks = masks[:num_samples]
@@ -1988,7 +3523,14 @@ def visualize_predictions(model, dataloader, device, num_samples=5):
     masks = masks.numpy()
     predictions = predictions.cpu().numpy()
     
-    # Create subplots
+    # ============================================
+    # VISUALIZATION
+    # ============================================
+    
+    print("\n" + "="*70)
+    print("VISUALIZING SEGMENTATION RESULTS")
+    print("="*70)
+    
     fig, axes = plt.subplots(num_samples, 3, figsize=(12, 4*num_samples))
     
     for i in range(num_samples):
@@ -2011,19 +3553,58 @@ def visualize_predictions(model, dataloader, device, num_samples=5):
         axes[i, 2].axis('off')
     
     plt.tight_layout()
+    plt.savefig('segmentation_results.png', dpi=300)
     plt.show()
-```
+    print("💾 Saved visualization as 'segmentation_results.png'")
+    
+    # ============================================
+    # METRICS ON ENTIRE DATASET
+    # ============================================
+    
+    print("\n" + "="*70)
+    print("CALCULATING METRICS")
+    print("="*70)
+    
+    all_dice = []
+    all_iou = []
+    
+    with torch.no_grad():
+        for images, masks in dataloader:
+            images = images.to(device)
+            masks = masks.to(device)
+            
+            predictions = model(images)
+            predictions = (predictions > 0.5).float()
+            
+            for i in range(predictions.size(0)):
+                pred_flat = predictions[i].view(-1)
+                mask_flat = masks[i].view(-1)
+                
+                # Dice score
+                intersection = (pred_flat * mask_flat).sum()
+                union = pred_flat.sum() + mask_flat.sum()
+                dice = (2. * intersection + 1e-6) / (union + 1e-6)
+                all_dice.append(dice.item())
+                
+                # IoU
+                iou = (intersection + 1e-6) / (union - intersection + 1e-6)
+                all_iou.append(iou.item())
+    
+    # Calculate statistics
+    mean_dice = np.mean(all_dice)
+    std_dice = np.std(all_dice)
+    mean_iou = np.mean(all_iou)
+    std_iou = np.std(all_iou)
+    
+    print(f"\n📊 Final Metrics:")
+    print(f"  Dice Score: {mean_dice:.4f} ± {std_dice:.4f}")
+    print(f"  IoU: {mean_iou:.4f} ± {std_iou:.4f}")
+    
+    return mean_dice, mean_iou
 
-### 7.7 Complete Pipeline
-
-```python
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader
-import numpy as np
-import matplotlib.pyplot as plt
-import os
-import cv2
+# ============================================
+# 9. MAIN FUNCTION - COMPLETE PIPELINE
+# ============================================
 
 def main():
     """
@@ -2037,65 +3618,65 @@ def main():
     5. Visualization
     """
     
-    # ============================================
-    # CONFIGURATION
-    # ============================================
-    
-    # Data settings
-    IMAGE_SIZE = (256, 256)
-    BATCH_SIZE = 8
-    NUM_WORKERS = 4
-    
-    # Model settings
-    IN_CHANNELS = 3
-    OUT_CHANNELS = 1
-    FEATURES = [64, 128, 256, 512]
-    
-    # Training settings
-    EPOCHS = 50
-    LEARNING_RATE = 1e-4
-    DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print("="*70)
+    print("MEDICAL IMAGE SEGMENTATION SYSTEM")
+    print("Tech Prime Pvt Limited - Advanced AI/ML Internship")
+    print("="*70)
+    print("\n🔬 This system performs pixel-level segmentation")
+    print("   of medical images using U-Net architecture.")
+    print("   It can identify and segment anatomical structures,")
+    print("   tumors, and abnormalities.")
     
     # ============================================
-    # DATA PREPARATION
+    # STEP 1: DATA PREPARATION
     # ============================================
     
-    print("Loading and preparing data...")
+    print("\n[1/5] Loading and preparing data...")
+    print("-" * 40)
     
-    # Create directories
-    os.makedirs('medical_data/images', exist_ok=True)
-    os.makedirs('medical_data/masks', exist_ok=True)
+    # Create directories if they don't exist
+    os.makedirs(MedicalConfig.IMAGES_DIR, exist_ok=True)
+    os.makedirs(MedicalConfig.MASKS_DIR, exist_ok=True)
     
-    # Create dummy dataset for demonstration
-    # In practice, you would load real medical images
+    print("📁 Data directories created:")
+    print(f"   Images: {MedicalConfig.IMAGES_DIR}")
+    print(f"   Masks: {MedicalConfig.MASKS_DIR}")
+    
+    # For demonstration, create dummy dataset
+    # In practice, you would use real medical images
+    print("\n📊 Creating dummy dataset for demonstration...")
+    
     for i in range(100):
         # Create random image
         img = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
-        cv2.imwrite(f'medical_data/images/image_{i:03d}.png', img)
+        cv2.imwrite(f'{MedicalConfig.IMAGES_DIR}/image_{i:03d}.png', img)
         
         # Create random mask (shape in center)
         mask = np.zeros((256, 256), dtype=np.uint8)
         cx, cy = np.random.randint(50, 200, 2)
         r = np.random.randint(30, 80)
         cv2.circle(mask, (cx, cy), r, 255, -1)
-        cv2.imwrite(f'medical_data/masks/mask_{i:03d}.png', mask)
+        cv2.imwrite(f'{MedicalConfig.MASKS_DIR}/mask_{i:03d}.png', mask)
+    
+    print(f"✅ Created 100 dummy image-mask pairs")
     
     # Create dataset
     dataset = MedicalSegmentationDataset(
-        images_dir='medical_data/images',
-        masks_dir='medical_data/masks',
-        target_size=IMAGE_SIZE,
+        images_dir=MedicalConfig.IMAGES_DIR,
+        masks_dir=MedicalConfig.MASKS_DIR,
         transform=MedicalAugmentation(
             rotation_range=15,
             flip_prob=0.5,
             brightness_range=0.1,
             contrast_range=0.1
-        )
+        ),
+        target_size=MedicalConfig.IMAGE_SIZE
     )
     
     # Split into train and validation
-    train_size = int(0.8 * len(dataset))
+    train_size = int(MedicalConfig.TRAIN_SPLIT * len(dataset))
     val_size = len(dataset) - train_size
+    
     train_dataset, val_dataset = torch.utils.data.random_split(
         dataset, [train_size, val_size]
     )
@@ -2103,373 +3684,258 @@ def main():
     # Create dataloaders
     train_loader = DataLoader(
         train_dataset,
-        batch_size=BATCH_SIZE,
+        batch_size=MedicalConfig.BATCH_SIZE,
         shuffle=True,
-        num_workers=NUM_WORKERS
+        num_workers=MedicalConfig.NUM_WORKERS,
+        pin_memory=True
     )
     
     val_loader = DataLoader(
         val_dataset,
-        batch_size=BATCH_SIZE,
+        batch_size=MedicalConfig.BATCH_SIZE,
         shuffle=False,
-        num_workers=NUM_WORKERS
+        num_workers=MedicalConfig.NUM_WORKERS,
+        pin_memory=True
     )
     
+    print(f"\n✅ Data split complete:")
+    print(f"   Training samples: {len(train_dataset)}")
+    print(f"   Validation samples: {len(val_dataset)}")
+    
     # ============================================
-    # MODEL SETUP
+    # STEP 2: MODEL SETUP
     # ============================================
     
-    print("Setting up U-Net model...")
+    print("\n[2/5] Setting up U-Net model...")
+    print("-" * 40)
     
-    model = UNet(
-        in_channels=IN_CHANNELS,
-        out_channels=OUT_CHANNELS,
-        features=FEATURES
+    model = UNetMedical(
+        in_channels=MedicalConfig.IN_CHANNELS,
+        out_channels=MedicalConfig.OUT_CHANNELS,
+        features=MedicalConfig.FEATURES
     )
     
     # Count parameters
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     
-    print(f"Total parameters: {total_params:,}")
-    print(f"Trainable parameters: {trainable_params:,}")
+    print("✅ Model created successfully")
+    print(f"   Architecture: U-Net")
+    print(f"   Input channels: {MedicalConfig.IN_CHANNELS}")
+    print(f"   Output channels: {MedicalConfig.OUT_CHANNELS}")
+    print(f"   Feature levels: {MedicalConfig.FEATURES}")
+    print(f"   Total parameters: {total_params:,}")
+    print(f"   Trainable parameters: {trainable_params:,}")
     
     # ============================================
-    # TRAINING
+    # STEP 3: TRAINING
     # ============================================
     
-    print("Training model...")
+    print("\n[3/5] Training model...")
+    print("-" * 40)
     
     model, history = train_model(
         model=model,
         train_loader=train_loader,
         val_loader=val_loader,
-        epochs=EPOCHS,
-        lr=LEARNING_RATE,
-        device=DEVICE
+        epochs=MedicalConfig.EPOCHS,
+        lr=MedicalConfig.LEARNING_RATE,
+        device=MedicalConfig.DEVICE
     )
     
     # ============================================
-    # EVALUATION
+    # STEP 4: EVALUATION
     # ============================================
     
-    print("Evaluating model...")
+    print("\n[4/5] Evaluating model...")
+    print("-" * 40)
     
     # Load best model
-    model.load_state_dict(torch.load('best_model.pth'))
+    model.load_state_dict(torch.load(MedicalConfig.MODEL_SAVE_PATH))
+    print(f"✅ Loaded best model from: {MedicalConfig.MODEL_SAVE_PATH}")
     
     # Evaluate
-    mean_dice, mean_iou = evaluate_model(model, val_loader, DEVICE)
-    print(f"Mean Dice: {mean_dice:.4f}")
-    print(f"Mean IoU: {mean_iou:.4f}")
+    mean_dice, mean_iou = evaluate_model(
+        model=model,
+        dataloader=val_loader,
+        device=MedicalConfig.DEVICE,
+        num_samples=MedicalConfig.NUM_VISUAL_SAMPLES
+    )
     
-    # Visualize predictions
-    visualize_predictions(model, val_loader, DEVICE)
+    # ============================================
+    # STEP 5: VISUALIZE TRAINING HISTORY
+    # ============================================
     
-    # Plot training history
+    print("\n[5/5] Generating training history plots...")
+    print("-" * 40)
+    
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
     
     # Loss plot
-    axes[0].plot(history['train_loss'], label='Train Loss')
-    axes[0].plot(history['val_loss'], label='Validation Loss')
+    axes[0].plot(history['train_loss'], label='Train Loss', linewidth=2)
+    axes[0].plot(history['val_loss'], label='Validation Loss', linewidth=2)
     axes[0].set_xlabel('Epoch')
     axes[0].set_ylabel('Loss')
     axes[0].set_title('Training and Validation Loss')
     axes[0].legend()
-    axes[0].grid(True)
+    axes[0].grid(True, alpha=0.3)
     
     # Dice plot
-    axes[1].plot(history['train_dice'], label='Train Dice')
-    axes[1].plot(history['val_dice'], label='Validation Dice')
+    axes[1].plot(history['train_dice'], label='Train Dice', linewidth=2)
+    axes[1].plot(history['val_dice'], label='Validation Dice', linewidth=2)
     axes[1].set_xlabel('Epoch')
     axes[1].set_ylabel('Dice Score')
     axes[1].set_title('Training and Validation Dice Score')
     axes[1].legend()
-    axes[1].grid(True)
+    axes[1].grid(True, alpha=0.3)
     
     plt.tight_layout()
+    plt.savefig('training_history.png', dpi=300)
     plt.show()
+    print("💾 Saved training history as 'training_history.png'")
+    
+    # ============================================
+    # COMPLETION
+    # ============================================
+    
+    print("\n" + "="*70)
+    print("✅ PROJECT COMPLETED SUCCESSFULLY!")
+    print("="*70)
+    print("\n📁 Output Files:")
+    print(f"  - {MedicalConfig.MODEL_SAVE_PATH} (model weights)")
+    print("  - segmentation_results.png (visual results)")
+    print("  - training_history.png (training plots)")
+    print("\n📊 Final Performance:")
+    print(f"  - Dice Score: {mean_dice:.4f}")
+    print(f"  - IoU: {mean_iou:.4f}")
+    print("\n💡 Next Steps:")
+    print("  1. Use real medical imaging data")
+    print("  2. Experiment with different architectures")
+    print("  3. Try different loss functions")
+    print("  4. Implement 3D U-Net for volumetric data")
+    
+    return model, history
 
 if __name__ == "__main__":
     main()
 ```
 
-### 7.8 Transfer Learning for Segmentation
-
-The same recipe as classification applies: pretrained encoder + task-specific decoder.
-
-```python
-import torchvision.models as models
-
-def setup_transfer_learning_segmentation(encoder_name='resnet50', num_classes=1):
-    """
-    Setup transfer learning for segmentation
-    
-    Args:
-        encoder_name: Name of pretrained encoder
-        num_classes: Number of output classes
-    
-    Returns:
-        model: Segmentation model with pretrained encoder
-    """
-    
-    # Load pretrained encoder
-    if encoder_name == 'resnet50':
-        encoder = models.resnet50(weights='IMAGENET1K_V1')
-        # Remove classifier head
-        # Keep only feature extraction layers
-        encoder = torch.nn.Sequential(*list(encoder.children())[:-2])
-    else:
-        raise ValueError(f"Unsupported encoder: {encoder_name}")
-    
-    # Freeze encoder
-    # This prevents the encoder weights from being updated
-    for param in encoder.parameters():
-        param.requires_grad = False
-    
-    # Add segmentation decoder
-    # This decoder is randomly initialized
-    # while encoder starts from ImageNet weights
-    
-    # In practice, you would add a U-Net decoder or simple upsampling
-    # The decoder learns to map features to segmentation masks
-    
-    return model
-```
-
-**Key Points:**
-- The decoder is randomly initialized while the encoder starts from ImageNet weights
-- This works even when the input domain (microscopy, satellite, MRI) differs from ImageNet
-- Freezing the encoder speeds up training and prevents overfitting with limited data
-- Only the decoder needs to learn the task-specific segmentation
-
 ---
 
-## 8. 2026 Research Developments
+# 8. COMMON ISSUES AND SOLUTIONS
 
-### 8.1 Foundation Models for Segmentation
-
-**SAM (Segment Anything Model) and SAM 2:**
-
-Meta AI's Segment Anything models represent a paradigm shift in segmentation. SAM 2 (2024) extends the original SAM to video with temporal consistency. These are foundation models pretrained on billions of masks and often work zero-shot for new domains.
-
-**SAM3 (2025):**
-
-Meta AI's SAM3 is a unified vision-language segmentation model that accepts text prompts and produces segmentation masks directly, combining detection and segmentation in a single pass.
-
-**Key Characteristics:**
-- Accepts free-form text prompts
-- No retraining required for new domains
-- Can be used zero-shot for specialized datasets
-- Requires substantial GPU memory (16GB+ VRAM)
-
-### 8.2 Open-Set Object Detection
-
-**Grounding DINO (2023):**
-
-Grounding DINO is an open-set object detector that accepts free-form text rather than a fixed category list:
-- Fuses a Swin Transformer visual backbone with a BERT-style text encoder
-- Detects any object described in natural language
-- A prompt like "glomerulus . renal glomerulus . small circular structure ." is enough to attempt detection without retraining
-
-**Integration with SAM:**
-The DINO + SAM2 pipeline uses Grounding DINO for text-prompted bounding-box detection and SAM 2 for mask segmentation. This combination enables zero-shot segmentation on specialized domains.
-
-### 8.3 Advanced Architectures
-
-**Transformer-Based Segmentation Models:**
-
-Models such as SETR and SegFormer apply self-attention mechanisms to model long-range dependencies between distant image regions, which is particularly valuable for parsing complex scenes where an object's identity depends on its relationship to other objects far away.
-
-**Mask2Former (2022):**
-
-Unified semantic, instance, and panoptic segmentation in a single model.
-
-**DETR (2020):**
-
-End-to-end transformer-based detection, no anchors or NMS required.
-
-### 8.4 nnU-Net (Self-Adapting Framework)
-
-nnU-Net is a self-adapting framework for U-Net-based medical image segmentation. It automatically adapts to new datasets without manual tuning, significantly simplifying the application of U-Net to new medical imaging tasks.
-
-**Key Features:**
-- Automatically determines optimal architecture
-- Adapts preprocessing based on dataset properties
-- Handles different image modalities
-- State-of-the-art performance in medical segmentation
-
-### 8.5 Fine-Tuning for Specialized Domains
-
-Research shows that on specialized scientific datasets (e.g., kidney histology images), fine-tuned DINO + SAM2 pipelines outperform SAM3 zero-shot. Fine-tuning with as few as 20 annotated images can significantly improve performance.
-
-**Benefits of Fine-Tuning:**
-- Better performance on specialized domains
-- Requires minimal labeled data
-- Preserves foundation model capabilities
-
-### 8.6 Literature-Informed Object Detection
-
-A 2026 development is the use of Retrieval-Augmented Generation (RAG) for literature-informed object detection:
-
-1. Upload scientific PDFs
-2. Parse and chunk documents
-3. Embed with all-MiniLM-L6-v2
-4. Store in ChromaDB
-5. Retrieve relevant passages at query time
-6. Pass to Llama 3.2 to synthesize detection guidance
-7. Feed resulting text prompts into Grounding DINO
-
-This approach grounds detection in domain literature rather than generic descriptions.
-
-### 8.7 Clinical Integration
-
-Medical imaging societies are establishing guidelines for segmentation in clinical practice. The European Society of Medical Imaging Informatics emphasizes that high-quality segmentation is important for AI-driven radiological research and clinical practice. As AI continues to advance, volumetry will become more integrated into clinical practice, making it essential for radiologists to stay informed about its applications in diagnosis and treatment planning.
-
----
-
-## 9. Common Issues and Solutions
-
-### 9.1 Class Imbalance
-
-**Problem:** Medical images often have small regions of interest (e.g., tumors occupy <1% of image)
-
-**Solutions:**
-- Use Dice loss instead of Cross-Entropy
-- Use weighted loss functions
-- Use focal loss to down-weight easy pixels
-- Oversample minority class
-- Data augmentation for minority class
-
-**Example - Weighted BCE:**
+## 8.1 Medical Imaging Specific Issues
 
 ```python
+# ============ COMMON ISSUES IN MEDICAL SEGMENTATION ============
+
+def common_issues_and_solutions():
+    """
+    Common problems and their solutions in medical segmentation
+    """
+    
+    print("="*70)
+    print("COMMON ISSUES AND SOLUTIONS IN MEDICAL SEGMENTATION")
+    print("="*70)
+    
+    issues = {
+        "1. Class Imbalance": {
+            "Problem": "Medical images often have small regions of interest (e.g., tumors occupy <1% of image)",
+            "Solutions": [
+                "Use Dice loss instead of Cross-Entropy",
+                "Oversample minority class",
+                "Use focal loss",
+                "Weighted loss functions",
+                "Data augmentation for minority class"
+            ],
+            "Code": """
+# Weighted BCE
 class WeightedBCE(nn.Module):
-    """
-    Weighted Binary Cross-Entropy Loss
-    
-    Assigns higher weight to minority class pixels
-    """
     def __init__(self, weight):
         super().__init__()
         self.weight = weight
     
     def forward(self, pred, target):
-        # Apply higher weight to positive class
         bce = nn.BCEWithLogitsLoss()(pred, target)
         return bce * self.weight
-```
 
-**Example - Focal Loss:**
-
-```python
+# Focal Loss
 class FocalLoss(nn.Module):
-    """
-    Focal Loss for Class Imbalance
-    
-    Reduces loss for well-classified examples
-    Focuses training on hard examples
-    """
     def __init__(self, alpha=0.25, gamma=2):
         super().__init__()
         self.alpha = alpha
         self.gamma = gamma
     
     def forward(self, pred, target):
-        # Binary Cross-Entropy Loss
         ce_loss = nn.BCEWithLogitsLoss(reduction='none')(pred, target)
-        
-        # Probability of correct prediction
         pt = torch.exp(-ce_loss)
-        
-        # Focal loss: (1 - pt)^gamma * ce_loss
         focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
         return focal_loss.mean()
-```
-
-### 9.2 Limited Training Data
-
-**Problem:** Medical annotations are expensive and time-consuming
-
-**Solutions:**
-- Data augmentation (rotation, flipping, elastic deformations)
-- Transfer learning from similar datasets
-- Use pre-trained encoders
-- Semi-supervised learning
-- Synthetic data generation
-- Active learning
-
-**Example - Elastic Deformation:**
-
-```python
+            """
+        },
+        
+        "2. Limited Training Data": {
+            "Problem": "Medical annotations are expensive and time-consuming",
+            "Solutions": [
+                "Data augmentation (rotation, flipping, elastic deformations)",
+                "Transfer learning from similar datasets",
+                "Semi-supervised learning",
+                "Synthetic data generation",
+                "Active learning"
+            ],
+            "Code": """
+# Elastic deformation augmentation
 def elastic_deformation(image, mask, alpha=50, sigma=5):
-    """
-    Elastic deformation augmentation
-    
-    Simulates realistic tissue deformations
-    Commonly used in medical imaging
-    """
-    import scipy.ndimage as ndimage
-    
     random_state = np.random.RandomState(None)
     shape = image.shape[:2]
     
-    # Generate random displacement fields
     dx = random_state.randn(*shape) * sigma
     dy = random_state.randn(*shape) * sigma
     
-    # Create coordinate grid
     x, y = np.meshgrid(np.arange(shape[1]), np.arange(shape[0]))
     indices = (y + dy, x + dx)
     
-    # Apply deformation
     image = ndimage.map_coordinates(image, indices, order=1)
     mask = ndimage.map_coordinates(mask, indices, order=0)
     
     return image, mask
-```
-
-### 9.3 Poor Contrast / Low Quality
-
-**Problem:** Medical images often have low contrast and noise
-
-**Solutions:**
-- Contrast enhancement (CLAHE)
-- Histogram equalization
-- Denoising filters (median filter, bilateral filter)
-- Intensity normalization
-- Standardization
-
-**Example - CLAHE:**
-
-```python
+            """
+        },
+        
+        "3. Poor Contrast / Low Quality": {
+            "Problem": "Medical images often have low contrast and noise",
+            "Solutions": [
+                "Contrast enhancement (CLAHE)",
+                "Histogram equalization",
+                "Denoising filters",
+                "Intensity normalization",
+                "Standardization"
+            ],
+            "Code": """
+# CLAHE contrast enhancement
 def enhance_contrast(image):
-    """Enhance contrast using CLAHE"""
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     return clahe.apply(image)
 
+# Z-score normalization
 def z_score_normalize(image):
-    """Z-score normalization"""
     mean = np.mean(image)
     std = np.std(image)
     return (image - mean) / (std + 1e-8)
-```
-
-### 9.4 Variability in Anatomy
-
-**Problem:** Different patients have different anatomies
-
-**Solutions:**
-- Data augmentation with anatomical variations
-- Registration to standard template
-- Multi-scale architectures
-- Ensemble methods
-
-**Example - Scale Augmentation:**
-
-```python
+            """
+        },
+        
+        "4. Variability in Anatomy": {
+            "Problem": "Different patients have different anatomies",
+            "Solutions": [
+                "Data augmentation with anatomical variations",
+                "Registration to standard template",
+                "Multi-scale architectures",
+                "Ensemble methods"
+            ],
+            "Code": """
+# Scale augmentation
 def random_scale(image, mask, scale_range=(0.8, 1.2)):
-    """Random scaling augmentation"""
     scale = np.random.uniform(scale_range[0], scale_range[1])
     h, w = image.shape[:2]
     new_h = int(h * scale)
@@ -2477,29 +3943,21 @@ def random_scale(image, mask, scale_range=(0.8, 1.2)):
     image = cv2.resize(image, (new_w, new_h))
     mask = cv2.resize(mask, (new_w, new_h))
     return image, mask
-```
-
-### 9.5 Memory Issues
-
-**Problem:** Medical images are large (e.g., 3D volumes, high-resolution 2D)
-
-**Solutions:**
-- Patch-based training
-- Reduce batch size
-- Use smaller input size
-- Gradient accumulation
-- Mixed precision training
-
-**Example - Patch Extraction:**
-
-```python
+            """
+        },
+        
+        "5. Memory Issues": {
+            "Problem": "Medical images are large (e.g., 3D volumes)",
+            "Solutions": [
+                "Patch-based training",
+                "Reduce batch size",
+                "Use smaller input size",
+                "Gradient accumulation",
+                "Mixed precision training"
+            ],
+            "Code": """
+# Patch-based training
 def extract_patches(image, mask, patch_size=64, stride=32):
-    """
-    Extract patches from large images
-    
-    Allows training on high-resolution images
-    by processing smaller patches
-    """
     patches_img = []
     patches_mask = []
     
@@ -2512,335 +3970,276 @@ def extract_patches(image, mask, patch_size=64, stride=32):
             patches_mask.append(patch_mask)
     
     return np.array(patches_img), np.array(patches_mask)
+            """
+        }
+    }
+    
+    for issue, info in issues.items():
+        print(f"\n🔴 {issue}")
+        print(f"   Problem: {info['Problem']}")
+        print(f"   Solutions:")
+        for sol in info['Solutions']:
+            print(f"   - {sol}")
+        if 'Code' in info:
+            print(f"\n   Example Code:")
+            print(f"   {info['Code']}")
+        print("-" * 70)
+
+common_issues_and_solutions()
 ```
 
-### 9.6 Blurry Boundaries
-
-**Problem:** Segmentation boundaries are not sharp
-
-**Solutions:**
-- Add CRF (Conditional Random Fields) post-processing
-- Use skip connections (U-Net's strength)
-- Add boundary-aware loss functions
-- Use higher resolution input
-
-### 9.7 Low Detection Confidence on Specialized Images
-
-**Problem:** Models trained on natural images perform poorly on specialized domains
-
-**Solutions:**
-- Drop the confidence threshold to 0.05-0.10
-- Fine-tune on as few as 20 specialized images
-- Use multi-phrase prompts for ambiguous structures
-- Keep backbone frozen and train only the detection head
-
-**Example - Multi-Phrase Prompts:**
+## 8.2 Performance Optimization
 
 ```python
-# For a class like "glomerulus", use multiple phrases
-phrases = [
-    "glomerulus",
-    "renal glomerulus",
-    "small circular structure in kidney cortex"
-]
+# ============ PERFORMANCE OPTIMIZATION ============
 
-# All phrases run in a single detection pass, improving recall
-# Different phrasings capture different aspects of the object
+def performance_optimization():
+    """
+    Tips for improving medical segmentation performance
+    """
+    
+    print("="*70)
+    print("PERFORMANCE OPTIMIZATION TIPS")
+    print("="*70)
+    
+    tips = {
+        "Training Speed": [
+            "Use GPU acceleration",
+            "Increase batch size (if memory allows)",
+            "Use mixed precision training",
+            "Reduce image size",
+            "Use data parallelism",
+            "Optimize data loading (pre-fetch)"
+        ],
+        "Model Accuracy": [
+            "Use deeper U-Net",
+            "Add attention mechanisms",
+            "Use residual connections",
+            "Ensemble multiple models",
+            "Use test-time augmentation",
+            "Post-processing (CRF)"
+        ],
+        "Memory Efficiency": [
+            "Use gradient checkpointing",
+            "Reduce feature channels",
+            "Use patch-based training",
+            "Use 3D to 2D projections",
+            "Use model pruning",
+            "Use quantization"
+        ],
+        "Generalization": [
+            "Use diverse training data",
+            "Apply heavy augmentation",
+            "Use label smoothing",
+            "Use adversarial training",
+            "Use self-supervised pre-training",
+            "Use domain adaptation"
+        ]
+    }
+    
+    for category, items in tips.items():
+        print(f"\n📊 {category.upper()}:")
+        for i, item in enumerate(items, 1):
+            print(f"   {i}. {item}")
+
+performance_optimization()
 ```
-
-### 9.8 Performance Optimization Tips
-
-**Training Speed:**
-- Use GPU acceleration
-- Increase batch size (if memory allows)
-- Use mixed precision training
-- Reduce image size
-- Use data parallelism
-- Optimize data loading (pre-fetch)
-
-**Model Accuracy:**
-- Use deeper U-Net
-- Add attention mechanisms
-- Use residual connections
-- Ensemble multiple models
-- Use test-time augmentation
-- Post-processing (CRF)
-
-**Memory Efficiency:**
-- Use gradient checkpointing
-- Reduce feature channels
-- Use patch-based training
-- Use 3D to 2D projections
-- Use model pruning
-- Use quantization
-
-**Generalization:**
-- Use diverse training data
-- Apply heavy augmentation
-- Use label smoothing
-- Use adversarial training
-- Use self-supervised pre-training
-- Use domain adaptation
 
 ---
 
-## 10. Code Reference
+# 9. QUICK REFERENCE - ALL CODE PATTERNS
 
-### 10.1 Complete Preprocessing Pipeline
+## 9.1 U-Net Architecture Patterns
 
 ```python
-import cv2
-import numpy as np
+# ============ BASIC U-NET ============
 
-class ImagePreprocessor:
-    """
-    Complete image preprocessing pipeline
-    """
+class UNet(nn.Module):
+    def __init__(self, in_channels=3, out_channels=1):
+        super().__init__()
+        # Define layers as shown in section 3
     
+    def forward(self, x):
+        # Encoder + Decoder with skip connections
+        return x
+
+# ============ RESIDUAL U-NET ============
+
+class ResUNet(nn.Module):
     def __init__(self):
-        pass
+        super().__init__()
+        # Use residual blocks instead of plain convolutions
     
-    def load_image(self, path):
-        """Load image from file"""
-        image = cv2.imread(path)
-        if image is None:
-            raise ValueError(f"Could not load image: {path}")
-        return image
+    def forward(self, x):
+        return x
+
+# ============ ATTENTION U-NET ============
+
+class AttentionUNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # Add attention gates between encoder and decoder
     
-    def resize(self, image, target_size=(256, 256)):
-        """Resize image to target size"""
-        return cv2.resize(image, target_size, interpolation=cv2.INTER_LINEAR)
-    
-    def to_grayscale(self, image):
-        """Convert to grayscale if color"""
-        if len(image.shape) == 3:
-            return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        return image
-    
-    def normalize(self, image):
-        """Normalize pixel values to [0, 1]"""
-        return image.astype(np.float32) / 255.0
-    
-    def standardize(self, image):
-        """Standardize to mean=0, std=1"""
-        mean = np.mean(image)
-        std = np.std(image)
-        return (image - mean) / (std + 1e-8)
-    
-    def enhance_contrast(self, image):
-        """Enhance contrast using CLAHE"""
-        if len(image.shape) == 3:
-            lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-            l, a, b = cv2.split(lab)
-            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-            l = clahe.apply(l)
-            lab = cv2.merge((l, a, b))
-            return cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
-        else:
-            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-            return clahe.apply(image)
-    
-    def remove_noise(self, image):
-        """Remove noise using median filter"""
-        if len(image.shape) == 3:
-            result = np.zeros_like(image)
-            for i in range(3):
-                result[:, :, i] = cv2.medianBlur(image[:, :, i], 3)
-            return result
-        else:
-            return cv2.medianBlur(image, 3)
-    
-    def threshold_otsu(self, image):
-        """Apply Otsu thresholding"""
-        if len(image.shape) == 3:
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        else:
-            gray = image
-        _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        return binary
-    
-    def morphological_open(self, binary, kernel_size=3):
-        """Morphological opening"""
-        kernel = np.ones((kernel_size, kernel_size), np.uint8)
-        return cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
-    
-    def morphological_close(self, binary, kernel_size=3):
-        """Morphological closing"""
-        kernel = np.ones((kernel_size, kernel_size), np.uint8)
-        return cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
-    
-    def detect_edges(self, image):
-        """Detect edges using Canny"""
-        if len(image.shape) == 3:
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        else:
-            gray = image
-        return cv2.Canny(gray, 50, 150)
-    
-    def pipeline(self, image_path, visualize=True):
-        """Complete preprocessing pipeline"""
-        image = self.load_image(image_path)
-        results = [('Original', image.copy())]
-        
-        image = self.resize(image, (256, 256))
-        results.append(('Resized', image.copy()))
-        
-        image = self.to_grayscale(image)
-        results.append(('Grayscale', image.copy()))
-        
-        image = self.remove_noise(image)
-        results.append(('Denoised', image.copy()))
-        
-        image = self.enhance_contrast(image)
-        results.append(('Enhanced Contrast', image.copy()))
-        
-        image = self.normalize(image)
-        results.append(('Normalized', image.copy()))
-        
-        binary = self.threshold_otsu(image)
-        results.append(('Otsu Binary', binary))
-        
-        opened = self.morphological_open(binary)
-        results.append(('Morphological Open', opened))
-        
-        edges = self.detect_edges(image)
-        results.append(('Edges', edges))
-        
-        return results
+    def forward(self, x):
+        return x
 ```
 
-### 10.2 Quick Reference - U-Net Parameters
-
-| Component | Parameters |
-|-----------|------------|
-| Double Conv | in_channels, out_channels, kernel_size=3, padding=1 |
-| Max Pool | kernel_size=2, stride=2 |
-| Transposed Conv | in_channels, out_channels, kernel_size=2, stride=2 |
-| Bottleneck | features[-1] -> features[-1] * 2 |
-| Final Conv | in_channels, out_channels, kernel_size=1 |
-
-**Feature Levels:**
-
-| Feature Level | Input Channels | Output Channels |
-|---------------|----------------|-----------------|
-| Level 1 | 3 | 64 |
-| Level 2 | 64 | 128 |
-| Level 3 | 128 | 256 |
-| Level 4 | 256 | 512 |
-| Bottleneck | 512 | 1024 |
-
-**Training Parameters:**
-
-| Parameter | Recommended Value |
-|-----------|-------------------|
-| Learning Rate | 1e-4 |
-| Batch Size | 8-16 (depending on GPU memory) |
-| Loss Function | BCE + Dice |
-| Optimizer | Adam |
-| Input Size | 256x256 or 512x512 |
-
-### 10.3 OpenCV Quick Reference
-
-**Basic Operations:**
+## 9.2 Data Loading Patterns
 
 ```python
+# ============ MEDICAL DATASET ============
+
+class MedicalDataset(Dataset):
+    def __init__(self, images_dir, masks_dir):
+        self.images = sorted(os.listdir(images_dir))
+        self.masks = sorted(os.listdir(masks_dir))
+    
+    def __len__(self):
+        return len(self.images)
+    
+    def __getitem__(self, idx):
+        image = cv2.imread(...)
+        mask = cv2.imread(...)
+        return image, mask
+
+# ============ DATA LOADER ============
+
+train_loader = DataLoader(
+    dataset, batch_size=8, shuffle=True, num_workers=4
+)
+```
+
+## 9.3 Training Patterns
+
+```python
+# ============ TRAINING LOOP ============
+
+for epoch in range(epochs):
+    model.train()
+    for images, masks in train_loader:
+        images, masks = images.to(device), masks.to(device)
+        predictions = model(images)
+        loss = loss_fn(predictions, masks)
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+    
+    model.eval()
+    with torch.no_grad():
+        for images, masks in val_loader:
+            predictions = model(images)
+            # Calculate metrics
+
+# ============ DICE LOSS ============
+
+def dice_loss(pred, target):
+    smooth = 1e-6
+    pred_flat = pred.view(-1)
+    target_flat = target.view(-1)
+    intersection = (pred_flat * target_flat).sum()
+    union = pred_flat.sum() + target_flat.sum()
+    return 1 - (2 * intersection + smooth) / (union + smooth)
+
+# ============ COMBINED LOSS ============
+
+def combined_loss(pred, target):
+    return nn.BCELoss()(pred, target) + dice_loss(pred, target)
+```
+
+## 9.4 Evaluation Patterns
+
+```python
+# ============ METRICS ============
+
+def compute_metrics(pred, target):
+    pred = (pred > 0.5).float()
+    
+    # Dice
+    dice = 2 * (pred * target).sum() / (pred.sum() + target.sum() + 1e-6)
+    
+    # IoU
+    intersection = (pred * target).sum()
+    union = pred.sum() + target.sum() - intersection
+    iou = intersection / (union + 1e-6)
+    
+    return dice, iou
+
+# ============ VISUALIZATION ============
+
+def visualize_results(images, masks, predictions):
+    fig, axes = plt.subplots(len(images), 3)
+    for i in range(len(images)):
+        axes[i, 0].imshow(images[i])
+        axes[i, 1].imshow(masks[i], cmap='gray')
+        axes[i, 2].imshow(predictions[i], cmap='gray')
+    plt.show()
+```
+
+## 9.5 OpenCV Patterns
+
+```python
+# ============ BASIC OPERATIONS ============
+
 # Read image
-image = cv2.imread('path')
+image = cv2.imread('image.jpg')
+
+# Resize
+resized = cv2.resize(image, (256, 256))
+
+# Convert color
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Draw shapes
+cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+cv2.circle(image, (cx, cy), radius, (0, 0, 255), -1)
+cv2.putText(image, 'Text', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
 # Show image
-cv2.imshow('window', image)
+cv2.imshow('Window', image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
 # Save image
 cv2.imwrite('output.jpg', image)
-```
 
-**Color Conversions:**
+# ============ FILTERING ============
 
-```python
-# BGR to Grayscale
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# Blur
+blurred = cv2.GaussianBlur(image, (5, 5), 0)
 
-# BGR to RGB
-rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+# Edge detection
+edges = cv2.Canny(image, 100, 200)
 
-# BGR to HSV
-hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+# Contours
+contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
 
-# BGR to LAB
-lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-```
+# ============ PREPROCESSING ============
 
-**Drawing:**
+# Histogram equalization
+equalized = cv2.equalizeHist(gray)
 
-```python
-# Line
-cv2.line(image, (x1,y1), (x2,y2), (B,G,R), thickness)
+# Thresholding
+_, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
 
-# Rectangle
-cv2.rectangle(image, (x1,y1), (x2,y2), (B,G,R), thickness)
-
-# Circle
-cv2.circle(image, (cx,cy), radius, (B,G,R), thickness)
-
-# Text
-cv2.putText(image, text, (x,y), font, scale, (B,G,R), thickness)
-```
-
-**Filtering:**
-
-```python
-# Gaussian Blur
-gaussian = cv2.GaussianBlur(image, (5,5), sigma)
-
-# Median Blur
-median = cv2.medianBlur(image, kernel_size)
-
-# Bilateral Filter
-bilateral = cv2.bilateralFilter(image, diameter, sigma_color, sigma_space)
-
-# Edge Detection
-edges = cv2.Canny(image, threshold1, threshold2)
-```
-
-**Morphological Operations:**
-
-```python
-# Erosion
-eroded = cv2.erode(binary, kernel, iterations=1)
-
-# Dilation
-dilated = cv2.dilate(binary, kernel, iterations=1)
-
-# Opening
-opening = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
-
-# Closing
-closing = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
-```
-
-**Contours:**
-
-```python
-# Find Contours
-contours, hierarchy = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-# Draw Contours
-cv2.drawContours(image, contours, -1, (B,G,R), thickness)
+# Morphological operations
+kernel = np.ones((3, 3), np.uint8)
+opened = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+closed = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
 ```
 
 ---
 
-## Key Takeaways
+**End of Week 3 Notes - Complete Noob-Friendly Guide**
+
+##  Key Takeaways
 
 1. **Segmentation** = Label every pixel, not just finding objects
 2. **U-Net** = The go-to architecture for medical image segmentation
 3. **Skip Connections** = Preserve fine details in segmentation
-4. **OpenCV** = Essential toolkit for image processing
+4. **OpenCV** = Your Swiss Army knife for image processing
 5. **Preprocessing** = Clean data is crucial for good results
 6. **Medical Imaging** = Special challenges: low contrast, limited data, class imbalance
 7. **Dice Loss** = Better than BCE for imbalanced segmentation
 8. **Data Augmentation** = Essential for medical images with limited data
-9. **Foundation Models** = SAM, SAM2, SAM3 represent paradigm shift
-10. **Fine-Tuning** = Effective even with limited specialized data
+
