@@ -1,0 +1,2871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 2: Text Preprocessing & Tokenization - 3 Hour Session</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --white: #ffffff;
+            --light-gray: #f1f5f9;
+            --medium-gray: #64748b;
+            --charcoal: #1e293b;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            --gradient-error: linear-gradient(135deg, var(--error-red) 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, var(--purple) 0%, #a855f7 100%);
+            --gradient-pink: linear-gradient(135deg, var(--pink) 0%, #f472b6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
+            color: var(--primary-navy);
+            overflow: hidden;
+            height: 100vh;
+            line-height: 1.6;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem 3rem;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            padding-right: 280px;
+        }
+
+        .slide-number-container {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-number {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .slide-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .slide-title {
+            color: var(--white);
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.02em;
+        }
+
+        .slide-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            background: var(--white);
+        }
+
+        .navigation {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .nav-btn {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn:disabled {
+            background: var(--medium-gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-indicator {
+            color: var(--primary-navy);
+            font-weight: 700;
+            padding: 12px 20px;
+            background: var(--light-gray);
+            border-radius: 25px;
+            font-size: 14px;
+        }
+
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card-grid.two-col {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-grid.three-col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .card-grid.four-col {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .content-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .highlight-stat {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-green { color: var(--success-green); }
+        .stat-blue { color: var(--primary-blue); }
+        .stat-orange { color: var(--warning-orange); }
+        .stat-red { color: var(--error-red); }
+        .stat-purple { color: var(--purple); }
+        .stat-pink { color: var(--pink); }
+
+        .quiz-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+
+        .quiz-question {
+            background: var(--white);
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .quiz-question h4 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .quiz-options {
+            margin: 1rem 0;
+        }
+
+        .quiz-options .option {
+            background: var(--light-gray);
+            padding: 0.8rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            border-left: 3px solid var(--success-green);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .quiz-answer {
+            background: var(--gradient-success);
+            color: var(--white);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--medium-gray);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-list li i {
+            color: var(--success-green);
+            font-weight: bold;
+        }
+
+        .funny-example {
+            background: var(--gradient-pink);
+            color: var(--white);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 5px solid var(--pink);
+        }
+
+        .practical-exercise {
+            background: var(--gradient-purple);
+            color: var(--white);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 5px solid var(--purple);
+        }
+
+        .assessment-box {
+            background: var(--gradient-warning);
+            color: var(--white);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 5px solid var(--warning-orange);
+        }
+
+        .text-center { text-align: center; }
+        .mb-3 { margin-bottom: 1rem; }
+        .mt-3 { margin-top: 1rem; }
+
+        .timer {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-xl);
+            z-index: 1000;
+            font-weight: 700;
+            color: var(--primary-navy);
+        }
+
+        .break-indicator {
+            background: var(--gradient-success);
+            color: var(--white);
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .code-example {
+            background: var(--charcoal);
+            color: var(--white);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .step-box {
+            background: var(--light-gray);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 5px solid var(--primary-blue);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: var(--white);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .comparison-table th {
+            background: var(--gradient-primary);
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--light-gray);
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Timer -->
+        <div class="timer">
+            <i class="fas fa-clock"></i> Session Time: <span id="timer">00:00</span>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="previousSlide()">
+                <i class="fas fa-chevron-left"></i>
+                Previous
+            </button>
+            <div class="slide-indicator">
+                <span id="currentSlide">1</span> of <span id="totalSlides">31</span>
+            </div>
+            <button class="nav-btn" onclick="nextSlide()">
+                Next
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 1 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Text Preprocessing & Tokenization</h1>
+                <p class="slide-subtitle">Lecture 2: The Foundation of NLP</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <div class="icon-large" style="background: var(--gradient-primary); margin-bottom: 2rem;">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h2 class="section-title">Welcome to Text Preprocessing!</h2>
+                    <p class="section-subtitle">Where we clean up the messy world of human text (and sometimes make it messier!)</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Course Information</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-book"></i> Course: Natural Language Processing</li>
+                            <li><i class="fas fa-user"></i> Instructor: Muhammad Farhan</li>
+                            <li><i class="fas fa-calendar"></i> Lecture 2: Text Preprocessing</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-target"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Today's Agenda</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Text Preprocessing Fundamentals</li>
+                            <li><i class="fas fa-check"></i> Tokenization Techniques</li>
+                            <li><i class="fas fa-check"></i> Text Cleaning & Normalization</li>
+                            <li><i class="fas fa-check"></i> Break & Hands-on Practice</li>
+                            <li><i class="fas fa-check"></i> Advanced Preprocessing</li>
+                            <li><i class="fas fa-check"></i> Practical Implementation</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Fun Fact to Start With:</h4>
+                    <p>Did you know that the first step in most NLP pipelines is deciding whether "don't" should be one token or two? It's like asking whether a hot dog is a sandwich - it depends on who you ask! 🌭🤔</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Lecture 1 Summary -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 2 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Lecture 1 Summary</h1>
+                <p class="slide-subtitle">What we learned in our introduction to NLP</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Recap: Introduction to NLP</h2>
+                    <p class="section-subtitle">Key concepts from our first lecture</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">What is NLP?</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-language"></i> Teaching computers to understand human language</li>
+                            <li><i class="fas fa-robot"></i> Enabling machine intelligence for language tasks</li>
+                            <li><i class="fas fa-cogs"></i> Building practical applications</li>
+                            <li><i class="fas fa-globe"></i> Bridging communication gaps</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">NLP Applications</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-search"></i> Search engines and information retrieval</li>
+                            <li><i class="fas fa-comments"></i> Virtual assistants and chatbots</li>
+                            <li><i class="fas fa-translate"></i> Machine translation services</li>
+                            <li><i class="fas fa-chart-bar"></i> Sentiment analysis and market research</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">NLP Challenges</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-question"></i> Ambiguity in language</li>
+                            <li><i class="fas fa-language"></i> Language diversity</li>
+                            <li><i class="fas fa-brain"></i> Context understanding</li>
+                            <li><i class="fas fa-cogs"></i> Computational complexity</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-laugh"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Funny Examples</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-smile"></i> "I'm feeling blue" → "Try feeling red"</li>
+                            <li><i class="fas fa-bank"></i> "Bank" confusion (river vs. financial)</li>
+                            <li><i class="fas fa-translate"></i> Translation fails and context issues</li>
+                            <li><i class="fas fa-robot"></i> Chatbot misunderstandings</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">NLP Processing Pipeline</h3>
+                    <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">From Lecture 1: Text → Preprocessing → Analysis → Understanding</div>
+                    <div style="font-size: 1rem; opacity: 0.8; margin-top: 0.5rem;">Today we focus on the preprocessing step!</div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Remember This Classic Fail:</h4>
+                    <p><strong>Human:</strong> "I'm going to the bank to deposit money."<br>
+                    <strong>Early NLP System:</strong> "I understand you're going to the river bank to deposit money into the water. That's not very practical!" 🏦➡️🏞️</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Quick Review (5 minutes):</h4>
+                    <p>Think about the NLP challenges we discussed. How do you think preprocessing might help solve some of these problems? Share your thoughts with your neighbor!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: What is Text Preprocessing? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 3 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is Text Preprocessing?</h1>
+                <p class="slide-subtitle">The art of making messy human text machine-readable</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">The Foundation of NLP</h2>
+                    <p class="section-subtitle">Raw text is like a messy room - preprocessing is our way of organizing it!</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-broom"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Text Cleaning</h3>
+                        <p style="text-align: center; color: var(--medium-gray);">Removing noise, special characters, and unwanted elements from raw text data</p>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-cut"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Tokenization</h3>
+                        <p style="text-align: center; color: var(--medium-gray);">Breaking text into smaller units (tokens) that machines can process</p>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Normalization</h3>
+                        <p style="text-align: center; color: var(--medium-gray);">Standardizing text format, case, and structure for consistent processing</p>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Preprocessing Reality Check:</h4>
+                    <p><strong>Raw Text:</strong> "OMG!!! This is SOOOO cool!!! 😍😍😍 #amazing #NLP"<br>
+                    <strong>After Preprocessing:</strong> "omg this is so cool amazing nlp"<br>
+                    <strong>Result:</strong> From emoji explosion to clean, processable text! 🎉➡️📝</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Quick Exercise (5 minutes):</h4>
+                    <p>Look at your phone's text messages. What preprocessing steps would you need to apply before feeding them to an NLP system? Think about emojis, abbreviations, typos, and formatting!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Why Preprocessing Matters -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 4 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Why Preprocessing Matters</h1>
+                <p class="slide-subtitle">The critical first step that can make or break your NLP pipeline</p>
+            </div>
+            <div class="slide-content">
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Impact on Performance</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 10px;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-green);">85%</div>
+                                <div style="font-size: 0.8rem; color: var(--medium-gray);">Accuracy Improvement</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 10px;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-green);">60%</div>
+                                <div style="font-size: 0.8rem; color: var(--medium-gray);">Speed Increase</div>
+                            </div>
+                        </div>
+                        <p style="color: var(--medium-gray); text-align: center;">Proper preprocessing can dramatically improve model performance</p>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Common Issues Without Preprocessing</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-times"></i> Inconsistent tokenization</li>
+                            <li><i class="fas fa-times"></i> Noise from special characters</li>
+                            <li><i class="fas fa-times"></i> Case sensitivity problems</li>
+                            <li><i class="fas fa-times"></i> Duplicate variations of same word</li>
+                            <li><i class="fas fa-times"></i> Poor model generalization</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-warning); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">The Garbage In, Garbage Out Principle</h3>
+                    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">"No amount of sophisticated algorithms can save you from bad preprocessing"</div>
+                    <div style="font-size: 1rem; opacity: 0.8; margin-top: 0.5rem;">- Every NLP Engineer Ever</div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Real-World Example:</h4>
+                    <p><strong>Without Preprocessing:</strong> "I LOVEEEE this product!!! It's AMAZINGGGG!!! 😍😍😍"<br>
+                    <strong>Model Sees:</strong> "I", "LOVEEEE", "this", "product", "!!!", "It's", "AMAZINGGGG", "!!!", "😍", "😍", "😍"<br>
+                    <strong>Result:</strong> Model thinks "LOVEEEE" and "AMAZINGGGG" are different words from "love" and "amazing"! 🤯</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Text Preprocessing Pipeline -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 5 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Text Preprocessing Pipeline</h1>
+                <p class="slide-subtitle">The systematic approach to cleaning and preparing text data</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">The Complete Pipeline</h2>
+                    <p class="section-subtitle">From raw text to clean, processable tokens</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-broom"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">1. Text Cleaning</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-trash"></i> Remove HTML tags</li>
+                            <li><i class="fas fa-ban"></i> Remove special characters</li>
+                            <li><i class="fas fa-link"></i> Handle URLs and emails</li>
+                            <li><i class="fas fa-smile"></i> Process emojis</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-cut"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">2. Tokenization</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-scissors"></i> Split into words</li>
+                            <li><i class="fas fa-quote-right"></i> Handle contractions</li>
+                            <li><i class="fas fa-hyphen"></i> Manage punctuation</li>
+                            <i class="fas fa-language"></i> Language-specific rules</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">3. Normalization</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-font"></i> Case normalization</li>
+                            <li><i class="fas fa-leaf"></i> Stemming/Lemmatization</li>
+                            <li><i class="fas fa-filter"></i> Remove stop words</li>
+                            <li><i class="fas fa-check"></i> Spelling correction</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <div style="font-size: 1.2rem; margin-bottom: 1rem;">
+                        <strong>Example Pipeline:</strong> "OMG!!! This is SOOOO cool!!! 😍"
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; font-size: 0.9rem;">
+                        <div><strong>Step 1:</strong> "OMG This is SOOOO cool"</div>
+                        <div><strong>Step 2:</strong> ["OMG", "This", "is", "SOOOO", "cool"]</div>
+                        <div><strong>Step 3:</strong> ["omg", "this", "is", "so", "cool"]</div>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Pipeline Fail:</h4>
+                    <p><strong>Input:</strong> "I can't believe it's not butter!"<br>
+                    <strong>Bad Tokenization:</strong> ["I", "can't", "believe", "it's", "not", "butter!"]<br>
+                    <strong>Good Tokenization:</strong> ["I", "can", "not", "believe", "it", "is", "not", "butter"]<br>
+                    <strong>Result:</strong> The apostrophe makes all the difference! 🧈</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Tokenization Fundamentals -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 6 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-cut"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Tokenization Fundamentals</h1>
+                <p class="slide-subtitle">Breaking text into meaningful units that machines can understand</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">What is Tokenization?</h2>
+                    <p class="section-subtitle">The process of splitting text into smaller, meaningful units called tokens</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-puzzle-piece"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Types of Tokens</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-font"></i> Words: "hello", "world"</li>
+                            <li><i class="fas fa-hyphen"></i> Subwords: "un", "happy", "ness"</li>
+                            <li><i class="fas fa-quote-right"></i> Characters: "h", "e", "l", "l", "o"</li>
+                            <li><i class="fas fa-at"></i> Special tokens: "[PAD]", "[UNK]"</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Tokenization Methods</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-space-shuttle"></i> Whitespace tokenization</li>
+                            <li><i class="fas fa-language"></i> Rule-based tokenization</li>
+                            <li><i class="fas fa-brain"></i> Machine learning-based</li>
+                            <li><i class="fas fa-puzzle-piece"></i> Subword tokenization</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">Tokenization Example:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Input:</strong> "Hello, world! How are you today?"
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Whitespace Tokenization:</strong> ["Hello,", "world!", "How", "are", "you", "today?"]
+                    </div>
+                    <div>
+                        <strong>Smart Tokenization:</strong> ["Hello", ",", "world", "!", "How", "are", "you", "today", "?"]
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Tokenization Confusion:</h4>
+                    <p><strong>Text:</strong> "I can't wait for the weekend!"<br>
+                    <strong>Bad Tokenizer:</strong> ["I", "can't", "wait", "for", "the", "weekend!"]<br>
+                    <strong>Problem:</strong> "can't" and "weekend!" include punctuation!<br>
+                    <strong>Good Tokenizer:</strong> ["I", "can", "'", "t", "wait", "for", "the", "weekend", "!"]<br>
+                    <strong>Result:</strong> Much cleaner for the model to process! 🎯</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Hands-on Exercise (10 minutes):</h4>
+                    <p>Try tokenizing this sentence manually: "Dr. Smith's appointment is at 3:30 PM."<br>
+                    What challenges do you face? How would you handle the period after "Dr." vs. the period at the end?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Whitespace Tokenization -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 7 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-space-shuttle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Whitespace Tokenization</h1>
+                <p class="slide-subtitle">The simplest approach to breaking text into tokens</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">The Basic Approach</h2>
+                    <p class="section-subtitle">Split text wherever you find whitespace characters</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Advantages</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-bolt"></i> Simple and fast</li>
+                            <li><i class="fas fa-memory"></i> Low memory usage</li>
+                            <li><i class="fas fa-globe"></i> Language independent</li>
+                            <li><i class="fas fa-tools"></i> Easy to implement</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Disadvantages</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-exclamation"></i> Punctuation attached to words</li>
+                            <li><i class="fas fa-question"></i> Doesn't handle contractions</li>
+                            <li><i class="fas fa-language"></i> Poor for some languages</li>
+                            <li><i class="fas fa-bug"></i> Creates inconsistent tokens</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">Whitespace Tokenization Examples:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Input:</strong> "Hello, world! How are you?"
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Result:</strong> ["Hello,", "world!", "How", "are", "you?"]
+                    </div>
+                    <div style="color: var(--warning-orange);">
+                        <strong>Problem:</strong> Punctuation is attached to words!
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Whitespace Tokenization Fail:</h4>
+                    <p><strong>Text:</strong> "I can't believe it's working!"<br>
+                    <strong>Whitespace Tokenization:</strong> ["I", "can't", "believe", "it's", "working!"]<br>
+                    <strong>Problem:</strong> "can't" and "it's" are treated as single tokens, but they contain multiple words!<br>
+                    <strong>Better Approach:</strong> Need to handle contractions properly! 🤯</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Rule-Based Tokenization -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 8 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-ruler"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Rule-Based Tokenization</h1>
+                <p class="slide-subtitle">Using linguistic rules to create better token boundaries</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Smart Tokenization Rules</h2>
+                    <p class="section-subtitle">Applying linguistic knowledge to improve tokenization quality</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-quote-right"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Punctuation Rules</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-comma"></i> Separate punctuation</li>
+                            <li><i class="fas fa-question"></i> Handle sentence endings</li>
+                            <li><i class="fas fa-hyphen"></i> Manage hyphens</li>
+                            <li><i class="fas fa-quote-left"></i> Process quotes</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-compress"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Contraction Rules</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-cut"></i> Split contractions</li>
+                            <li><i class="fas fa-list"></i> Handle common forms</li>
+                            <li><i class="fas fa-language"></i> Language-specific rules</li>
+                            <li><i class="fas fa-check"></i> Validate results</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Special Cases</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-at"></i> URLs and emails</li>
+                            <li><i class="fas fa-hashtag"></i> Hashtags and mentions</li>
+                            <li><i class="fas fa-clock"></i> Dates and times</li>
+                            <li><i class="fas fa-dollar-sign"></i> Numbers and currency</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">Rule-Based Tokenization Example:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Input:</strong> "I can't believe it's 3:30 PM!"
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Rules Applied:</strong>
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>Split contractions: "can't" → "can", "'t"</li>
+                            <li>Separate punctuation: "!" → separate token</li>
+                            <li>Handle time: "3:30" → keep as one token</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong>Result:</strong> ["I", "can", "'t", "believe", "it", "'s", "3:30", "PM", "!"]
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Rule-Based Confusion:</h4>
+                    <p><strong>Text:</strong> "Dr. Smith's appointment is at 3:30 P.M."<br>
+                    <strong>Rule-Based Tokenizer:</strong> ["Dr.", "Smith", "'s", "appointment", "is", "at", "3:30", "P.M."]<br>
+                    <strong>Problem:</strong> "Dr." and "P.M." are kept as single tokens, but "3:30" is also kept as one token!<br>
+                    <strong>Consistency Issue:</strong> Some abbreviations are split, others aren't! 🤔</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Subword Tokenization -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 9 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Subword Tokenization</h1>
+                <p class="slide-subtitle">Breaking words into smaller, meaningful pieces</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">The Modern Approach</h2>
+                    <p class="section-subtitle">Used by state-of-the-art models like BERT, GPT, and T5</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Advantages</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-infinity"></i> Handles out-of-vocabulary words</li>
+                            <li><i class="fas fa-compress"></i> Reduces vocabulary size</li>
+                            <li><i class="fas fa-language"></i> Works across languages</li>
+                            <li><i class="fas fa-brain"></i> Better for neural networks</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Popular Methods</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-code"></i> BPE (Byte Pair Encoding)</li>
+                            <li><i class="fas fa-puzzle-piece"></i> WordPiece</li>
+                            <li><i class="fas fa-cut"></i> SentencePiece</li>
+                            <li><i class="fas fa-university"></i> Unigram Language Model</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">Subword Tokenization Example:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Word:</strong> "unhappiness"
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Subword Tokens:</strong> ["un", "happy", "ness"]
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Benefits:</strong>
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>Can understand "unhappiness" even if not in training data</li>
+                            <li>Recognizes "un-" prefix and "-ness" suffix</li>
+                            <li>Smaller vocabulary size</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Subword Tokenization Magic:</h4>
+                    <p><strong>New Word:</strong> "supercalifragilisticexpialidocious"<br>
+                    <strong>Subword Tokenizer:</strong> ["super", "cali", "fragil", "istic", "expial", "idocious"]<br>
+                    <strong>Result:</strong> Even though this word wasn't in training data, the model can still process it!<br>
+                    <strong>Magic:</strong> It's like having a universal translator for words! ✨</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Think About It (5 minutes):</h4>
+                    <p>How would you tokenize the word "antidisestablishmentarianism"?<br>
+                    What subwords would be most useful for understanding its meaning?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Text Cleaning Techniques -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 10 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-broom"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Text Cleaning Techniques</h1>
+                <p class="slide-subtitle">Removing noise and unwanted elements from text data</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Cleaning Your Text Data</h2>
+                    <p class="section-subtitle">The first step in any preprocessing pipeline</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">HTML/XML Cleaning</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-tags"></i> Remove HTML tags</li>
+                            <li><i class="fas fa-link"></i> Extract text content</li>
+                            <li><i class="fas fa-broom"></i> Clean attributes</li>
+                            <li><i class="fas fa-check"></i> Preserve structure</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-ban"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Special Characters</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-exclamation"></i> Remove unwanted symbols</li>
+                            <li><i class="fas fa-smile"></i> Handle emojis</li>
+                            <li><i class="fas fa-font"></i> Normalize encoding</li>
+                            <li><i class="fas fa-question"></i> Preserve punctuation</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">URLs & Emails</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-globe"></i> Remove or replace URLs</li>
+                            <li><i class="fas fa-envelope"></i> Handle email addresses</li>
+                            <li><i class="fas fa-hashtag"></i> Process hashtags</li>
+                            <li><i class="fas fa-at"></i> Handle mentions</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">Text Cleaning Example:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Raw Text:</strong> "Check out this link: https://example.com! 😍 #amazing @username"
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>After Cleaning:</strong> "Check out this link amazing"
+                    </div>
+                    <div style="color: var(--warning-orange);">
+                        <strong>Removed:</strong> URL, emoji, hashtag, mention
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Over-Cleaning Disaster:</h4>
+                    <p><strong>Original:</strong> "I love this product! It's amazing! 😍😍😍 #loveit"<br>
+                    <strong>Over-Cleaned:</strong> "I love this product It amazing"<br>
+                    <strong>Problem:</strong> Removed all punctuation and emotion!<br>
+                    <strong>Result:</strong> Lost all the sentiment and enthusiasm! 😢</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Cleaning Challenge (10 minutes):</h4>
+                    <p>Design cleaning rules for this text: "OMG!!! This is SOOOO cool!!! 😍😍😍 #amazing #NLP @nlp_expert"<br>
+                    What would you keep? What would you remove? Why?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Case Normalization -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 11 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-font"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Case Normalization</h1>
+                <p class="slide-subtitle">Standardizing text case for consistent processing</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">To Lowercase or Not to Lowercase?</h2>
+                    <p class="section-subtitle">That is the question in case normalization</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Lowercase Everything</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Reduces vocabulary size</li>
+                            <li><i class="fas fa-check"></i> Treats "Hello" = "hello"</li>
+                            <li><i class="fas fa-check"></i> Good for general tasks</li>
+                            <li><i class="fas fa-check"></i> Simpler processing</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Preserve Case</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-info"></i> Keeps proper nouns</li>
+                            <li><i class="fas fa-info"></i> Preserves acronyms</li>
+                            <li><i class="fas fa-info"></i> Maintains emphasis</li>
+                            <li><i class="fas fa-info"></i> Better for NER tasks</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Text</th>
+                            <th>Lowercase</th>
+                            <th>Preserve Case</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>"Hello, Dr. Smith!"</td>
+                            <td>"hello, dr. smith!"</td>
+                            <td>"Hello, Dr. Smith!"</td>
+                            <td>General text processing</td>
+                        </tr>
+                        <tr>
+                            <td>"I love NLP!"</td>
+                            <td>"i love nlp!"</td>
+                            <td>"I love NLP!"</td>
+                            <td>Named Entity Recognition</td>
+                        </tr>
+                        <tr>
+                            <td>"The USA is great!"</td>
+                            <td>"the usa is great!"</td>
+                            <td>"The USA is great!"</td>
+                            <td>Geographic analysis</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Case Normalization Confusion:</h4>
+                    <p><strong>Text:</strong> "I love my iPhone and my MacBook!"<br>
+                    <strong>Lowercase:</strong> "i love my iphone and my macbook!"<br>
+                    <strong>Problem:</strong> "iPhone" and "MacBook" are now generic terms!<br>
+                    <strong>Result:</strong> Lost the brand information that might be important! 📱💻</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Case Decision Exercise (5 minutes):</h4>
+                    <p>For each of these tasks, decide whether to lowercase or preserve case:<br>
+                    1. Sentiment analysis of product reviews<br>
+                    2. Named entity recognition<br>
+                    3. Machine translation<br>
+                    4. Text classification</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Break Time -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 12 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Break Time!</h1>
+                <p class="slide-subtitle">15-minute coffee break and hands-on practice</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <div class="icon-large" style="background: var(--gradient-success); margin-bottom: 2rem;">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                    <h2 class="section-title">Time for a Break!</h2>
+                    <p class="section-subtitle">Grab some coffee and practice what we've learned</p>
+                </div>
+                
+                <div class="break-indicator">
+                    <h3><i class="fas fa-clock"></i> 15-Minute Break</h3>
+                    <p>Use this time to:</p>
+                </div>
+
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Hands-on Practice</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-cut"></i> Try tokenizing different texts</li>
+                            <li><i class="fas fa-broom"></i> Practice text cleaning</li>
+                            <li><i class="fas fa-font"></i> Experiment with case normalization</li>
+                            <li><i class="fas fa-puzzle-piece"></i> Explore subword tokenization</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Discussion Topics</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-comments"></i> Share tokenization challenges</li>
+                            <li><i class="fas fa-lightbulb"></i> Discuss real-world applications</li>
+                            <li><i class="fas fa-question"></i> Ask questions about concepts</li>
+                            <li><i class="fas fa-brain"></i> Think about edge cases</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Break Challenge:</h4>
+                    <p>Find a news article online and try to manually tokenize the first paragraph. What challenges do you face? How would you handle contractions, punctuation, and special cases?</p>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Break Joke:</h4>
+                    <p>Why did the tokenizer go to therapy? Because it had trouble splitting up with words! 😂</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Stop Words Removal -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 13 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Stop Words Removal</h1>
+                <p class="slide-subtitle">Filtering out common words that don't carry much meaning</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">What are Stop Words?</h2>
+                    <p class="section-subtitle">Common words that appear frequently but don't contribute much to meaning</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Common Stop Words</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-font"></i> Articles: "a", "an", "the"</li>
+                            <li><i class="fas fa-link"></i> Prepositions: "in", "on", "at"</li>
+                            <li><i class="fas fa-cogs"></i> Conjunctions: "and", "or", "but"</li>
+                            <li><i class="fas fa-question"></i> Pronouns: "I", "you", "he", "she"</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">When to Remove</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Text classification</li>
+                            <li><i class="fas fa-check"></i> Information retrieval</li>
+                            <li><i class="fas fa-check"></i> Topic modeling</li>
+                            <li><i class="fas fa-check"></i> Reducing noise</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">Stop Words Removal Example:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Original:</strong> "The quick brown fox jumps over the lazy dog"
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>After Stop Words Removal:</strong> "quick brown fox jumps lazy dog"
+                    </div>
+                    <div style="color: var(--warning-orange);">
+                        <strong>Removed:</strong> "the", "over"
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Stop Words Confusion:</h4>
+                    <p><strong>Text:</strong> "I am not happy with this product"<br>
+                    <strong>After Stop Words Removal:</strong> "not happy product"<br>
+                    <strong>Problem:</strong> Removed "I" and "am" but kept "not" - now it's unclear who's not happy!<br>
+                    <strong>Result:</strong> Lost important context! 😅</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Stop Words Exercise (10 minutes):</h4>
+                    <p>Create your own stop words list for these sentences:<br>
+                    1. "I love this amazing product!"<br>
+                    2. "The weather is beautiful today."<br>
+                    3. "She said that it was perfect."<br>
+                    Which words would you remove? Why?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Stemming and Lemmatization -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 14 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Stemming and Lemmatization</h1>
+                <p class="slide-subtitle">Reducing words to their root forms for better analysis</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Word Normalization</h2>
+                    <p class="section-subtitle">Two approaches to reducing words to their base forms</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-cut"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Stemming</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-bolt"></i> Fast and simple</li>
+                            <li><i class="fas fa-scissors"></i> Cuts off suffixes</li>
+                            <li><i class="fas fa-exclamation"></i> May create invalid words</li>
+                            <li><i class="fas fa-tools"></i> Rule-based approach</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Lemmatization</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-brain"></i> More accurate</li>
+                            <li><i class="fas fa-dictionary"></i> Uses dictionary lookup</li>
+                            <li><i class="fas fa-check"></i> Produces valid words</li>
+                            <li><i class="fas fa-clock"></i> Slower but better</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Word</th>
+                            <th>Stemming</th>
+                            <th>Lemmatization</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>running</td>
+                            <td>run</td>
+                            <td>run</td>
+                            <td>Both work well</td>
+                        </tr>
+                        <tr>
+                            <td>better</td>
+                            <td>better</td>
+                            <td>good</td>
+                            <td>Lemmatization is better</td>
+                        </tr>
+                        <tr>
+                            <td>flies</td>
+                            <td>fli</td>
+                            <td>fly</td>
+                            <td>Stemming creates invalid word</td>
+                        </tr>
+                        <tr>
+                            <td>went</td>
+                            <td>went</td>
+                            <td>go</td>
+                            <td>Lemmatization handles irregular verbs</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Stemming Gone Wrong:</h4>
+                    <p><strong>Text:</strong> "The flies are flying around the running water"<br>
+                    <strong>After Stemming:</strong> "The fli are fli around the run water"<br>
+                    <strong>Problem:</strong> "flies" became "fli" and "flying" became "fli" - now they're the same!<br>
+                    <strong>Result:</strong> Lost the distinction between noun and verb! 🪰</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Stemming vs Lemmatization (15 minutes):</h4>
+                    <p>Try both approaches on these words:<br>
+                    "studies", "studying", "studied", "better", "best", "went", "gone"<br>
+                    Which approach gives better results? Why?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Part-of-Speech Tagging -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 15 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Part-of-Speech Tagging</h1>
+                <p class="slide-subtitle">Identifying the grammatical role of each word in a sentence</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Understanding Grammar</h2>
+                    <p class="section-subtitle">The foundation for many advanced NLP tasks</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-font"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Basic POS Tags</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-font"></i> NOUN: person, place, thing</li>
+                            <li><i class="fas fa-bolt"></i> VERB: action or state</li>
+                            <li><i class="fas fa-palette"></i> ADJECTIVE: describes nouns</li>
+                            <li><i class="fas fa-arrow-right"></i> ADVERB: describes verbs</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Function Words</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-link"></i> PREPOSITION: in, on, at</li>
+                            <li><i class="fas fa-quote-right"></i> DETERMINER: the, a, an</li>
+                            <li><i class="fas fa-cogs"></i> CONJUNCTION: and, or, but</li>
+                            <li><i class="fas fa-question"></i> PRONOUN: I, you, he</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Applications</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-search"></i> Information extraction</li>
+                            <li><i class="fas fa-comments"></i> Question answering</li>
+                            <li><i class="fas fa-translate"></i> Machine translation</li>
+                            <li><i class="fas fa-chart-bar"></i> Text analysis</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">POS Tagging Example:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Text:</strong> "The quick brown fox jumps over the lazy dog"
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>POS Tags:</strong> "The(DET) quick(ADJ) brown(ADJ) fox(NOUN) jumps(VERB) over(PREP) the(DET) lazy(ADJ) dog(NOUN)"
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> POS Tagging Confusion:</h4>
+                    <p><strong>Text:</strong> "Time flies like an arrow"<br>
+                    <strong>POS Tagger:</strong> "Time(NOUN) flies(VERB) like(PREP) an(DET) arrow(NOUN)"<br>
+                    <strong>Problem:</strong> "flies" could be a noun (insects) or verb (moves through air)!<br>
+                    <strong>Result:</strong> Context is crucial for disambiguation! 🪰➡️</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> POS Tagging Practice (10 minutes):</h4>
+                    <p>Try to tag these sentences manually:<br>
+                    1. "I love reading books."<br>
+                    2. "The book is on the table."<br>
+                    3. "She books a flight every month."<br>
+                    Notice how "book" has different meanings and tags!</p>
+                </div>
+
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem; text-align: center;"><i class="fas fa-book"></i> Part-of-Speech Tags Explained</h3>
+                    <div class="card-grid two-col">
+                        <div>
+                            <h4 style="color: var(--white); margin-bottom: 1rem;">Content Words (Carry Meaning):</h4>
+                            <ul style="color: var(--white); line-height: 1.6;">
+                                <li><strong>NOUN:</strong> Names a person, place, thing, or idea (cat, London, happiness)</li>
+                                <li><strong>VERB:</strong> Expresses action or state of being (run, think, is)</li>
+                                <li><strong>ADJECTIVE:</strong> Describes or modifies nouns (big, red, beautiful)</li>
+                                <li><strong>ADVERB:</strong> Describes verbs, adjectives, or other adverbs (quickly, very, often)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--white); margin-bottom: 1rem;">Function Words (Grammar):</h4>
+                            <ul style="color: var(--white); line-height: 1.6;">
+                                <li><strong>PREPOSITION:</strong> Shows relationship between words (in, on, at, with)</li>
+                                <li><strong>DETERMINER:</strong> Introduces nouns (the, a, an, this, that)</li>
+                                <li><strong>CONJUNCTION:</strong> Connects words or clauses (and, or, but, because)</li>
+                                <li><strong>PRONOUN:</strong> Replaces nouns (I, you, he, she, it, they)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 1.5rem; font-size: 1.1rem; opacity: 0.9;">
+                        <strong>Why POS Tagging Matters:</strong> Helps computers understand grammar, disambiguate meaning, and build better NLP applications!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Named Entity Recognition -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 16 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-user-tag"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Named Entity Recognition (NER)</h1>
+                <p class="slide-subtitle">Identifying and classifying named entities in text</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Finding Important Entities</h2>
+                    <p class="section-subtitle">Extracting people, places, organizations, and more</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Person (PER)</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-user"></i> Individual names</li>
+                            <li><i class="fas fa-star"></i> Celebrities</li>
+                            <li><i class="fas fa-graduation-cap"></i> Historical figures</li>
+                            <li><i class="fas fa-briefcase"></i> Professionals</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Location (LOC)</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-globe"></i> Countries</li>
+                            <li><i class="fas fa-city"></i> Cities</li>
+                            <li><i class="fas fa-mountain"></i> Landmarks</li>
+                            <li><i class="fas fa-water"></i> Bodies of water</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Organization (ORG)</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-briefcase"></i> Companies</li>
+                            <li><i class="fas fa-university"></i> Universities</li>
+                            <li><i class="fas fa-flag"></i> Government agencies</li>
+                            <i class="fas fa-users"></i> Non-profits</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">NER Example:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Text:</strong> "Apple Inc. was founded by Steve Jobs in Cupertino, California."
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Entities Found:</strong>
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>Apple Inc. → ORG (Organization)</li>
+                            <li>Steve Jobs → PER (Person)</li>
+                            <li>Cupertino → LOC (Location)</li>
+                            <li>California → LOC (Location)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> NER Confusion:</h4>
+                    <p><strong>Text:</strong> "I love Apple pie and Microsoft Word"<br>
+                    <strong>NER System:</strong> "I love Apple(ORG) pie and Microsoft(ORG) Word"<br>
+                    <strong>Problem:</strong> "Apple" in "Apple pie" is not the company!<br>
+                    <strong>Result:</strong> Context matters for entity recognition! 🍎🥧</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> NER Challenge (15 minutes):</h4>
+                    <p>Find all named entities in this text:<br>
+                    "Google was founded by Larry Page and Sergey Brin at Stanford University in California. The company is now headquartered in Mountain View."<br>
+                    What entities can you identify? What types are they?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Advanced Preprocessing Techniques -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 17 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Advanced Preprocessing Techniques</h1>
+                <p class="slide-subtitle">Modern approaches to text preprocessing</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Beyond Basic Preprocessing</h2>
+                    <p class="section-subtitle">Advanced techniques for better text understanding</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-spell-check"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Spelling Correction</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Fix typos and misspellings</li>
+                            <li><i class="fas fa-brain"></i> Use edit distance algorithms</li>
+                            <li><i class="fas fa-book"></i> Dictionary-based correction</li>
+                            <li><i class="fas fa-chart-line"></i> Context-aware correction</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Text Expansion</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-compress"></i> Handle abbreviations</li>
+                            <li><i class="fas fa-link"></i> Expand contractions</li>
+                            <li><i class="fas fa-list"></i> Resolve acronyms</li>
+                            <li><i class="fas fa-language"></i> Language-specific rules</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Text Normalization</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-font"></i> Unicode normalization</li>
+                            <li><i class="fas fa-hashtag"></i> Handle social media text</li>
+                            <li><i class="fas fa-smile"></i> Emoji processing</li>
+                            <li><i class="fas fa-link"></i> URL and email handling</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Noise Reduction</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-ban"></i> Remove duplicate content</li>
+                            <li><i class="fas fa-trash"></i> Filter low-quality text</li>
+                            <li><i class="fas fa-shield-alt"></i> Handle spam and noise</li>
+                            <li><i class="fas fa-check"></i> Quality assessment</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Advanced Preprocessing Fail:</h4>
+                    <p><strong>Original:</strong> "OMG!!! This is SOOOO cool!!! 😍😍😍 #amazing #NLP"<br>
+                    <strong>After Advanced Preprocessing:</strong> "Oh my god this is so cool amazing natural language processing"<br>
+                    <strong>Problem:</strong> Lost all the enthusiasm and emotion!<br>
+                    <strong>Result:</strong> Sometimes "noise" is actually signal! 😢</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Advanced Preprocessing Challenge (20 minutes):</h4>
+                    <p>Design preprocessing rules for this social media text:<br>
+                    "OMG!!! Just saw @elonmusk's tweet about #AI! It's 🔥🔥🔥 Can't wait for the future! #excited #technology"<br>
+                    What would you keep? What would you change? Why?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Language-Specific Considerations -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 18 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Language-Specific Considerations</h1>
+                <p class="slide-subtitle">Adapting preprocessing for different languages</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">One Size Doesn't Fit All</h2>
+                    <p class="section-subtitle">Different languages require different preprocessing approaches</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-font"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">English</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Space-separated words</li>
+                            <li><i class="fas fa-quote-right"></i> Contractions: don't, can't</li>
+                            <li><i class="fas fa-font"></i> Case matters</li>
+                            <li><i class="fas fa-list"></i> Rich morphology</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Chinese</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-font"></i> No spaces between words</li>
+                            <li><i class="fas fa-puzzle-piece"></i> Character-based</li>
+                            <li><i class="fas fa-cut"></i> Requires segmentation</li>
+                            <li><i class="fas fa-brain"></i> Context-dependent</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Arabic</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-arrow-right"></i> Right-to-left writing</li>
+                            <li><i class="fas fa-font"></i> Complex morphology</li>
+                            <li><i class="fas fa-link"></i> Root-based system</li>
+                            <li><i class="fas fa-cut"></i> Vowel variations</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">Language-Specific Examples:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>English:</strong> "I can't believe it's working!"<br>
+                        <strong>Tokenization:</strong> ["I", "can", "'t", "believe", "it", "'s", "working", "!"]
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Chinese:</strong> "我喜欢自然语言处理"<br>
+                        <strong>Tokenization:</strong> ["我", "喜欢", "自然", "语言", "处理"]
+                    </div>
+                    <div>
+                        <strong>Arabic:</strong> "أحب معالجة اللغة الطبيعية"<br>
+                        <strong>Tokenization:</strong> ["أحب", "معالجة", "اللغة", "الطبيعية"]
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Language Confusion:</h4>
+                    <p><strong>English Tokenizer on Chinese:</strong> "我喜欢自然语言处理"<br>
+                    <strong>Result:</strong> ["我", "喜", "欢", "自", "然", "语", "言", "处", "理"]<br>
+                    <strong>Problem:</strong> Split into individual characters instead of words!<br>
+                    <strong>Result:</strong> Lost all meaning! 😅</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Language Challenge (15 minutes):</h4>
+                    <p>Think about how you would preprocess text in these languages:<br>
+                    1. Japanese (no spaces, complex writing system)<br>
+                    2. German (compound words like "Donaudampfschifffahrtsgesellschaftskapitän")<br>
+                    3. Turkish (agglutinative language)<br>
+                    What challenges would you face?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Evaluation and Quality Metrics -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 19 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Evaluation and Quality Metrics</h1>
+                <p class="slide-subtitle">Measuring the effectiveness of preprocessing</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">How Good is Your Preprocessing?</h2>
+                    <p class="section-subtitle">Metrics to evaluate preprocessing quality</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Accuracy Metrics</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Tokenization accuracy</li>
+                            <li><i class="fas fa-tags"></i> POS tagging accuracy</li>
+                            <li><i class="fas fa-user-tag"></i> NER precision/recall</li>
+                            <li><i class="fas fa-spell-check"></i> Spelling correction rate</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Performance Metrics</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-bolt"></i> Processing speed</li>
+                            <li><i class="fas fa-memory"></i> Memory usage</li>
+                            <li><i class="fas fa-chart-bar"></i> Throughput</li>
+                            <li><i class="fas fa-balance-scale"></i> Scalability</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">Evaluation Example:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Ground Truth:</strong> ["I", "can", "'t", "believe", "it", "'s", "working", "!"]<br>
+                        <strong>System Output:</strong> ["I", "can't", "believe", "it's", "working", "!"]<br>
+                        <strong>Accuracy:</strong> 6/8 = 75% (2 tokens incorrectly merged)
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Evaluation Confusion:</h4>
+                    <p><strong>System:</strong> "I processed 1,000,000 tokens in 0.1 seconds!"<br>
+                    <strong>Reality:</strong> "But 50% of them were wrong!"<br>
+                    <strong>Problem:</strong> Speed without accuracy is useless!<br>
+                    <strong>Result:</strong> Need to balance speed and quality! ⚖️</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Evaluation Exercise (10 minutes):</h4>
+                    <p>Design evaluation metrics for a tokenizer that processes social media text:<br>
+                    - What would you measure?<br>
+                    - How would you create test data?<br>
+                    - What's more important: speed or accuracy?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Practical Implementation -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 20 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Practical Implementation</h1>
+                <p class="slide-subtitle">Building a complete preprocessing pipeline</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">From Theory to Practice</h2>
+                    <p class="section-subtitle">Implementing a real-world preprocessing pipeline</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Popular Libraries</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-python"></i> NLTK (Natural Language Toolkit)</li>
+                            <li><i class="fas fa-rocket"></i> spaCy (Industrial-strength NLP)</li>
+                            <li><i class="fas fa-brain"></i> Transformers (Hugging Face)</li>
+                            <li><i class="fas fa-cogs"></i> scikit-learn</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Pipeline Design</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-list"></i> Modular components</li>
+                            <li><i class="fas fa-sync"></i> Configurable parameters</li>
+                            <li><i class="fas fa-chart-line"></i> Performance monitoring</li>
+                            <li><i class="fas fa-bug"></i> Error handling</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <h4 style="color: var(--success-green); margin-bottom: 1rem;">Sample Pipeline Code:</h4>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Python Example:</strong>
+                    </div>
+                    <div style="font-family: 'Courier New', monospace; font-size: 0.9rem; line-height: 1.4;">
+                        import nltk<br>
+                        from nltk.tokenize import word_tokenize<br>
+                        from nltk.corpus import stopwords<br>
+                        from nltk.stem import PorterStemmer<br><br>
+                        
+                        def preprocess_text(text):<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;# 1. Clean text<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;text = text.lower()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;# 2. Tokenize<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;tokens = word_tokenize(text)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;# 3. Remove stop words<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;tokens = [t for t in tokens if t not in stopwords.words('english')]<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;# 4. Stem<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;stemmer = PorterStemmer()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;tokens = [stemmer.stem(t) for t in tokens]<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;return tokens
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Implementation Reality:</h4>
+                    <p><strong>Student:</strong> "I'll build a preprocessing pipeline in 10 minutes!"<br>
+                    <strong>Reality:</strong> 3 hours later, still debugging tokenization issues...<br>
+                    <strong>Problem:</strong> Text preprocessing is harder than it looks!<br>
+                    <strong>Result:</strong> Always test with real data first! 😅</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Implementation Challenge (30 minutes):</h4>
+                    <p>Design a preprocessing pipeline for product reviews:<br>
+                    1. What steps would you include?<br>
+                    2. How would you handle different types of reviews?<br>
+                    3. What parameters would you make configurable?<br>
+                    4. How would you test your pipeline?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20: Common Pitfalls -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 21 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Common Pitfalls and Solutions</h1>
+                <p class="slide-subtitle">Avoiding the most common preprocessing mistakes</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Learning from Mistakes</h2>
+                    <p class="section-subtitle">Common pitfalls and how to avoid them</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card" style="border: 2px solid var(--error-red);">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Common Pitfalls</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-exclamation"></i> Over-cleaning text</li>
+                            <li><i class="fas fa-question"></i> Ignoring context</li>
+                            <li><i class="fas fa-bug"></i> Inconsistent preprocessing</li>
+                            <li><i class="fas fa-clock"></i> Not testing with real data</li>
+                        </ul>
+                    </div>
+                    <div class="content-card" style="border: 2px solid var(--success-green);">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Best Practices</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-balance-scale"></i> Balance cleaning vs. information</li>
+                            <li><i class="fas fa-eye"></i> Always inspect your data</li>
+                            <li><i class="fas fa-sync"></i> Consistent preprocessing</li>
+                            <li><i class="fas fa-chart-line"></i> Measure impact on downstream tasks</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Preprocessing Horror Story:</h4>
+                    <p><strong>Student:</strong> "I'll remove all punctuation to clean the text!"<br>
+                    <strong>Result:</strong> "I love this product it amazing"<br>
+                    <strong>Problem:</strong> Lost all sentence boundaries and emotion!<br>
+                    <strong>Reality:</strong> Sometimes punctuation is crucial! 😱</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Pitfall Analysis (15 minutes):</h4>
+                    <p>Analyze these preprocessing decisions:<br>
+                    1. Removing all numbers from text<br>
+                    2. Converting everything to lowercase<br>
+                    3. Removing all punctuation<br>
+                    4. Stemming all words<br>
+                    What could go wrong? How would you fix it?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 21: Domain-Specific Preprocessing -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 22 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Domain-Specific Preprocessing</h1>
+                <p class="slide-subtitle">Adapting preprocessing for different domains</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">One Size Doesn't Fit All</h2>
+                    <p class="section-subtitle">Different domains require different approaches</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Social Media</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-hashtag"></i> Handle hashtags</li>
+                            <li><i class="fas fa-at"></i> Process mentions</li>
+                            <li><i class="fas fa-smile"></i> Preserve emojis</li>
+                            <li><i class="fas fa-link"></i> Handle URLs</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Business</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-file-alt"></i> Preserve formatting</li>
+                            <li><i class="fas fa-table"></i> Handle tables</li>
+                            <li><i class="fas fa-link"></i> Extract metadata</li>
+                            <li><i class="fas fa-shield-alt"></i> Maintain confidentiality</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Medical</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-shield-alt"></i> Preserve medical terms</li>
+                            <li><i class="fas fa-list"></i> Handle abbreviations</li>
+                            <li><i class="fas fa-user-shield"></i> Maintain privacy</li>
+                            <li><i class="fas fa-check"></i> Ensure accuracy</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Domain Confusion:</h4>
+                    <p><strong>Medical Text:</strong> "Patient has HTN, DM, and CAD"<br>
+                    <strong>General Preprocessor:</strong> "Patient has htn, dm, and cad"<br>
+                    <strong>Problem:</strong> Lost all medical meaning!<br>
+                    <strong>Result:</strong> Need domain-specific knowledge! 🏥</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Domain Challenge (20 minutes):</h4>
+                    <p>Design preprocessing for these domains:<br>
+                    1. Legal documents (contracts, court cases)<br>
+                    2. Scientific papers (research articles)<br>
+                    3. Customer reviews (e-commerce)<br>
+                    What special considerations would you have?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 22: Performance Optimization -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 23 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Performance Optimization</h1>
+                <p class="slide-subtitle">Making preprocessing fast and efficient</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Speed and Efficiency</h2>
+                    <p class="section-subtitle">Optimizing preprocessing for production systems</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Speed Optimization</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-memory"></i> Caching frequent operations</li>
+                            <li><i class="fas fa-parallel"></i> Parallel processing</li>
+                            <li><i class="fas fa-database"></i> Pre-computed resources</li>
+                            <li><i class="fas fa-code"></i> Efficient algorithms</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Memory Optimization</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-stream"></i> Streaming processing</li>
+                            <li><i class="fas fa-compress"></i> Lazy evaluation</li>
+                            <li><i class="fas fa-trash"></i> Garbage collection</li>
+                            <li><i class="fas fa-database"></i> Efficient data structures</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Performance Reality:</h4>
+                    <p><strong>Developer:</strong> "My preprocessing is super fast!"<br>
+                    <strong>Reality:</strong> "It takes 5 minutes to process 100 documents..."<br>
+                    <strong>Problem:</strong> "Fast" is relative!<br>
+                    <strong>Result:</strong> Always benchmark with real data! ⏱️</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Optimization Challenge (15 minutes):</h4>
+                    <p>How would you optimize preprocessing for:<br>
+                    1. Real-time chat applications<br>
+                    2. Batch processing of millions of documents<br>
+                    3. Mobile applications with limited resources<br>
+                    What strategies would you use?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 23: Break Time -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 24 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Break Time!</h1>
+                <p class="slide-subtitle">15-minute coffee break and final practice</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <div class="icon-large" style="background: var(--gradient-success); margin-bottom: 2rem;">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                    <h2 class="section-title">Final Break!</h2>
+                    <p class="section-subtitle">Grab some coffee and prepare for the final assessment</p>
+                </div>
+                
+                <div class="break-indicator">
+                    <h3><i class="fas fa-clock"></i> 15-Minute Break</h3>
+                    <p>Use this time to review and discuss!</p>
+                </div>
+
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Review Topics</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-cut"></i> Tokenization techniques</li>
+                            <li><i class="fas fa-broom"></i> Text cleaning methods</li>
+                            <li><i class="fas fa-tags"></i> POS tagging and NER</li>
+                            <li><i class="fas fa-cogs"></i> Pipeline design</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Discussion</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-comments"></i> Share implementation ideas</li>
+                            <li><i class="fas fa-lightbulb"></i> Discuss real-world applications</li>
+                            <li><i class="fas fa-question"></i> Ask final questions</li>
+                            <li><i class="fas fa-chart-line"></i> Plan next steps</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Break Joke:</h4>
+                    <p>Why did the preprocessing pipeline go to therapy? Because it had too many issues with tokenization! 😂</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 24: Real-World Case Studies -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 25 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Real-World Case Studies</h1>
+                <p class="slide-subtitle">How preprocessing is used in production systems</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Production Examples</h2>
+                    <p class="section-subtitle">Real-world applications of text preprocessing</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Google Search</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-cut"></i> Query tokenization</li>
+                            <li><i class="fas fa-broom"></i> Spelling correction</li>
+                            <li><i class="fas fa-link"></i> Synonym expansion</li>
+                            <li><i class="fas fa-chart-line"></i> Query normalization</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Social Media</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-hashtag"></i> Hashtag processing</li>
+                            <li><i class="fas fa-at"></i> Mention extraction</li>
+                            <li><i class="fas fa-smile"></i> Emoji handling</li>
+                            <li><i class="fas fa-shield-alt"></i> Content moderation</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Real-World Fail:</h4>
+                    <p><strong>System:</strong> "This email is 99% likely to be spam!"<br>
+                    <strong>User:</strong> "But it's from my bank!"<br>
+                    <strong>Problem:</strong> Over-aggressive preprocessing removed important context!<br>
+                    <strong>Result:</strong> False positives are expensive! 💸</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Case Study Analysis (20 minutes):</h4>
+                    <p>Analyze these real-world scenarios:<br>
+                    1. E-commerce product review analysis<br>
+                    2. Customer service chatbot<br>
+                    3. News article summarization<br>
+                    What preprocessing challenges would each face?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 25: Future Trends -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 26 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Future Trends</h1>
+                <p class="slide-subtitle">The evolving landscape of text preprocessing</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">What's Next?</h2>
+                    <p class="section-subtitle">Emerging trends and future directions</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">AI-Powered Preprocessing</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-robot"></i> Neural preprocessing</li>
+                            <li><i class="fas fa-chart-line"></i> End-to-end learning</li>
+                            <li><i class="fas fa-language"></i> Multilingual models</li>
+                            <li><i class="fas fa-cogs"></i> Adaptive preprocessing</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Edge Computing</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-mobile-alt"></i> Mobile preprocessing</li>
+                            <li><i class="fas fa-bolt"></i> Real-time processing</li>
+                            <li><i class="fas fa-shield-alt"></i> Privacy-preserving</li>
+                            <li><i class="fas fa-wifi"></i> Offline capabilities</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Future Prediction:</h4>
+                    <p><strong>2024:</strong> "I need to manually design preprocessing pipelines"<br>
+                    <strong>2030:</strong> "AI, please preprocess this text optimally"<br>
+                    <strong>AI:</strong> "Done! I've also optimized it for your specific use case"<br>
+                    <strong>Result:</strong> The future is automated! 🤖</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Future Thinking (10 minutes):</h4>
+                    <p>Imagine preprocessing in 5 years:<br>
+                    1. What challenges will remain?<br>
+                    2. What new capabilities will emerge?<br>
+                    3. How will your role as an NLP engineer change?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 26: Best Practices Summary -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 27 of 29</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Best Practices Summary</h1>
+                <p class="slide-subtitle">Key takeaways for effective text preprocessing</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Key Takeaways</h2>
+                    <p class="section-subtitle">Essential principles for successful preprocessing</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Do's</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-eye"></i> Always inspect your data</li>
+                            <li><i class="fas fa-balance-scale"></i> Balance cleaning vs. information</li>
+                            <li><i class="fas fa-sync"></i> Be consistent</li>
+                            <li><i class="fas fa-chart-line"></i> Measure impact</li>
+                            <li><i class="fas fa-bug"></i> Test with real data</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Don'ts</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-exclamation"></i> Don't over-clean</li>
+                            <li><i class="fas fa-question"></i> Don't ignore context</li>
+                            <li><i class="fas fa-bug"></i> Don't assume one size fits all</li>
+                            <li><i class="fas fa-clock"></i> Don't skip testing</li>
+                            <li><i class="fas fa-chart-line"></i> Don't ignore performance</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">The Golden Rule</h3>
+                    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">"Preprocessing should improve your downstream task, not just clean your data"</div>
+                    <div style="font-size: 1rem; opacity: 0.8; margin-top: 0.5rem;">- Every successful NLP engineer</div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Final Wisdom:</h4>
+                    <p><strong>Student:</strong> "I'll just remove all punctuation and lowercase everything!"<br>
+                    <strong>Experienced Engineer:</strong> "That's like removing all seasoning from food - it might be 'cleaner' but it's not better!"<br>
+                    <strong>Result:</strong> Context and purpose matter more than cleanliness! 🍽️</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Final Reflection (10 minutes):</h4>
+                    <p>Think about what you've learned today:<br>
+                    1. What was the most surprising concept?<br>
+                    2. What will you apply in your next project?<br>
+                    3. What questions do you still have?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 27: Quiz Part 1 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 28 of 30</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">NLP Text Preprocessing Quiz - Part 1</h1>
+                <p class="slide-subtitle">Test your knowledge with these questions!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Knowledge Assessment</h2>
+                    <p class="section-subtitle">Answer these questions to test your understanding</p>
+                </div>
+                
+                <div class="quiz-container">
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question-circle"></i> Question 1: Text Normalization (2 points)</h4>
+                        <p>What is the primary purpose of text normalization in NLP preprocessing?</p>
+                        <div class="quiz-options">
+                            <div class="option">A) To make text longer and more complex</div>
+                            <div class="option">B) To standardize text format and reduce variability</div>
+                            <div class="option">C) To add more punctuation to text</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question-circle"></i> Question 2: Regular Expressions (2 points)</h4>
+                        <p>Which regex pattern would match email addresses in text?</p>
+                        <div class="quiz-options">
+                            <div class="option">A) \d+@\d+\.\d+</div>
+                            <div class="option">B) [a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}</div>
+                            <div class="option">C) @.*@</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question-circle"></i> Question 3: Text Cleaning (2 points)</h4>
+                        <p>What is the main advantage of removing HTML tags from web-scraped text?</p>
+                        <div class="quiz-options">
+                            <div class="option">A) It makes the text more colorful</div>
+                            <div class="option">B) It removes formatting noise and focuses on actual content</div>
+                            <div class="option">C) It increases the file size</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question-circle"></i> Question 4: Tokenization Methods (3 points)</h4>
+                        <p>Which tokenization method is best for handling social media text with hashtags and mentions?</p>
+                        <div class="quiz-options">
+                            <div class="option">A) Simple whitespace tokenization</div>
+                            <div class="option">B) Regex-based tokenization that preserves special characters</div>
+                            <div class="option">C) Character-level tokenization only</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 1.5rem; margin-top: 2rem; text-align: center;">
+                    <h3 style="margin-bottom: 1rem;"><i class="fas fa-arrow-right"></i> Continue to Part 2</h3>
+                    <div style="font-size: 1rem; opacity: 0.9;">
+                        Questions 5-8 and answers will be shown on the next slide
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 28: Quiz Part 2 -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 29 of 30</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">NLP Text Preprocessing Quiz - Part 2</h1>
+                <p class="slide-subtitle">Complete the quiz and check your answers!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Questions 5-8 & Answers</h2>
+                    <p class="section-subtitle">Complete the assessment and review your knowledge</p>
+                </div>
+                
+                <div class="quiz-container">
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question-circle"></i> Question 5: Data Preprocessing Pipeline (3 points)</h4>
+                        <p>What is the recommended order for these preprocessing steps: tokenization, cleaning, normalization, stop word removal?</p>
+                        <div class="quiz-options">
+                            <div class="option">A) Cleaning → Normalization → Tokenization → Stop word removal</div>
+                            <div class="option">B) Tokenization → Cleaning → Normalization → Stop word removal</div>
+                            <div class="option">C) Stop word removal → Cleaning → Tokenization → Normalization</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question-circle"></i> Question 6: Text Encoding (3 points)</h4>
+                        <p>What is the main challenge when preprocessing multilingual text data?</p>
+                        <div class="quiz-options">
+                            <div class="option">A) Different languages use different alphabets and character sets</div>
+                            <div class="option">B) All languages are exactly the same</div>
+                            <div class="option">C) Multilingual text doesn't need preprocessing</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question-circle"></i> Question 7: Noise Removal (2 points)</h4>
+                        <p>Which of the following is NOT typically considered noise in text preprocessing?</p>
+                        <div class="quiz-options">
+                            <div class="option">A) HTML tags and markup</div>
+                            <div class="option">B) Meaningful punctuation like question marks</div>
+                            <div class="option">C) Random special characters and symbols</div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question-circle"></i> Question 8: Text Preprocessing Tools (3 points)</h4>
+                        <p>Which Python library is most commonly used for advanced text preprocessing tasks like lemmatization and POS tagging?</p>
+                        <div class="quiz-options">
+                            <div class="option">A) NumPy</div>
+                            <div class="option">B) spaCy</div>
+                            <div class="option">C) Matplotlib</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: var(--gradient-success); color: var(--white); border-radius: 20px; padding: 2rem; margin-top: 2rem; text-align: center;">
+                    <h3 style="margin-bottom: 1rem;"><i class="fas fa-trophy"></i> Scoring Guide</h3>
+                    <div style="font-size: 1.1rem; line-height: 1.6;">
+                        <strong>Total Points: 20</strong><br>
+                        <strong>18-20:</strong> Excellent! You've mastered text preprocessing! 🎉<br>
+                        <strong>15-17:</strong> Good understanding! Review the areas you missed 📚<br>
+                        <strong>12-14:</strong> Fair - consider reviewing the lecture materials 🔄<br>
+                        <strong>Below 12:</strong> Need more study - focus on the fundamentals 📖
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Quiz Joke:</h4>
+                    <p>Why did the tokenizer get a perfect score on the quiz? Because it knew how to break down every question! 😂</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 29: Quiz Answers -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 30 of 30</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Quiz Answers & Explanations</h1>
+                <p class="slide-subtitle">Check your answers and learn from detailed explanations</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Answer Key</h2>
+                    <p class="section-subtitle">Review the correct answers and explanations</p>
+                </div>
+                
+                <div class="quiz-container">
+                    <div class="quiz-answer">
+                        <h4><i class="fas fa-check-circle"></i> Question 1: Text Normalization</h4>
+                        <p><strong>Answer: B</strong> - To standardize text format and reduce variability</p>
+                        <p><strong>Explanation:</strong> Text normalization helps create consistent input for NLP models by handling variations in spelling, case, and formatting</p>
+                    </div>
+
+                    <div class="quiz-answer">
+                        <h4><i class="fas fa-check-circle"></i> Question 2: Regular Expressions</h4>
+                        <p><strong>Answer: B</strong> - [a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}</p>
+                        <p><strong>Explanation:</strong> This regex pattern matches valid email addresses by checking for alphanumeric characters, special symbols, @ symbol, domain, and top-level domain</p>
+                    </div>
+
+                    <div class="quiz-answer">
+                        <h4><i class="fas fa-check-circle"></i> Question 3: Text Cleaning</h4>
+                        <p><strong>Answer: B</strong> - It removes formatting noise and focuses on actual content</p>
+                        <p><strong>Explanation:</strong> HTML tags are markup elements that don't contain meaningful text content, so removing them helps focus on the actual textual information</p>
+                    </div>
+
+                    <div class="quiz-answer">
+                        <h4><i class="fas fa-check-circle"></i> Question 4: Tokenization Methods</h4>
+                        <p><strong>Answer: B</strong> - Regex-based tokenization that preserves special characters</p>
+                        <p><strong>Explanation:</strong> Social media text contains hashtags (#), mentions (@), and other special characters that need to be preserved for proper analysis</p>
+                    </div>
+
+                    <div class="quiz-answer">
+                        <h4><i class="fas fa-check-circle"></i> Question 5: Data Preprocessing Pipeline</h4>
+                        <p><strong>Answer: A</strong> - Cleaning → Normalization → Tokenization → Stop word removal</p>
+                        <p><strong>Explanation:</strong> Clean the raw text first, then normalize it, tokenize into words, and finally remove stop words to get clean tokens</p>
+                    </div>
+
+                    <div class="quiz-answer">
+                        <h4><i class="fas fa-check-circle"></i> Question 6: Text Encoding</h4>
+                        <p><strong>Answer: A</strong> - Different languages use different alphabets and character sets</p>
+                        <p><strong>Explanation:</strong> Multilingual text requires handling different scripts (Latin, Cyrillic, Arabic, etc.) and encoding schemes (UTF-8) properly</p>
+                    </div>
+
+                    <div class="quiz-answer">
+                        <h4><i class="fas fa-check-circle"></i> Question 7: Noise Removal</h4>
+                        <p><strong>Answer: B</strong> - Meaningful punctuation like question marks</p>
+                        <p><strong>Explanation:</strong> Question marks, exclamation points, and other meaningful punctuation carry important semantic information and should be preserved</p>
+                    </div>
+
+                    <div class="quiz-answer">
+                        <h4><i class="fas fa-check-circle"></i> Question 8: Text Preprocessing Tools</h4>
+                        <p><strong>Answer: B</strong> - spaCy</p>
+                        <p><strong>Explanation:</strong> spaCy provides comprehensive NLP capabilities including tokenization, POS tagging, lemmatization, and named entity recognition</p>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Final Joke:</h4>
+                    <p>Why did the NLP engineer become a chef? Because they were tired of preprocessing text and wanted to preprocess ingredients instead! 🍳📝</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 30: Conclusion -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 31 of 31</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Conclusion and Next Steps</h1>
+                <p class="slide-subtitle">Congratulations! You've completed Lecture 2</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <div class="icon-large" style="background: var(--gradient-success); margin-bottom: 2rem;">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h2 class="section-title">Congratulations!</h2>
+                    <p class="section-subtitle">You've mastered the fundamentals of text preprocessing</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">What You've Learned</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-cut"></i> Tokenization techniques</li>
+                            <li><i class="fas fa-broom"></i> Text cleaning methods</li>
+                            <li><i class="fas fa-tags"></i> POS tagging and NER</li>
+                            <li><i class="fas fa-cogs"></i> Pipeline design</li>
+                            <li><i class="fas fa-chart-line"></i> Performance optimization</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Next Steps</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-book"></i> Practice with real datasets</li>
+                            <li><i class="fas fa-code"></i> Implement your own pipeline</li>
+                            <li><i class="fas fa-users"></i> Join NLP communities</li>
+                            <li><i class="fas fa-chart-line"></i> Explore advanced topics</li>
+                            <li><i class="fas fa-graduation-cap"></i> Continue learning</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-warning); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Thank You!</h3>
+                    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">You're now ready to build amazing NLP applications!</div>
+                    <div style="font-size: 1rem; opacity: 0.8; margin-top: 0.5rem;">Keep practicing and never stop learning</div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Final Joke:</h4>
+                    <p>Why did the NLP engineer become a chef? Because they were tired of preprocessing text and wanted to preprocess ingredients instead! 🍳📝</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Your Next Challenge:</h4>
+                    <p>Build a preprocessing pipeline for your own project! Choose a domain you're interested in and apply what you've learned. Share your results with the class!</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let startTime = Date.now();
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) {
+                    slide.classList.add('active');
+                }
+            });
+            
+            document.getElementById('currentSlide').textContent = index + 1;
+            document.getElementById('totalSlides').textContent = totalSlides;
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                currentSlideIndex++;
+                showSlide(currentSlideIndex);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                showSlide(currentSlideIndex);
+            }
+        }
+
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                nextSlide();
+            } else if (event.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+
+        // Update timer every second
+        setInterval(updateTimer, 1000);
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

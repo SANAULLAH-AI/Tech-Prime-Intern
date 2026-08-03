@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 1: Introduction to NLP - 3 Hour Session</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --white: #ffffff;
+            --light-gray: #f1f5f9;
+            --medium-gray: #64748b;
+            --charcoal: #1e293b;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            --gradient-error: linear-gradient(135deg, var(--error-red) 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, var(--purple) 0%, #a855f7 100%);
+            --gradient-pink: linear-gradient(135deg, var(--pink) 0%, #f472b6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
+            color: var(--primary-navy);
+            overflow: hidden;
+            height: 100vh;
+            line-height: 1.8;
+            font-size: 18px; /* Base font size increased */
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1rem 3rem; /* Reduced from 2rem */
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .slide-number-container {
+            position: absolute;
+            top: 0.8rem; /* Reduced from 1.5rem */
+            right: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.6rem 1.2rem; /* Reduced padding */
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-number {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .slide-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .slide-title {
+            color: var(--white);
+            font-size: 3.5rem; /* Increased from 2.5rem */
+            font-weight: 800;
+            margin-bottom: 0.3rem; /* Reduced from 0.5rem */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.02em;
+        }
+
+        .slide-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.5rem; /* Increased from 1.1rem */
+            font-weight: 500;
+            margin-bottom: 0; /* Remove bottom margin */
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            background: var(--white);
+            font-size: 1.25rem; /* Increased base content font */
+        }
+        
+        .slide-content p {
+            font-size: 1.3rem; /* Paragraph font size */
+            line-height: 1.9;
+            margin-bottom: 1rem;
+        }
+        
+        .slide-content h2, .slide-content h3, .slide-content h4 {
+            font-weight: 700;
+        }
+        
+        .slide-content h3 {
+            font-size: 1.8rem; /* Card titles */
+        }
+        
+        .slide-content h4 {
+            font-size: 1.5rem; /* Subheadings */
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 25px; /* Changed from top to bottom */
+            right: 25px;
+            display: flex;
+            gap: 10px; /* Reduced gap */
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 15px; /* Reduced padding */
+            border-radius: 50px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .nav-btn {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            padding: 8px 15px; /* Reduced padding */
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px; /* Reduced gap */
+            font-size: 14px; /* Reduced font size */
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn:disabled {
+            background: var(--medium-gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-indicator {
+            color: var(--primary-navy);
+            font-weight: 700;
+            padding: 8px 15px; /* Reduced padding */
+            background: var(--light-gray);
+            border-radius: 20px;
+            font-size: 14px; /* Reduced font size */
+        }
+
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card-grid.two-col {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card-grid.three-col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .card-grid.four-col {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .content-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2.5rem; /* Increased padding */
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--light-gray);
+            transition: all 0.3s ease;
+        }
+        
+        .content-card p {
+            font-size: 1.2rem;
+            line-height: 1.9;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .highlight-stat {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-green { color: var(--success-green); }
+        .stat-blue { color: var(--primary-blue); }
+        .stat-orange { color: var(--warning-orange); }
+        .stat-red { color: var(--error-red); }
+        .stat-purple { color: var(--purple); }
+        .stat-pink { color: var(--pink); }
+
+        .section-title {
+            font-size: 2.8rem; /* Increased from 2rem */
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 1.5rem; /* Increased from 1.1rem */
+            color: var(--medium-gray);
+            text-align: center;
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.8rem 0; /* Increased padding */
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.2rem; /* Increased list item font */
+            line-height: 1.8;
+        }
+
+        .feature-list li i {
+            color: var(--success-green);
+            font-weight: bold;
+        }
+
+        .funny-example {
+            background: var(--gradient-pink);
+            color: var(--white);
+            border-radius: 15px;
+            padding: 2rem; /* Increased padding */
+            margin: 1.5rem 0;
+            border-left: 5px solid var(--pink);
+            font-size: 1.25rem; /* Increased font */
+            line-height: 1.9;
+        }
+        
+        .funny-example h4 {
+            font-size: 1.6rem; /* Increased heading */
+            margin-bottom: 1rem;
+        }
+
+        .practical-exercise {
+            background: var(--gradient-purple);
+            color: var(--white);
+            border-radius: 15px;
+            padding: 2rem; /* Increased padding */
+            margin: 1.5rem 0;
+            border-left: 5px solid var(--purple);
+            font-size: 1.25rem; /* Increased font */
+            line-height: 1.9;
+        }
+        
+        .practical-exercise h4 {
+            font-size: 1.6rem; /* Increased heading */
+            margin-bottom: 1rem;
+        }
+
+        .assessment-box {
+            background: var(--gradient-warning);
+            color: var(--white);
+            border-radius: 15px;
+            padding: 2rem; /* Increased padding */
+            margin: 1.5rem 0;
+            border-left: 5px solid var(--warning-orange);
+            font-size: 1.25rem; /* Increased font */
+            line-height: 1.9;
+        }
+        
+        .explanation-box {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            border-left: 6px solid var(--primary-blue);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            font-size: 1.3rem;
+            line-height: 1.9;
+            color: var(--charcoal);
+        }
+        
+        .explanation-box h4 {
+            color: var(--primary-blue);
+            font-size: 1.7rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .key-point {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 6px solid var(--warning-orange);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            font-size: 1.3rem;
+            line-height: 1.9;
+            color: var(--charcoal);
+        }
+        
+        .key-point h4 {
+            color: var(--warning-orange);
+            font-size: 1.7rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .analogy-box {
+            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+            border-left: 6px solid var(--purple);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            font-size: 1.3rem;
+            line-height: 1.9;
+            color: var(--charcoal);
+        }
+        
+        .analogy-box h4 {
+            color: var(--purple);
+            font-size: 1.7rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .text-center { text-align: center; }
+        .mb-3 { margin-bottom: 1rem; }
+        .mt-3 { margin-top: 1rem; }
+
+        .break-indicator {
+            background: var(--gradient-success);
+            color: var(--white);
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="previousSlide()">
+                <i class="fas fa-chevron-left"></i>
+                Previous
+            </button>
+            <div class="slide-indicator">
+                <span id="currentSlide">1</span> of <span id="totalSlides">25</span>
+            </div>
+            <button class="nav-btn" onclick="nextSlide()">
+                Next
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active">
+            <div class="slide-header">
+                <h1 class="slide-title">Natural Language Processing</h1>
+                <p class="slide-subtitle">Lecture 1: Introduction to NLP</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <div class="icon-large" style="background: var(--gradient-primary); margin-bottom: 2rem;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h2 class="section-title">Welcome to NLP!</h2>
+                    <p class="section-subtitle">Where we teach machines to understand human language (and sometimes fail hilariously)</p>
+                    
+                    <div class="explanation-box">
+                        <h4><i class="fas fa-lightbulb"></i> What You'll Learn Today:</h4>
+                        <p><strong>Think of NLP like teaching a computer to read and understand like a human!</strong> Just like you learned to read books, understand jokes, and have conversations, we're going to teach computers to do the same thing. But here's the fun part - computers are REALLY bad at it at first, which leads to some hilarious mistakes!</p>
+                        <p><strong>By the end of today, you'll understand:</strong> What NLP is, why it's important, how it works, and most importantly - why it's so challenging (and funny when it fails)!</p>
+                    </div>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Course Information</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-book"></i> Course: Natural Language Processing</li>
+                            <li><i class="fas fa-user"></i> Instructor: Muhammad Farhan</li>
+                            <li><i class="fas fa-calendar"></i> Semester: VI (Domain Elective-II)</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-target"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Today's Agenda</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Introduction & Examples</li>
+                            <li><i class="fas fa-check"></i> NLP Fundamentals </li>
+                            <li><i class="fas fa-check"></i> Practical Exercises </li>
+                            <li><i class="fas fa-check"></i> Break & Discussion </li>
+                            <li><i class="fas fa-check"></i> Advanced Concepts </li>
+                            <li><i class="fas fa-check"></i> Final Assessment</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Fun Fact to Start With:</h4>
+                    <p>Did you know that early chatbots were so bad at understanding context that when someone said "I'm feeling blue," they would respond with "I'm sorry to hear you're feeling the color blue. Have you tried feeling red instead?" 🤖</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: What is NLP? -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">What is Natural Language Processing?</h1>
+                <p class="slide-subtitle">Teaching computers to understand human language (easier said than done!)</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">The Big Question</h2>
+                    <p class="section-subtitle">How do we make machines understand the mess that is human language?</p>
+                </div>
+                
+                <div class="explanation-box">
+                    <h4><i class="fas fa-graduation-cap"></i> Simple Explanation:</h4>
+                    <p><strong>Natural Language Processing (NLP) is like teaching a computer to be a translator and interpreter!</strong></p>
+                    <p>Imagine you're talking to someone who only understands numbers and code. NLP is the bridge that helps computers understand:</p>
+                    <ul style="margin-left: 2rem; margin-top: 1rem; font-size: 1.2rem;">
+                        <li><strong>What you're saying</strong> - Understanding the words and sentences</li>
+                        <li><strong>What you mean</strong> - Understanding the meaning behind the words</li>
+                        <li><strong>What you want</strong> - Understanding your intent or what you're trying to do</li>
+                    </ul>
+                    <p style="margin-top: 1rem;"><strong>Example:</strong> When you say "I'm hungry" to Siri, NLP helps Siri understand that you want food recommendations, not just that you're stating a fact about your hunger!</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Language Understanding</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.2rem; line-height: 1.9;"><strong>What it means:</strong> Teaching computers to read between the lines! Just like when your friend says "I'm fine" but you know they're not fine, NLP tries to understand the hidden meaning, emotions, and context behind words.</p>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.2rem; margin-top: 0.5rem;"><strong>Real example:</strong> Understanding that "That's sick!" can mean something is cool (positive) or something is disgusting (negative) depending on context!</p>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Machine Intelligence</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.2rem; line-height: 1.9;"><strong>What it means:</strong> Making computers smart enough to handle language tasks that normally require human intelligence. Think of it as giving computers a "language brain"!</p>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.2rem; margin-top: 0.5rem;"><strong>Real example:</strong> When you ask Alexa "What's the weather?" it doesn't just search for those words - it understands you want weather information and responds appropriately!</p>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Practical Applications</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.2rem; line-height: 1.9;"><strong>What it means:</strong> Using NLP to build real-world tools that make our lives easier! These are the things you use every day without realizing NLP is working behind the scenes.</p>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.2rem; margin-top: 0.5rem;"><strong>Real examples:</strong> Google Translate, Siri, spam filters in your email, auto-correct on your phone - all powered by NLP!</p>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Classic NLP Fail:</h4>
+                    <p><strong>Human:</strong> "I'm going to the bank to deposit money."<br>
+                    <strong>Early NLP System:</strong> "I understand you're going to the river bank to deposit money into the water. That's not very practical!" 🏦➡️🏞️</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Quick Exercise (5 minutes):</h4>
+                    <p>Think of 3 sentences that could be misunderstood by a computer. Write them down and we'll discuss why they're ambiguous!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Continue with more slides... -->
+        
+        <!-- Slide 3: Why NLP Matters -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Why NLP Matters</h1>
+                <p class="slide-subtitle">The growing importance of language technology in our digital world</p>
+            </div>
+            <div class="slide-content">
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Global Impact</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.15rem; margin-bottom: 1.5rem;"><strong>Why it matters:</strong> The world speaks thousands of languages, and NLP helps everyone communicate!</p>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="text-align: center; padding: 1.5rem; background: var(--light-gray); border-radius: 10px;">
+                                <div style="font-size: 2rem; font-weight: 800; color: var(--success-green);">7,000+</div>
+                                <div style="font-size: 1rem; color: var(--medium-gray); margin-top: 0.5rem;">Languages Worldwide</div>
+                                <div style="font-size: 0.9rem; color: var(--medium-gray); margin-top: 0.5rem;">NLP helps translate between them!</div>
+                            </div>
+                            <div style="text-align: center; padding: 1.5rem; background: var(--light-gray); border-radius: 10px;">
+                                <div style="font-size: 2rem; font-weight: 800; color: var(--success-green);">2.5B+</div>
+                                <div style="font-size: 1rem; color: var(--medium-gray); margin-top: 0.5rem;">Digital Users</div>
+                                <div style="font-size: 0.9rem; color: var(--medium-gray); margin-top: 0.5rem;">All using NLP-powered tools!</div>
+                            </div>
+                        </div>
+                        <p style="color: var(--medium-gray); text-align: center; font-size: 1.2rem; line-height: 1.8;"><strong>Simple explanation:</strong> NLP bridges communication gaps across languages and cultures. It's like having a universal translator that helps people from different countries understand each other!</p>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Industry Applications</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.15rem; margin-bottom: 1rem;"><strong>Where NLP is used:</strong> Almost everywhere in the digital world!</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-search"></i> <strong>Search engines:</strong> Google understands what you're really looking for</li>
+                            <li><i class="fas fa-comments"></i> <strong>Virtual assistants:</strong> Siri, Alexa help you with daily tasks</li>
+                            <li><i class="fas fa-translate"></i> <strong>Translation:</strong> Google Translate breaks language barriers</li>
+                            <li><i class="fas fa-chart-bar"></i> <strong>Business:</strong> Companies analyze customer reviews and feedback</li>
+                            <li><i class="fas fa-shield-alt"></i> <strong>Security:</strong> Protecting users from spam and harmful content</li>
+                        </ul>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 1.1rem;">
+                            <strong>Real impact:</strong> Companies use NLP to understand customer needs, improve products, and provide better service!
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-warning); color: var(--white); border-radius: 20px; padding: 2.5rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem; font-size: 2rem;">Market Growth</h3>
+                    <div style="font-size: 3.5rem; font-weight: 900; margin-bottom: 0.5rem;">$43.7B</div>
+                    <div style="font-size: 1.4rem; opacity: 0.9; margin-bottom: 0.5rem;">Global NLP Market Size (2024)</div>
+                    <div style="font-size: 1.2rem; opacity: 0.9; margin-top: 0.5rem;"><strong>Growing at 25.7% per year!</strong></div>
+                    <p style="font-size: 1.2rem; margin-top: 1rem; opacity: 0.95;"><strong>What this means:</strong> NLP is a HUGE industry with tons of job opportunities! Companies are investing billions because NLP is becoming essential for business success.</p>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Real Translation Fail:</h4>
+                    <p><strong>Original:</strong> "The spirit is willing, but the flesh is weak."<br>
+                    <strong>Machine Translation:</strong> "The vodka is good, but the meat is rotten." 🍺🥩</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: NLP Challenges -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">NLP Challenges</h1>
+                <p class="slide-subtitle">Understanding the complexities of human language processing</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Why Language is Complex</h2>
+                    <p class="section-subtitle">Human language presents unique challenges for computational processing</p>
+                </div>
+                
+                <div class="analogy-box">
+                    <h4><i class="fas fa-brain"></i> Think of it This Way:</h4>
+                    <p><strong>Understanding language is like solving a puzzle with missing pieces!</strong> Humans are amazing at filling in the gaps using context, but computers struggle with this. Let me explain why:</p>
+                    <p style="margin-top: 1rem;"><strong>Example:</strong> When you read "I saw her duck," you immediately know if it means:</p>
+                    <ul style="margin-left: 2rem; margin-top: 0.5rem; font-size: 1.2rem;">
+                        <li>I saw her pet duck (animal) 🦆</li>
+                        <li>I saw her duck down (action) 🙇</li>
+                    </ul>
+                    <p style="margin-top: 1rem;">Humans use context clues automatically, but computers need to be explicitly taught how to figure this out!</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card" style="border: 2px solid var(--error-red);">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-question"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Ambiguity</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.2rem; line-height: 1.9;"><strong>Simple explanation:</strong> One word, many meanings! Just like how "cool" can mean temperature, or something awesome, or staying calm!</p>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1.5rem; margin-top: 1rem; text-align: center; font-size: 1.2rem;">
+                            <strong>Example:</strong> "I'm going to the bank"<br>
+                            <span style="color: var(--success-green);">✓ Could mean:</span> Financial institution (to get money)<br>
+                            <span style="color: var(--error-red);">✓ Could mean:</span> River bank (to sit by the water)<br>
+                            <strong>How do we know?</strong> Context clues! 💡
+                        </div>
+                    </div>
+                    <div class="content-card" style="border: 2px solid var(--warning-orange);">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Diversity</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.2rem; line-height: 1.9;"><strong>Simple explanation:</strong> There are over 7,000 languages in the world, each with different rules! It's like trying to learn every language at once!</p>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1.5rem; margin-top: 1rem; text-align: center; font-size: 1.2rem;">
+                            <strong>Challenge:</strong> Cross-lingual understanding and translation<br><br>
+                            <strong>Example:</strong> English: "I love you" (Subject-Verb-Object)<br>
+                            Japanese: "Watashi wa anata wo aishiteimasu" (Different word order!)<br>
+                            <span style="color: var(--primary-blue);">Computers need to understand ALL these patterns!</span>
+                        </div>
+                    </div>
+                    <div class="content-card" style="border: 2px solid var(--primary-blue);">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Context</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.2rem; line-height: 1.9;"><strong>Simple explanation:</strong> Understanding what someone means requires knowing the situation, background knowledge, and common sense!</p>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1.5rem; margin-top: 1rem; text-align: center; font-size: 1.2rem;">
+                            <strong>Example:</strong> "It's cold"<br>
+                            <span style="color: var(--success-green);">In winter:</span> Temperature is low ❄️<br>
+                            <span style="color: var(--error-red);">After a breakup:</span> Emotionally distant 💔<br>
+                            <span style="color: var(--primary-blue);">Computers struggle to know which one!</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Context Confusion:</h4>
+                    <p><strong>Human:</strong> "I'm going to get some cash from the ATM."<br>
+                    <strong>NLP System:</strong> "I understand you want to get cash from the Automated Teller Machine. Are you planning to rob it?" 🏧😅</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Group Exercise (10 minutes):</h4>
+                    <p>In groups of 3, create a list of 5 ambiguous sentences. Then try to explain to each other why they're confusing for computers. Be creative!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Funny NLP Fails -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Classic NLP Fails</h1>
+                <p class="slide-subtitle">When machines misunderstand us (and it's hilarious!)</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Learning from Mistakes</h2>
+                    <p class="section-subtitle">These funny examples show us why NLP is challenging</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-pink);">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Chatbot Confusion</h3>
+                        <div style="background: var(--light-gray); border-radius: 15px; padding: 1.5rem; margin: 1rem 0;">
+                            <p><strong>User:</strong> "I'm feeling down today."</p>
+                            <p><strong>Chatbot:</strong> "I understand you're feeling physically lower than usual. Have you tried standing up?" 🤖⬇️</p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-purple);">
+                            <i class="fas fa-translate"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Translation Mishaps</h3>
+                        <div style="background: var(--light-gray); border-radius: 15px; padding: 1.5rem; margin: 1rem 0;">
+                            <p><strong>Original:</strong> "Out of sight, out of mind."</p>
+                            <p><strong>Translation:</strong> "Invisible idiot." 👻🤪</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Voice Recognition Fail:</h4>
+                    <p><strong>Human:</strong> "Hey Siri, call my wife."<br>
+                    <strong>Siri:</strong> "Calling your knife." 🔪<br>
+                    <strong>Human:</strong> "No! My WIFE!"<br>
+                    <strong>Siri:</strong> "Calling your life." 💀</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Interactive Activity (5 minutes):</h4>
+                    <p>Try to come up with a sentence that would confuse a voice assistant. Share with your neighbor and see if they can guess what the AI might misunderstand!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Break Time -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">Break Time!</h1>
+                <p class="slide-subtitle">15-minute coffee break and discussion</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <div class="icon-large" style="background: var(--gradient-success); margin-bottom: 2rem;">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                    <h2 class="section-title">Time for a Break!</h2>
+                    <p class="section-subtitle">Grab some coffee and discuss what we've learned so far</p>
+                </div>
+                
+                <div class="break-indicator">
+                    <h3><i class="fas fa-clock"></i> 15-Minute Break</h3>
+                    <p>Use this time to:</p>
+                </div>
+
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Discussion Topics</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-comments"></i> Share your funny NLP examples</li>
+                            <li><i class="fas fa-lightbulb"></i> Discuss real-world applications</li>
+                            <li><i class="fas fa-question"></i> Ask questions about concepts</li>
+                            <li><i class="fas fa-brain"></i> Think about future NLP possibilities</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-coffee"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Break Activities</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-coffee"></i> Grab coffee/tea</li>
+                            <li><i class="fas fa-mobile-alt"></i> Test voice assistants</li>
+                            <li><i class="fas fa-laptop"></i> Try Google Translate</li>
+                            <li><i class="fas fa-chat"></i> Chat with classmates</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Break Joke:</h4>
+                    <p>Why did the NLP researcher go broke? Because he spent all his money on machine learning models! 🤖💰</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: NLP Applications -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">NLP Applications</h1>
+                <p class="slide-subtitle">Real-world applications and use cases of NLP technology</p>
+            </div>
+            <div class="slide-content">
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Conversational AI</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.15rem; margin-bottom: 1rem;"><strong>What it is:</strong> Teaching computers to have conversations like humans!</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-robot"></i> <strong>Virtual assistants:</strong> Siri, Alexa, Google Assistant - they understand your voice commands!</li>
+                            <li><i class="fas fa-comment-dots"></i> <strong>Chatbots:</strong> Customer service bots that answer questions 24/7</li>
+                            <li><i class="fas fa-headset"></i> <strong>Voice tech:</strong> Converting speech to text and text to speech</li>
+                            <li><i class="fas fa-brain"></i> <strong>Smart systems:</strong> Systems that remember context in conversations</li>
+                        </ul>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 1.1rem;">
+                            <strong>Real example:</strong> When you say "Hey Siri, set a timer for 5 minutes," NLP helps Siri understand you want a timer, not a timer recipe!
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Information Processing</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.15rem; margin-bottom: 1rem;"><strong>What it is:</strong> Helping computers find, organize, and understand information from text!</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-search"></i> <strong>Search engines:</strong> Google understands what you're looking for, not just keywords</li>
+                            <li><i class="fas fa-file-alt"></i> <strong>Document processing:</strong> Automatically categorizing and summarizing long documents</li>
+                            <li><i class="fas fa-key"></i> <strong>Topic extraction:</strong> Finding main themes in large amounts of text</li>
+                            <li><i class="fas fa-chart-bar"></i> <strong>Sentiment:</strong> Understanding if reviews are positive or negative</li>
+                        </ul>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 1.1rem;">
+                            <strong>Real example:</strong> When you search "best pizza near me," Google understands you want pizza restaurants, not pizza recipes!
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-translate"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Language Services</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.15rem; margin-bottom: 1rem;"><strong>What it is:</strong> Tools that help with language tasks - translation, grammar, and more!</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-language"></i> <strong>Translation:</strong> Google Translate converts between languages</li>
+                            <li><i class="fas fa-spell-check"></i> <strong>Grammar:</strong> Tools like Grammarly fix your writing mistakes</li>
+                            <li><i class="fas fa-book"></i> <strong>Speech tech:</strong> Converting between spoken and written language</li>
+                            <li><i class="fas fa-pen"></i> <strong>Content creation:</strong> AI writing assistants help create text</li>
+                        </ul>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 1.1rem;">
+                            <strong>Real example:</strong> When you type "I goed to store," grammar checkers suggest "I went to the store"!
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">Content Moderation</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.15rem; margin-bottom: 1rem;"><strong>What it is:</strong> Using NLP to keep the internet safe by detecting harmful content!</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-filter"></i> <strong>Spam:</strong> Your email filters automatically detect spam messages</li>
+                            <li><i class="fas fa-ban"></i> <strong>Inappropriate:</strong> Social media detects and removes bad content</li>
+                            <li><i class="fas fa-user-shield"></i> <strong>Hate speech:</strong> Identifying harmful language automatically</li>
+                            <li><i class="fas fa-flag"></i> <strong>Flagging:</strong> Marking content that needs human review</li>
+                        </ul>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 1.1rem;">
+                            <strong>Real example:</strong> Gmail's spam filter uses NLP to detect "CLICK HERE TO WIN MONEY!" emails!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Real Application Fail:</h4>
+                    <p>A restaurant's chatbot was asked: "Do you have vegetarian options?"<br>
+                    It responded: "Yes, we have many vegetarian options including our famous beef burger!" 🍔🥬</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: NLP Pipeline -->
+        <div class="slide">
+            <div class="slide-header">
+                <h1 class="slide-title">NLP Processing Pipeline</h1>
+                <p class="slide-subtitle">Understanding the step-by-step process of natural language processing</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">From Raw Text to Understanding</h2>
+                    <p class="section-subtitle">The systematic approach to processing human language</p>
+                </div>
+                
+                <div class="key-point">
+                    <h4><i class="fas fa-key"></i> Key Concept: The NLP Pipeline</h4>
+                    <p><strong>Think of NLP like cooking a recipe!</strong> You can't just throw everything in at once - you need to follow steps:</p>
+                    <ol style="margin-left: 2rem; margin-top: 1rem; font-size: 1.2rem;">
+                        <li><strong>Preprocessing</strong> - Clean and prepare the text (like washing vegetables)</li>
+                        <li><strong>Syntactic Analysis</strong> - Understand the structure (like following the recipe steps)</li>
+                        <li><strong>Semantic Analysis</strong> - Understand the meaning (like tasting to see if it's good!)</li>
+                    </ol>
+                    <p style="margin-top: 1rem;"><strong>Why this matters:</strong> Each step builds on the previous one. If you skip a step, the whole thing falls apart!</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-file-text"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">1. Text Preprocessing</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.15rem; margin-bottom: 1rem;"><strong>What it is:</strong> Cleaning and preparing text, like washing vegetables before cooking!</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-cut"></i> <strong>Tokenization:</strong> Breaking text into words (like cutting vegetables into pieces)</li>
+                            <li><i class="fas fa-broom"></i> <strong>Cleaning:</strong> Removing errors, extra spaces, special characters</li>
+                            <li><i class="fas fa-tags"></i> <strong>POS Tagging:</strong> Labeling words (noun, verb, adjective) - like sorting ingredients</li>
+                            <li><i class="fas fa-tree"></i> <strong>Lemmatization:</strong> Converting words to base form ("running" → "run")</li>
+                        </ul>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 1.1rem;">
+                            <strong>Example:</strong> "I'm running!" → ["I", "am", "running"] → [Pronoun, Verb, Verb] → ["I", "be", "run"]
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-sitemap"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">2. Syntactic Analysis</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.15rem; margin-bottom: 1rem;"><strong>What it is:</strong> Understanding sentence structure - who did what to whom!</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-diagram-project"></i> <strong>Parsing:</strong> Building a tree structure showing relationships</li>
+                            <li><i class="fas fa-link"></i> <strong>Dependency:</strong> Finding which words depend on which (subject-verb-object)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Constituency:</strong> Grouping words into phrases (noun phrases, verb phrases)</li>
+                            <li><i class="fas fa-arrows-alt"></i> <strong>NER:</strong> Finding names, places, dates ("John", "Paris", "2024")</li>
+                        </ul>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 1.1rem;">
+                            <strong>Example:</strong> "John loves pizza" → Subject: John, Verb: loves, Object: pizza
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.8rem;">3. Semantic Analysis</h3>
+                        <p style="text-align: center; color: var(--medium-gray); font-size: 1.15rem; margin-bottom: 1rem;"><strong>What it is:</strong> Understanding the MEANING - the hardest part! This is where computers struggle most.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-brain"></i> <strong>Meaning:</strong> What does the sentence actually mean?</li>
+                            <li><i class="fas fa-comments"></i> <strong>Discourse:</strong> Understanding conversations across multiple sentences</li>
+                            <li><i class="fas fa-sync"></i> <strong>Coreference:</strong> Figuring out what "it" or "he" refers to</li>
+                            <li><i class="fas fa-chart-line"></i> <strong>Sentiment:</strong> Is this positive, negative, or neutral?</li>
+                        </ul>
+                        <div style="background: var(--light-gray); border-radius: 10px; padding: 1rem; margin-top: 1rem; font-size: 1.1rem;">
+                            <strong>Example:</strong> "That movie was sick!" → Positive sentiment (meaning awesome), not negative (meaning disgusting)
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <div style="font-size: 1.5rem; margin-bottom: 1.5rem; font-weight: 700;">
+                        <strong>Complete Example Pipeline:</strong> "The cat sat on the mat"
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; font-size: 1.2rem;">
+                        <div style="background: rgba(255,255,255,0.2); padding: 1.5rem; border-radius: 10px;">
+                            <strong>Step 1 - Tokenization:</strong> Breaking into words<br>
+                            <span style="font-size: 1.1rem; color: rgba(255,255,255,0.9);">→ [The, cat, sat, on, the, mat]</span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 1.5rem; border-radius: 10px;">
+                            <strong>Step 2 - POS Tagging:</strong> Labeling each word<br>
+                            <span style="font-size: 1.1rem; color: rgba(255,255,255,0.9);">→ [DET, NOUN, VERB, PREP, DET, NOUN]</span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 1.5rem; border-radius: 10px;">
+                            <strong>Step 3 - Parsing:</strong> Building sentence structure<br>
+                            <span style="font-size: 1.1rem; color: rgba(255,255,255,0.9);">→ Subject: "cat", Verb: "sat", Location: "mat"</span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 1.5rem; border-radius: 10px;">
+                            <strong>Step 4 - Semantics:</strong> Understanding meaning<br>
+                            <span style="font-size: 1.1rem; color: rgba(255,255,255,0.9);">→ A cat performed the action of sitting on a mat</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Pipeline Fail:</h4>
+                    <p><strong>Input:</strong> "Time flies like an arrow."<br>
+                    <strong>NLP Pipeline:</strong> "Time (noun) flies (verb) like (preposition) an (article) arrow (noun)"<br>
+                    <strong>Interpretation:</strong> "Time is flying in the same way as an arrow flies" ⏰➡️🏹</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Continue with more slides... -->
+        
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) {
+                    slide.classList.add('active');
+                }
+            });
+            
+            document.getElementById('currentSlide').textContent = index + 1;
+            document.getElementById('totalSlides').textContent = totalSlides;
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                currentSlideIndex++;
+                showSlide(currentSlideIndex);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                showSlide(currentSlideIndex);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                nextSlide();
+            } else if (event.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
