@@ -1,17 +1,13 @@
-i understood
 
-Here are your **Week 4: NLP Fundamentals** notes - built with the same extreme noob-friendly, detail-obsessed approach as Week 3.
 
----
-
-# 📚 COMPLETE WEEK 4 NOTES - NLP Fundamentals (ULTIMATE NOOB-FRIENDLY GUIDE)
+#  COMPLETE WEEK 4 NOTES - NLP Fundamentals (ULTIMATE NOOB-FRIENDLY GUIDE)
 
 ## Professional Training Documentation
 **Tech Prime Pvt Limited - Advanced AI/ML Internship Program**
 
 ---
 
-# 📑 TABLE OF CONTENTS
+#  TABLE OF CONTENTS
 
 1. [What is NLP? - For Absolute Beginners](#1-what-is-nlp-for-absolute-beginners)
 2. [Tokenization - Breaking Text into Pieces](#2-tokenization-breaking-text-into-pieces)
