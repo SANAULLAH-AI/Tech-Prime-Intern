@@ -1,0 +1,2304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 3: Feature Engineering & Text Representation - 3 Hour Session</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --white: #ffffff;
+            --light-gray: #f1f5f9;
+            --medium-gray: #64748b;
+            --charcoal: #1e293b;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            --gradient-error: linear-gradient(135deg, var(--error-red) 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, var(--purple) 0%, #a855f7 100%);
+            --gradient-pink: linear-gradient(135deg, var(--pink) 0%, #f472b6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
+            color: var(--primary-navy);
+            overflow: hidden;
+            height: 100vh;
+            line-height: 1.75;
+            font-size: 18px;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 0.85rem 3rem;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            padding-right: 280px;
+        }
+
+        .slide-number-container {
+            position: absolute;
+            top: 0.6rem;
+            right: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-number {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 1.15rem;
+        }
+
+        .slide-icon {
+            color: var(--white);
+            font-size: 1.1rem;
+        }
+
+        .slide-title {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-subtitle {
+            font-size: 1.55rem;
+            opacity: 0.9;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            background: var(--white);
+            font-size: 1.25rem;
+        }
+        .slide-content p {
+            font-size: 1.3rem;
+            line-height: 1.8;
+        }
+        .slide-content h3, .slide-content h4 {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .section-title {
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 1.45rem;
+            color: var(--medium-gray);
+            text-align: center;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-grid.two-col {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .card-grid.three-col {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .content-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .content-card p {
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--white);
+            font-size: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.25rem;
+            line-height: 1.7;
+            color: var(--charcoal);
+        }
+
+        .feature-list i {
+            color: var(--accent-blue);
+            width: 20px;
+            text-align: center;
+        }
+
+        .code-block {
+            background: var(--charcoal);
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 1.15rem;
+            line-height: 1.7;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            border: 1px solid #374151;
+            white-space: pre-wrap; /* Preserve line breaks so content is readable */
+            word-wrap: break-word;
+        }
+        .code-block pre {
+            margin: 0;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            white-space: pre-wrap;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #fef3c7 0%, #fde68a 100%);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid var(--warning-orange);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid var(--accent-blue);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid var(--success-green);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .error-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 2px solid var(--error-red);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .funny-example {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border: 2px solid var(--purple);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            margin: 2rem 0;
+        }
+
+        .quiz-question {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 2px solid var(--accent-blue);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .quiz-question h4 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-size: 1.45rem;
+        }
+
+        .quiz-options {
+            margin: 1rem 0;
+        }
+
+        .quiz-options label {
+            display: block;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 1.25rem;
+        }
+
+        .quiz-options label:hover {
+            background-color: var(--light-gray);
+        }
+
+        .quiz-options input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+
+        .quiz-answer {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid var(--success-green);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: var(--dark-gray);
+            font-size: 1.2rem;
+        }
+
+        .quiz-controls {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .quiz-btn {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .metric-explanation {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--light-gray);
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .metric-explanation h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            font-size: 1.35rem;
+        }
+
+        .metric-explanation p {
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            line-height: 1.7;
+        }
+
+        .funny-example-small {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid var(--warning-orange);
+            border-radius: 8px;
+            padding: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .funny-example-small p {
+            margin: 0;
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+
+        .practical-exercise {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid var(--success-green);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: var(--white);
+            border: 2px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.15rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn:hover {
+            background: var(--accent-blue);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--accent-blue);
+            transition: width 0.3s ease;
+            z-index: 1001;
+        }
+
+        .quiz-question {
+            background: var(--light-gray);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border-left: 5px solid var(--accent-blue);
+        }
+
+        .quiz-options {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .quiz-options li {
+            background: var(--white);
+            margin: 0.5rem 0;
+            padding: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 1.25rem;
+        }
+
+        .quiz-options li:hover {
+            border-color: var(--accent-blue);
+            transform: translateX(5px);
+        }
+
+        .quiz-options li.correct {
+            background: var(--success-green);
+            color: var(--white);
+            border-color: var(--success-green);
+        }
+
+        .quiz-options li.incorrect {
+            background: var(--error-red);
+            color: var(--white);
+            border-color: var(--error-red);
+        }
+
+        @media (max-width: 768px) {
+            .slide-header {
+                padding: 0.75rem 2rem;
+                padding-right: 200px;
+            }
+            
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .slide-title {
+                font-size: 2.4rem;
+            }
+            
+            .card-grid.two-col,
+            .card-grid.three-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation-container">
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 1 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Feature Engineering & Text Representation</h1>
+                <p class="slide-subtitle">Lecture 3: Converting Text into Machine-Readable Features</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-5">
+                    <div class="icon-large" style="background: var(--gradient-primary); margin: 0 auto 2rem;">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h2 class="section-title">Welcome to Lecture 3!</h2>
+                    <p class="section-subtitle">From Clean Text to Powerful Features</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">What We'll Learn</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-vector-square"></i> Bag of Words and TF-IDF</li>
+                            <li><i class="fas fa-brain"></i> Word Embeddings (Word2Vec, GloVe)</li>
+                            <li><i class="fas fa-layer-group"></i> Contextual Embeddings</li>
+                            <li><i class="fas fa-chart-line"></i> Feature Selection Techniques</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Session Structure</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-play"></i> 3-hour comprehensive session</li>
+                            <li><i class="fas fa-coffee"></i> Two 15-minute breaks</li>
+                            <li><i class="fas fa-hands"></i> Hands-on coding exercises</li>
+                            <li><i class="fas fa-question"></i> Interactive quizzes</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">NLP Pipeline Progress</h3>
+                    <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">Lecture 1: Introduction → Lecture 2: Preprocessing → <span class="highlight" style="background: rgba(255,255,255,0.2);">Lecture 3: Feature Engineering</span></div>
+                    <div style="font-size: 1.25rem; opacity: 0.8; margin-top: 0.5rem;">Today we transform clean text into numerical features!</div>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-lightbulb"></i> Quick Warm-up (2 minutes):</h4>
+                    <p>Think about how you would represent the sentence "The cat sat on the mat" as numbers that a computer could understand. What challenges do you foresee?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Lecture 2 Summary -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 2 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Lecture 2 Summary</h1>
+                <p class="slide-subtitle">What we learned about text preprocessing and tokenization</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Recap: Text Preprocessing & Tokenization</h2>
+                    <p class="section-subtitle">Key concepts from our second lecture</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-broom"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Text Preprocessing</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-trash"></i> Text cleaning and noise removal</li>
+                            <li><i class="fas fa-text-height"></i> Case normalization</li>
+                            <li><i class="fas fa-filter"></i> Stop words removal</li>
+                            <li><i class="fas fa-cut"></i> Stemming and lemmatization</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-scissors"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Tokenization Methods</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-space-shuttle"></i> Whitespace tokenization</li>
+                            <li><i class="fas fa-ruler"></i> Rule-based tokenization</li>
+                            <li><i class="fas fa-puzzle-piece"></i> Subword tokenization</li>
+                            <li><i class="fas fa-language"></i> Language-specific approaches</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Advanced Techniques</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-tag"></i> Part-of-Speech tagging</li>
+                            <li><i class="fas fa-user-tag"></i> Named Entity Recognition</li>
+                            <li><i class="fas fa-cogs"></i> Advanced preprocessing</li>
+                            <li><i class="fas fa-chart-bar"></i> Quality metrics</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Key Challenges</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-language"></i> Language diversity</li>
+                            <li><i class="fas fa-balance-scale"></i> Context preservation</li>
+                            <li><i class="fas fa-tachometer-alt"></i> Performance optimization</li>
+                            <li><i class="fas fa-bug"></i> Common pitfalls</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Preprocessing Pipeline Output</h3>
+                    <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">Raw Text → Clean Tokens → Ready for Feature Engineering</div>
+                    <div style="font-size: 1.25rem; opacity: 0.8; margin-top: 0.5rem;">Today we convert these clean tokens into numerical features!</div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Remember This Preprocessing Fail:</h4>
+                    <p><strong>Before:</strong> "I can't believe it's not butter!"<br>
+                    <strong>After aggressive preprocessing:</strong> "believ butter"<br>
+                    <strong>Result:</strong> Lost all the important context and meaning! 😅</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Quick Review (3 minutes):</h4>
+                    <p>Think about the preprocessing steps we learned. How do you think these clean tokens can be converted into numbers that preserve meaning? Discuss with your neighbor!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: What is Feature Engineering? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 3 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is Feature Engineering?</h1>
+                <p class="slide-subtitle">The art of converting text into machine-readable numerical features</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Feature Engineering in NLP</h2>
+                    <p class="section-subtitle">Transforming text into numbers that capture meaning</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Definition</h4>
+                    <p><strong>Feature Engineering</strong> is the process of selecting, transforming, and creating features (variables) from raw data to improve the performance of machine learning algorithms.</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">The Challenge</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-text-width"></i> Text is unstructured data</li>
+                            <li><i class="fas fa-calculator"></i> ML algorithms need numbers</li>
+                            <li><i class="fas fa-brain"></i> Must preserve semantic meaning</li>
+                            <li><i class="fas fa-balance-scale"></i> Balance simplicity vs. complexity</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">The Solution</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-vector-square"></i> Convert text to vectors</li>
+                            <li><i class="fas fa-chart-line"></i> Capture word relationships</li>
+                            <li><i class="fas fa-layer-group"></i> Multiple representation levels</li>
+                            <li><i class="fas fa-cogs"></i> Domain-specific adaptations</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Why Feature Engineering Matters</h4>
+                    <p>In NLP, feature engineering can make or break your model's performance. Good features can capture semantic relationships, while poor features can lead to misleading results.</p>
+                </div>
+                
+                <div class="code-block"><pre># Example: Simple text to numbers
+text = "The cat sat on the mat"
+# How do we convert this to numbers?
+
+# Option 1: Character codes
+[84, 104, 101, 32, 99, 97, 116, ...]  # ASCII values
+
+# Option 2: Word indices
+[1, 2, 3, 4, 5, 6]  # Each word gets a number
+
+# Option 3: One-hot encoding
+[0, 1, 0, 0, 0, 0]  # "cat" is word 2
+[0, 0, 1, 0, 0, 0]  # "sat" is word 3</pre></div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Naive Approach:</h4>
+                    <p><strong>Student:</strong> "I'll just assign each word a random number!"<br>
+                    <strong>Result:</strong> "cat" = 42, "dog" = 17, "cat" = 42 again<br>
+                    <strong>Problem:</strong> No relationship between similar words! 😂</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-lightbulb"></i> The Smart Approach:</h4>
+                    <p><strong>Before:</strong> "I love pizza!" → Computer: "What's pizza? What's love? I only understand 0s and 1s!" 🤖<br>
+                    <strong>After Feature Engineering:</strong> "I love pizza!" → Computer: "Ah! Vector [0.8, 0.2, 0.9, 0.1] - this person likes food with 80% confidence!" 🍕</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Bag of Words -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 4 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Bag of Words (BoW)</h1>
+                <p class="slide-subtitle">The simplest and most intuitive text representation method</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Bag of Words Model</h2>
+                    <p class="section-subtitle">Counting word frequencies to represent documents</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Concept</h4>
+                    <p>Bag of Words treats each document as a "bag" of words, ignoring word order and grammar, focusing only on word frequency.</p>
+                </div>
+                
+                <div class="code-block">
+# Example: Simple BoW
+Doc 1: "The cat sat on the mat"
+Doc 2: "The dog sat on the mat"
+
+Vocabulary: [the, cat, sat, on, mat, dog]
+
+Doc 1: [2, 1, 1, 1, 1, 0]
+Doc 2: [2, 0, 1, 1, 1, 1]
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> Advantages</h4>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-simple"></i> Simple to understand and implement</li>
+                        <li><i class="fas fa-fast"></i> Fast computation</li>
+                        <li><i class="fas fa-chart-bar"></i> Good baseline for many tasks</li>
+                    </ul>
+                </div>
+                
+                <div class="error-box">
+                    <h4><i class="fas fa-times-circle"></i> Limitations</h4>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-sort"></i> Ignores word order</li>
+                        <li><i class="fas fa-weight"></i> High-dimensional sparse vectors</li>
+                        <li><i class="fas fa-brain"></i> No semantic relationships</li>
+                    </ul>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Word Order Problem:</h4>
+                    <p><strong>"The cat sat on the mat"</strong> and <strong>"The mat sat on the cat"</strong> would look identical in BoW! 🤯<br>
+                    <strong>Why it's called "Bag of Words":</strong> Because we throw all words in a bag and just count them, ignoring order - like counting M&Ms by color! 🍬</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Real-World Analogy:</h4>
+                    <p>BoW is like a recipe that only tells you "use 2 eggs, 1 cup flour, 1 cup sugar" but doesn't tell you the order or method. You might end up with a cake or scrambled eggs! 🍰🥚</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: TF-IDF -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 5 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">TF-IDF</h1>
+                <p class="slide-subtitle">Improving Bag of Words by weighting word importance</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">TF-IDF: The Smart BoW</h2>
+                    <p class="section-subtitle">Weighting words by their importance across documents</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Problem with BoW</h4>
+                    <p>Common words like "the", "and", "is" appear frequently in all documents and dominate the representation.</p>
+                </div>
+                
+                <div class="code-block">
+TF-IDF(t,d,D) = TF(t,d) × IDF(t,D)
+
+Where:
+TF(t,d) = count(t,d) / |d|
+IDF(t,D) = log(|D| / |{d∈D: t∈d}|)
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-calculator"></i> TF-IDF Benefits</h4>
+                    <p><strong>High TF-IDF:</strong> Word appears frequently in this document but rarely in others (important for this document)</p>
+                    <p><strong>Low TF-IDF:</strong> Word appears frequently everywhere or rarely in this document (not distinctive)</p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Restaurant Review Analogy:</h4>
+                    <p><strong>Problem with BoW:</strong> "The the the pizza is amazing" - "the" gets counted 3 times but isn't very informative<br>
+                    <strong>TF-IDF Solution:</strong> "the" appears everywhere → Low TF-IDF score (not important)<br>
+                    <strong>But:</strong> "pizza" appears rarely but is specific → High TF-IDF score (very important!)<br>
+                    <strong>Real-world:</strong> Like a restaurant review where "delicious" appears in every review (low importance) but "poisonous" appears rarely (high importance)! 🍕☠️</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Smart Weighting System:</h4>
+                    <p>TF-IDF is like a smart voting system where common words get fewer votes and rare, specific words get more votes. It's democracy for words! 🗳️</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Word Embeddings Introduction -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 6 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Word Embeddings Introduction</h1>
+                <p class="slide-subtitle">Dense vector representations that capture semantic meaning</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Beyond Simple Counting</h2>
+                    <p class="section-subtitle">Learning meaningful relationships between words</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> What are Word Embeddings?</h4>
+                    <p>Word embeddings are dense, low-dimensional vectors that represent words in a continuous vector space where semantically similar words are close to each other.</p>
+                </div>
+                
+                <div class="code-block">
+# Example: Word embeddings in action
+king = [0.1, 0.3, -0.2, 0.8, ...]
+queen = [0.2, 0.4, -0.1, 0.7, ...]
+man = [0.0, 0.2, -0.3, 0.9, ...]
+woman = [0.1, 0.3, -0.2, 0.8, ...]
+
+# The famous analogy:
+king - man + woman ≈ queen
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> Advantages over BoW/TF-IDF</h4>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-compress"></i> Much smaller dimensions</li>
+                        <li><i class="fas fa-brain"></i> Captures semantic relationships</li>
+                        <li><i class="fas fa-calculator"></i> Enables vector arithmetic</li>
+                    </ul>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Semantic Relationship Discovery:</h4>
+                    <p><strong>Traditional approach:</strong> "king" = [1, 0, 0, 0], "queen" = [0, 1, 0, 0] (no relationship)<br>
+                    <strong>Word embeddings:</strong> "king" = [0.1, 0.3, -0.2, 0.8], "queen" = [0.2, 0.4, -0.1, 0.7] (similar vectors!)<br>
+                    <strong>The magic:</strong> king - man + woman ≈ queen! 👑<br>
+                    <strong>Why it's amazing:</strong> The computer learned that kings and queens are both royalty, just like we did! 🤯</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Semantic GPS System:</h4>
+                    <p>Word embeddings are like a GPS for meaning - words with similar meanings end up close together in the vector space, just like similar places are close on a map! 🗺️</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Word2Vec -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 7 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Word2Vec</h1>
+                <p class="slide-subtitle">Learning word embeddings through neural networks</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Word2Vec: The Game Changer</h2>
+                    <p class="section-subtitle">Neural networks that learn word relationships</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Breakthrough</h4>
+                    <p>Word2Vec, introduced by Google in 2013, revolutionized NLP by showing that neural networks could learn meaningful word representations from large text corpora.</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Skip-gram Model</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-bullseye"></i> Predict context words from center word</li>
+                            <li><i class="fas fa-expand-arrows-alt"></i> "The cat sat on the mat"</li>
+                            <li><i class="fas fa-crosshairs"></i> Center: "sat", Context: ["cat", "on"]</li>
+                            <li><i class="fas fa-chart-line"></i> Learn to predict context</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">CBOW Model</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-arrows-alt"></i> Predict center word from context</li>
+                            <li><i class="fas fa-compress"></i> Context: ["cat", "on"], Center: "sat"</li>
+                            <li><i class="fas fa-bullseye"></i> Learn to predict center word</li>
+                            <li><i class="fas fa-chart-bar"></i> Faster training</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-magic"></i> The Famous Analogies</h4>
+                    <div class="code-block">
+king - man + woman ≈ queen
+paris - france + italy ≈ rome
+computer - keyboard + mouse ≈ monitor
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Word2Vec Magic:</h4>
+                    <p><strong>Input:</strong> "The king is a man"<br>
+                    <strong>Word2Vec learns:</strong> king - man = royal_masculinity<br>
+                    <strong>Then:</strong> royal_masculinity + woman = queen<br>
+                    <strong>Result:</strong> king - man + woman ≈ queen! 👑✨</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Word Detective Approach:</h4>
+                    <p><strong>Skip-gram:</strong> "The cat sat on the mat" → Give "sat" → Predict it's surrounded by "cat" and "on"<br>
+                    Like a word detective: "If I see 'sat', what words are usually nearby?" 🕵️‍♂️<br>
+                    <strong>CBOW:</strong> Give "cat" and "on" → Predict the missing word is "sat"<br>
+                    Like a word puzzle: "cat _ on" → "sat"! 🧩</p>
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> Neural Networks as Super-Smart Word Detectives:</h4>
+                    <p>Neural networks are like super-smart word detectives that learn by playing prediction games. They figure out word relationships by trying to predict what words should appear together! 🧠🕵️‍♂️</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: GloVe -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 8 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">GloVe (Global Vectors)</h1>
+                <p class="slide-subtitle">Combining global and local statistics for better embeddings</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">GloVe: The Best of Both Worlds</h2>
+                    <p class="section-subtitle">Global statistics + local context = better embeddings</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Innovation</h4>
+                    <p>GloVe combines the global statistics of LSA (Latent Semantic Analysis) with the local context learning of Word2Vec to create superior word embeddings.</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Key Insight</h3>
+                        <p style="color: var(--charcoal);">The ratio of co-occurrence probabilities encodes meaning:</p>
+                        <div class="code-block" style="font-size: 1.1rem;">
+P(solid|ice) / P(solid|steam) ≈ 1
+P(gas|ice) / P(gas|steam) ≈ 0.01
+P(water|ice) / P(water|steam) ≈ 1
+P(fashion|ice) / P(fashion|steam) ≈ 1
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Advantages</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-chart-line"></i> Better performance on analogies</li>
+                            <li><i class="fas fa-globe"></i> Captures global statistics</li>
+                            <li><i class="fas fa-cogs"></i> Faster training than Word2Vec</li>
+                            <li><i class="fas fa-trophy"></i> State-of-the-art results</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-trophy"></i> GloVe vs Word2Vec</h4>
+                    <div class="code-block">
+Word2Vec: Local context window approach
+GloVe: Global co-occurrence matrix approach
+
+Result: GloVe often performs better on semantic tasks!
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Library Detective Analogy:</h4>
+                    <p><strong>Word2Vec approach:</strong> "I see 'ice' and 'steam' in different contexts"<br>
+                    <strong>GloVe approach:</strong> "Let me count how often words appear together across ALL text"<br>
+                    <strong>The insight:</strong> P(solid|ice) / P(solid|steam) ≈ 1 (both can be solid)<br>
+                    <strong>But:</strong> P(gas|ice) / P(gas|steam) ≈ 0.01 (steam is more likely to be gas)<br>
+                    <strong>Real-world:</strong> It's like a word relationship detective who studies the entire library instead of just one book! 📚</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Big Picture Approach:</h4>
+                    <p>Sometimes looking at the big picture gives better insights than focusing on local details. GloVe is like having a bird's eye view of all word relationships! 🦅</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Modern Embeddings -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 9 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Modern Embeddings</h1>
+                <p class="slide-subtitle">Contextual embeddings and transformer-based representations</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">The Evolution Continues</h2>
+                    <p class="section-subtitle">From static to contextual embeddings</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Problem with Static Embeddings</h4>
+                    <p>Word2Vec and GloVe create the same embedding for a word regardless of context. But "bank" means different things in "river bank" vs "bank account"!</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">ELMo (2018)</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-layer-group"></i> Deep contextualized embeddings</li>
+                            <li><i class="fas fa-arrows-alt"></i> Bidirectional LSTM</li>
+                            <li><i class="fas fa-sync"></i> Different embeddings for same word</li>
+                            <li><i class="fas fa-chart-line"></i> Better performance</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">BERT (2018)</h3>
+                        <ul class="feature-list">
+                            <i class="fas fa-brain"></i> Transformer architecture</li>
+                            <li><i class="fas fa-mask"></i> Masked language modeling</li>
+                            <li><i class="fas fa-arrows-alt"></i> Bidirectional training</li>
+                            <li><i class="fas fa-trophy"></i> Revolutionary results</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Context Matters:</h4>
+                    <p><strong>Static embeddings:</strong> "bank" always = [0.1, 0.3, -0.2, ...]<br>
+                    <strong>Contextual embeddings:</strong><br>
+                    "I went to the bank" → "bank" = [0.2, 0.1, -0.1, ...] (financial)<br>
+                    "I sat by the bank" → "bank" = [0.0, 0.4, -0.3, ...] (river)<br>
+                    <strong>Result:</strong> Same word, different meanings! 🏦🏞️</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Chameleon Word Effect:</h4>
+                    <p>The same word can mean different things in different situations. It's like having a chameleon word that changes color based on its surroundings! 🦎<br>
+                    <strong>ELMo (2018):</strong> Deep contextualized embeddings using bidirectional LSTM<br>
+                    <strong>BERT (2018):</strong> Transformer architecture with masked language modeling</p>
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> The Context-Aware Revolution:</h4>
+                    <p>Moving from static embeddings to contextual ones was like going from black-and-white TV to color TV - suddenly everything makes much more sense! 📺🌈</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Break Time -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 10 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Break Time!</h1>
+                <p class="slide-subtitle">15-minute coffee break and hands-on practice</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-5">
+                    <div class="icon-large" style="background: var(--gradient-warning); margin: 0 auto 2rem;">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                    <h2 class="section-title">Time for a Break!</h2>
+                    <p class="section-subtitle">15 minutes to refresh and practice</p>
+                </div>
+                
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-hands"></i> Practice Exercise:</h4>
+                    <p>Try implementing Bag of Words and TF-IDF on sample documents. Calculate TF-IDF scores and discuss the results with your neighbors!</p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Break Time Realization:</h4>
+                    <p><strong>During break:</strong> Students frantically trying to implement TF-IDF<br>
+                    <strong>The realization:</strong> "Wait, why is my 'the' getting a higher score than 'pizza'?!" 🤔<br>
+                    <strong>The learning moment:</strong> "Oh! I need to check my vocabulary size and document frequency!" 💡</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Practice Makes Perfect:</h4>
+                    <p>Practice makes perfect - and coffee makes everything better! This is your chance to experiment with the concepts we've learned. ☕✨</p>
+                </div>
+                
+                <div style="background: var(--gradient-warning); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Break Activities</h3>
+                    <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">☕ Get coffee/tea • 🧠 Practice exercises • 💬 Discuss with peers</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Conclusion -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 11 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-flag-checkered"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Conclusion and Next Steps</h1>
+                <p class="slide-subtitle">Congratulations! You've completed Lecture 3</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">What We've Learned</h2>
+                    <p class="section-subtitle">From text to powerful numerical features</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Traditional Methods</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-shopping-bag"></i> Bag of Words - Counts word occurrences, ignores word order and grammar</li>
+                            <li><i class="fas fa-chart-line"></i> TF-IDF - Measures word importance by frequency vs. document frequency</li>
+                            <li><i class="fas fa-brain"></i> Word2Vec - Creates word vectors from neural network training on context</li>
+                            <li><i class="fas fa-globe"></i> GloVe - Learns word embeddings from global co-occurrence statistics</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Modern Methods</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-layer-group"></i> ELMo - Generates context-dependent word embeddings from language models</li>
+                            <li><i class="fas fa-brain"></i> BERT - Bidirectional transformer that understands context from both word directions</li>
+                            <li><i class="fas fa-sync"></i> Contextual embeddings - Word meanings change based on surrounding context</li>
+                            <li><i class="fas fa-robot"></i> Transformer models - Use self-attention to focus on relevant input parts</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">NLP Pipeline Progress</h3>
+                    <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">Lecture 1: Introduction → Lecture 2: Preprocessing → <span class="highlight" style="background: rgba(255,255,255,0.2);">Lecture 3: Feature Engineering</span> → Lecture 4: Models</div>
+                    <div style="font-size: 1.25rem; opacity: 0.8; margin-top: 0.5rem;">Next: We'll build actual NLP models using these features!</div>
+                </div>
+                
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-homework"></i> Next Steps:</h4>
+                    <p>1. Practice implementing Bag of Words and TF-IDF<br>
+                    2. Experiment with pre-trained word embeddings<br>
+                    3. Try building a simple text classifier<br>
+                    4. Read about transformer models and BERT</p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Feature Engineering Transformation:</h4>
+                    <p><strong>Before this lecture:</strong> "Text is just words, right?" 🤷‍♂️<br>
+                    <strong>After this lecture:</strong> "I can convert any text into meaningful numerical features!" 🧙‍♂️<br>
+                    <strong>The transformation:</strong> From text newbie to feature engineering wizard! ✨</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> You Now Have the Tools:</h4>
+                    <p>You now have the tools to turn any text into machine-readable features! From simple word counting to sophisticated neural embeddings, you're ready to tackle any text analysis problem! 🛠️</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional slides to reach 28 total -->
+        <!-- Slide 12-28: Additional content slides -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 12 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Practical Implementation</h1>
+                <p class="slide-subtitle">Building a complete feature engineering pipeline</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Hands-on Implementation</h2>
+                    <p class="section-subtitle">From theory to practice</p>
+                </div>
+                
+                <div class="code-block">
+# Python implementation example
+from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
+
+# Sample documents
+documents = [
+    "Machine learning is fascinating",
+    "Deep learning is a subset of machine learning",
+    "Natural language processing uses machine learning"
+]
+
+# TF-IDF implementation
+vectorizer = TfidfVectorizer()
+tfidf_matrix = vectorizer.fit_transform(documents)
+print("TF-IDF Matrix shape:", tfidf_matrix.shape)
+                </div>
+                
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-hands"></i> Try This:</h4>
+                    <p>Implement the code above and experiment with different parameters. What happens when you change the vocabulary size?</p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Code Wizard's Workshop:</h4>
+                    <p><strong>The beginner's mistake:</strong> vectorizer = TfidfVectorizer(max_features=1000000) # "More features = better, right?"<br>
+                    <strong>Result:</strong> Computer crashes, student cries 😭<br>
+                    <strong>The smart approach:</strong> vectorizer = TfidfVectorizer(max_features=5000) # "Let's be reasonable"<br>
+                    <strong>Result:</strong> Fast, efficient, and actually works! 🎉</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Implementation Reality Check:</h4>
+                    <p>Implementation is where theory meets reality - and reality can be harsh! Start simple, then gradually add complexity. 🛠️</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Continue with more slides... -->
+        <!-- For brevity, I'll add placeholder slides to complete the structure -->
+        
+        <!-- Slides 13-27: Additional content (placeholder structure) -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 13 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Feature Selection Techniques</h1>
+                <p class="slide-subtitle">Choosing the most important features</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Feature Selection</h2>
+                    <p class="section-subtitle">Reducing dimensionality while preserving information</p>
+                </div>
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Why Feature Selection Matters</h4>
+                    <p>With thousands of features, we need to select the most relevant ones to improve model performance and reduce overfitting.</p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Feature Diet Plan:</h4>
+                    <p><strong>The "Kitchen Sink" approach:</strong> "I'll use all 50,000 features!"<br>
+                    <strong>Result:</strong> Model takes 3 hours to train and performs worse<br>
+                    <strong>Like trying to cook with every ingredient in the kitchen!</strong> 🍳<br>
+                    <strong>The smart approach:</strong> "Let me pick the 1,000 most relevant features"<br>
+                    <strong>Result:</strong> Fast training, better performance<br>
+                    <strong>Like a master chef who knows exactly which ingredients to use!</strong> 👨‍🍳</p>
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> Quality Over Quantity:</h4>
+                    <p>More features ≠ better performance. Quality over quantity! It's like having a few really good friends vs. thousands of acquaintances. 👥</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Feature Selection Methods -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 14 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Feature Selection Methods</h1>
+                <p class="slide-subtitle">Statistical and machine learning approaches</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Feature Selection Techniques</h2>
+                    <p class="section-subtitle">Reducing dimensionality while preserving information</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Filter Methods</h3>
+                        <p style="color: var(--medium-gray); font-size: 1.2rem; margin-bottom: 1rem; text-align: center;">Independent of the learning algorithm - fast but less accurate</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-chart-line"></i> <strong>Chi-square test:</strong> Measures independence between features and target variable</li>
+                            <li><i class="fas fa-percentage"></i> <strong>Mutual information:</strong> Measures how much information a feature provides about the target</li>
+                            <li><i class="fas fa-sort"></i> <strong>Variance threshold:</strong> Removes features with low variance (little variation)</li>
+                            <li><i class="fas fa-calculator"></i> <strong>Correlation analysis:</strong> Removes highly correlated features to reduce redundancy</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Wrapper Methods</h3>
+                        <p style="color: var(--medium-gray); font-size: 1.2rem; margin-bottom: 1rem; text-align: center;">Uses the learning algorithm to evaluate features - slower but more accurate</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-search"></i> <strong>Forward selection:</strong> Start with no features, add best ones one by one</li>
+                            <li><i class="fas fa-backward"></i> <strong>Backward elimination:</strong> Start with all features, remove worst ones one by one</li>
+                            <li><i class="fas fa-exchange-alt"></i> <strong>Recursive feature elimination:</strong> Train model, remove least important features, repeat</li>
+                            <li><i class="fas fa-robot"></i> <strong>Model-based selection:</strong> Use model's built-in feature importance scores</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Why Feature Selection Matters</h4>
+                    <p>With thousands of features, we need to select the most relevant ones to improve model performance, reduce overfitting, and speed up training.</p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Feature Filtering Factory:</h4>
+                    <p><strong>Filter Methods:</strong> Like a bouncer at a club - "You're not important enough, you can't come in!" 🚫<br>
+                    • Chi-square test: "Are you statistically significant?"<br>
+                    • Mutual information: "Do you actually help predict the outcome?"<br>
+                    <strong>Wrapper Methods:</strong> Like a talent show judge - "Let me see how you perform!" 🎭<br>
+                    • Forward selection: "Start with nothing, add the best features one by one"<br>
+                    • Backward elimination: "Start with everything, remove the worst features one by one"</p>
+                </div>
+                
+                <div class="code-block">
+# Example: Filter Methods in Python
+from sklearn.feature_selection import SelectKBest, chi2, mutual_info_classif
+from sklearn.feature_selection import VarianceThreshold
+
+# Chi-square test
+selector = SelectKBest(score_func=chi2, k=10)
+X_selected = selector.fit_transform(X, y)
+
+# Mutual information
+selector = SelectKBest(score_func=mutual_info_classif, k=10)
+X_selected = selector.fit_transform(X, y)
+
+# Variance threshold
+selector = VarianceThreshold(threshold=0.01)
+X_selected = selector.fit_transform(X)
+                </div>
+                
+                <div class="code-block">
+# Example: Wrapper Methods in Python
+from sklearn.feature_selection import RFE, SelectFromModel
+from sklearn.ensemble import RandomForestClassifier
+
+# Recursive Feature Elimination
+estimator = RandomForestClassifier()
+selector = RFE(estimator, n_features_to_select=10)
+X_selected = selector.fit_transform(X, y)
+
+# Model-based selection
+model = RandomForestClassifier()
+model.fit(X, y)
+selector = SelectFromModel(model, threshold='median')
+X_selected = selector.fit_transform(X, y)
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> Different Methods for Different Situations:</h4>
+                    <p>Different selection methods work better for different situations. It's like having different tools for different jobs! 🔧</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Detailed Method Explanations:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div>
+                            <h5 style="color: var(--primary-blue); margin-bottom: 0.5rem;">Filter Methods:</h5>
+                            <ul style="font-size: 1.2rem; color: var(--charcoal);">
+                                <li><strong>Chi-square test:</strong> Tests if feature and target are independent. High chi-square = feature is useful for prediction</li>
+                                <li><strong>Mutual information:</strong> Measures how much knowing a feature reduces uncertainty about the target</li>
+                                <li><strong>Variance threshold:</strong> Removes features that don't vary much (e.g., all values are the same)</li>
+                                <li><strong>Correlation analysis:</strong> Removes features that are highly correlated with each other</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: var(--success-green); margin-bottom: 0.5rem;">Wrapper Methods:</h5>
+                            <ul style="font-size: 1.2rem; color: var(--charcoal);">
+                                <li><strong>Forward selection:</strong> Greedy approach - add best feature at each step</li>
+                                <li><strong>Backward elimination:</strong> Start with all features, remove worst one at each step</li>
+                                <li><strong>RFE:</strong> Train model, remove least important features, retrain, repeat</li>
+                                <li><strong>Model-based:</strong> Use feature importance from tree-based models (Random Forest, XGBoost)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> When to Use Which Method:</h4>
+                    <p><strong>Use Filter Methods when:</strong> You have many features (>1000), need fast processing, or want algorithm-independent selection<br>
+                    <strong>Use Wrapper Methods when:</strong> You have fewer features (<1000), want maximum accuracy, or can afford longer training time</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Dimensionality Reduction -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 15 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-compress"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Dimensionality Reduction</h1>
+                <p class="slide-subtitle">PCA, LDA, and other techniques</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Reducing Feature Dimensions</h2>
+                    <p class="section-subtitle">From high-dimensional to manageable spaces</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">PCA (Principal Component Analysis)</h3>
+                        <div class="info-box">
+                            <h4><i class="fas fa-chart-line"></i> What is PCA?</h4>
+                            <p><strong>Principal Component Analysis (PCA)</strong> is an unsupervised dimensionality reduction technique. It transforms high-dimensional data into a lower-dimensional space while retaining as much of the original variance as possible.</p>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-compress"></i> <strong>Linear Transformation:</strong> Projects data onto new orthogonal axes (principal components).</li>
+                                <li><i class="fas fa-expand-arrows-alt"></i> <strong>Maximizes Variance:</strong> Each principal component captures the maximum possible variance from the remaining data.</li>
+                                <li><i class="fas fa-arrows-alt-h"></i> <strong>Orthogonal Components:</strong> The new dimensions are uncorrelated with each other.</li>
+                                <li><i class="fas fa-eye-slash"></i> <strong>Unsupervised Method:</strong> It doesn't use class labels, only the inherent structure of the data.</li>
+                            </ul>
+                        </div>
+                        <div class="funny-example">
+                            <h4><i class="fas fa-laugh"></i> The Data Photographer:</h4>
+                            <p>Imagine your data points are scattered in a huge, messy room (many dimensions). PCA is like a clever photographer who finds the best angle to take a picture (the first principal component) that shows the most "spread" or variation in the room. Then, they find the next best angle perpendicular to the first (second principal component), and so on. They don't care if the objects are "red" or "blue," just how much space they occupy!</p>
+                        </div>
+                        <div class="code-block">
+                            <pre><code class="language-python">
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+
+# Sample data (e.g., 100 samples, 10 features)
+X = np.random.rand(100, 10)
+
+# Standardize the data (important for PCA)
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Apply PCA to reduce to 2 components
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+
+print(f"Original dimensions: {X.shape}")
+print(f"Reduced dimensions: {X_pca.shape}")
+print(f"Explained variance ratio: {pca.explained_variance_ratio_}")
+                            </code></pre>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">LDA (Linear Discriminant Analysis)</h3>
+                        <div class="info-box">
+                            <h4><i class="fas fa-user-check"></i> What is LDA?</h4>
+                            <p><strong>Linear Discriminant Analysis (LDA)</strong> is a supervised dimensionality reduction technique used to find a linear combination of features that characterizes or separates two or more classes of objects or events.</p>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-user-check"></i> <strong>Supervised Method:</strong> It explicitly uses class labels to find the most discriminative features.</li>
+                                <li><i class="fas fa-arrows-alt-h"></i> <strong>Maximizes Class Separation:</strong> Aims to maximize the distance between the means of different classes while minimizing the variance within each class.</li>
+                                <li><i class="fas fa-balance-scale"></i> <strong>Between/Within Class Variance:</strong> Finds projections that maximize the ratio of between-class variance to within-class variance.</li>
+                                <li><i class="fas fa-trophy"></i> <strong>Classification Focused:</strong> Often used as a preprocessing step for classification tasks.</li>
+                            </ul>
+                        </div>
+                        <div class="funny-example">
+                            <h4><i class="fas fa-laugh"></i> The Class Separator:</h4>
+                            <p>Imagine you have two groups of students, "Team Red" and "Team Blue," all mixed up in a room. LDA is like a super-smart teacher who figures out the perfect line to draw across the room so that all of Team Red is on one side, and all of Team Blue is on the other, with the biggest possible empty space in between. The teacher *needs* to know who belongs to which team to do this!</p>
+                        </div>
+                        <div class="code-block">
+                            <pre><code class="language-python">
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+
+# Sample data (e.g., 100 samples, 10 features, 2 classes)
+X = np.random.rand(100, 10)
+y = np.random.randint(0, 2, 100) # Binary classes
+
+# Standardize the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Apply LDA to reduce to 1 component (max_components = n_classes - 1)
+lda = LinearDiscriminantAnalysis(n_components=1)
+X_lda = lda.fit_transform(X_scaled, y)
+
+print(f"Original dimensions: {X.shape}")
+print(f"Reduced dimensions: {X_lda.shape}")
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> When to Use Each Method</h4>
+                    <p><strong>PCA:</strong> When you want to reduce dimensions without considering class labels<br>
+                    <strong>LDA:</strong> When you have labeled data and want to maximize class separation</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Key Differences Between PCA and LDA:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div>
+                            <h5 style="color: var(--primary-blue); margin-bottom: 0.5rem;">PCA (Unsupervised):</h5>
+                            <ul style="font-size: 1.2rem; color: var(--charcoal);">
+                                <li><strong>Goal:</strong> Maximize variance in the data</li>
+                                <li><strong>Input:</strong> Only features (X), no labels needed</li>
+                                <li><strong>Output:</strong> Components that capture most data spread</li>
+                                <li><strong>Use case:</strong> Data visualization, noise reduction, general dimensionality reduction</li>
+                                <li><strong>Components:</strong> Can have as many as original features</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: var(--success-green); margin-bottom: 0.5rem;">LDA (Supervised):</h5>
+                            <ul style="font-size: 1.2rem; color: var(--charcoal);">
+                                <li><strong>Goal:</strong> Maximize class separation</li>
+                                <li><strong>Input:</strong> Features (X) AND class labels (y)</li>
+                                <li><strong>Output:</strong> Components that best separate classes</li>
+                                <li><strong>Use case:</strong> Classification tasks, finding discriminative features</li>
+                                <li><strong>Components:</strong> Maximum = number of classes - 1</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block">
+# Practical Example: When to Use PCA vs LDA
+
+# Scenario 1: You have unlabeled data and want to visualize it
+# Use PCA
+from sklearn.decomposition import PCA
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_unlabeled)
+
+# Scenario 2: You have labeled data and want to improve classification
+# Use LDA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+lda = LinearDiscriminantAnalysis(n_components=1)
+X_lda = lda.fit_transform(X_labeled, y_labels)
+
+# Scenario 3: You want to reduce noise before classification
+# Use PCA first, then LDA
+X_pca = pca.fit_transform(X_labeled)
+X_lda = lda.fit_transform(X_pca, y_labels)
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Feature Compression Machine:</h4>
+                    <p><strong>PCA (Principal Component Analysis):</strong> Like a photographer who finds the best angle to capture the essence of a scene 📸<br>
+                    "I'll compress 1000 features into 100, but keep 95% of the important information!"<br>
+                    <strong>LDA (Linear Discriminant Analysis):</strong> Like a teacher who finds the best way to separate different student groups 👩‍🏫<br>
+                    "I'll find the line that best separates cats from dogs in feature space!"</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Sometimes Less is More:</h4>
+                    <p>Compression can actually improve performance! It's like having a well-organized closet vs. a messy one - you can find what you need faster! 🗂️</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Text Classification Pipeline -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 16 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Text Classification Pipeline</h1>
+                <p class="slide-subtitle">End-to-end feature engineering workflow</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Complete Pipeline</h2>
+                    <p class="section-subtitle">From raw text to trained model</p>
+                </div>
+                
+                <div class="code-block">
+# Complete Text Classification Pipeline
+1. Text Preprocessing
+   - Clean and normalize text
+   - Tokenize and remove stop words
+   - Apply stemming/lemmatization
+
+2. Feature Engineering
+   - Choose representation (BoW, TF-IDF, embeddings)
+   - Apply feature selection
+   - Reduce dimensionality if needed
+
+3. Model Training
+   - Split data (train/validation/test)
+   - Train classifier
+   - Evaluate performance
+
+4. Model Deployment
+   - Save trained model
+   - Create prediction API
+   - Monitor performance
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> Best Practices</h4>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-repeat"></i> Always use cross-validation</li>
+                        <li><i class="fas fa-balance-scale"></i> Balance your dataset</li>
+                        <li><i class="fas fa-chart-line"></i> Monitor for overfitting</li>
+                        <li><i class="fas fa-save"></i> Save preprocessing steps</li>
+                    </ul>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Feature Engineering Assembly Line:</h4>
+                    <p><strong>Step 1 - Preprocessing:</strong> "Clean the text" (like washing vegetables before cooking) 🥕<br>
+                    <strong>Step 2 - Feature Engineering:</strong> "Convert to numbers" (like turning ingredients into a recipe) 📝<br>
+                    <strong>Step 3 - Model Training:</strong> "Teach the model" (like training a chef) 👨‍🍳<br>
+                    <strong>Step 4 - Deployment:</strong> "Serve the model" (like opening a restaurant) 🍽️</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> A Well-Oiled Machine:</h4>
+                    <p>A good pipeline is like a well-oiled machine - each step builds on the previous one. Skip a step and everything falls apart! ⚙️</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Evaluation Metrics -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 17 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Evaluation Metrics</h1>
+                <p class="slide-subtitle">Measuring feature engineering success</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">How to Measure Success</h2>
+                    <p class="section-subtitle">Key metrics for text classification</p>
+                </div>
+                
+                <div class="info-box mb-4">
+                    <h4><i class="fas fa-info-circle"></i> Legend</h4>
+                    <p><strong>TP = True Positives</strong> (correctly identified), <strong>TN = True Negatives</strong> (correctly rejected), <strong>FP = False Positives</strong> (incorrectly flagged), <strong>FN = False Negatives</strong> (missed cases)</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Classification Metrics</h3>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-bullseye"></i> Accuracy</h4>
+                            <p><strong>What it is:</strong> The proportion of total predictions that were correct. It's intuitive but can be misleading in imbalanced datasets.</p>
+                            <div class="funny-example-small">
+                                <p><strong> Example:</strong> "My model predicted 99 out of 100 emails were 'not spam' and was right! But the one email it missed was from my boss about a raise. So, 99% accuracy, 100% regret!" 😅</p>
+                            </div>
+                            <p><strong>Formula:</strong> <code>(TP + TN) / (TP + TN + FP + FN)</code></p>
+                            <p><strong>Example:</strong> TP=99, TN=0, FP=0, FN=1 → Accuracy = (99+0)/(99+0+0+1) = 99/100 = 99% (but missed the important boss email!)</p>
+                            <p><strong>Best When:</strong> Used with balanced datasets</p>
+                            <p><strong>Watch Out For:</strong> Can be misleading with imbalanced data</p>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-chart-line"></i> Precision</h4>
+                            <p><strong>What it is:</strong> Of all the instances predicted as positive, how many were actually positive? It's about avoiding false positives.</p>
+                            <div class="funny-example-small">
+                                <p><strong> Example:</strong> "My spam filter has 100% precision! It only flags emails as spam if it's absolutely, positively sure. Problem is, it only flags 2 emails a year. The rest of my inbox is a digital landfill." 🗑️</p>
+                            </div>
+                            <p><strong>Formula:</strong> <code>TP / (TP + FP)</code></p>
+                            <p><strong>Example:</strong> TP=2, FP=0 → Precision = 2/(2+0) = 2/2 = 100% (but only flags 2 emails a year, rest is digital landfill!)</p>
+                            <p><strong>Best When:</strong> When false positives are costly</p>
+                            <p><strong>Watch Out For:</strong> Can be high by being too conservative (predicting positive only when very certain)</p>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-search"></i> Recall</h4>
+                            <p><strong>What it is:</strong> Of all the actual positive instances, how many did the model correctly identify? It's about avoiding false negatives.</p>
+                            <div class="funny-example-small">
+                                <p><strong> Example:</strong> "My spam filter has 100% recall! It catches <em>every single</em> spam email. Unfortunately, it also thinks my grandma's birthday wishes and my bank statements are spam. My inbox is empty, but my life is chaos!" 👵💸</p>
+                            </div>
+                            <p><strong>Formula:</strong> <code>TP / (TP + FN)</code></p>
+                            <p><strong>Example:</strong> TP=1000, FN=0 → Recall = 1000/(1000+0) = 100% (catches every spam, but also grandma's birthday wishes and bank statements!)</p>
+                            <p><strong>Best When:</strong> When false negatives are costly</p>
+                            <p><strong>Watch Out For:</strong> Can be high by flagging everything as positive</p>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-balance-scale"></i> F1-Score</h4>
+                            <p><strong>What it is:</strong> The harmonic mean of Precision and Recall. It provides a single score that balances both, especially useful when there's an uneven class distribution.</p>
+                            <div class="funny-example-small">
+                                <p><strong> Example:</strong> "The F1-Score is like the wise old judge who says, 'Look, you can't just be good at one thing! You need to be balanced. I need a model that's good at catching spam <em>and</em> not flagging my important emails.' It's the diplomat of metrics!" ⚖️</p>
+                            </div>
+                            <p><strong>Formula:</strong> <code>2 × (Precision × Recall) / (Precision + Recall)</code></p>
+                            <p><strong>Example:</strong> Precision=50%, Recall=50% → F1 = 2×(0.5×0.5)/(0.5+0.5) = 0.5/1.0 = 50% (the wise judge says "balance is key!")</p>
+                            <p><strong>Best When:</strong> When there is a need for a balance between precision and recall</p>
+                            <p><strong>Watch Out For:</strong> Can be low if either precision or recall is poor</p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Feature Quality</h3>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-compress"></i> Dimensionality reduction</h4>
+                            <p><strong>What it is:</strong> Reducing the number of input features while retaining important information. It combats the "curse of dimensionality," reduces noise, and speeds up training.</p>
+                            <div class="funny-example-small">
+                                <p><strong> Example:</strong> "Imagine trying to find your friend in a crowded stadium. If you only know their hair color, height, and what team they're cheering for (dimensionality reduction), it's much easier than knowing their exact shoe size, the brand of their watch, and the number of peanuts they've eaten (high dimensionality)." 🏟️</p>
+                            </div>
+                            <p><strong>Formula:</strong> <code>Reduction Ratio = Original Features / Reduced Features</code></p>
+                            <p><strong>Example:</strong> 100,000 features → 3 features → Reduction Ratio = 100,000/3 = 33,333x smaller (much easier to find your friend!)</p>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-clock"></i> Training time</h4>
+                            <p><strong>What it is:</strong> How long it takes for the model to learn from the data. Good feature quality (e.g., fewer, more relevant features) can significantly reduce training time.</p>
+                            <div class="funny-example-small">
+                                <p><strong> Example:</strong> "My model is training on 100,000 features. It started last Tuesday. I think it's still calculating the meaning of 'the'. My computer fan sounds like a jet engine taking off!" ✈️</p>
+                            </div>
+                            <p><strong>Formula:</strong> <code>Training Time ∝ O(n²) where n = number of features</code></p>
+                            <p><strong>Example:</strong> 100,000 features → 5 days, 1,000 features → 5 minutes (100x fewer features = 1,440x faster training!)</p>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-memory"></i> Memory usage</h4>
+                            <p><strong>What it is:</strong> The amount of computer memory (RAM) required to store the features and the model during training and inference. High-dimensional, dense features can consume a lot of memory.</p>
+                            <div class="funny-example-small">
+                                <p><strong> Example:</strong> "My model's features are so massive, my computer just gave up and showed me the 'blue screen of death'. It's like trying to fit an elephant into a smart car!" 🐘🚗</p>
+                            </div>
+                            <p><strong>Formula:</strong> <code>Memory = Features × Samples × Data Type Size</code></p>
+                            <p><strong>Example:</strong> 100,000 features × 1M samples × 8 bytes = 800GB (elephant size!) vs 1,000 features × 1M samples × 8 bytes = 8GB (smart car size!)</p>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-chart-line"></i> Model performance</h4>
+                            <p><strong>What it is:</strong> The overall effectiveness of the model on unseen data, often measured by the classification metrics (Accuracy, Precision, Recall, F1-Score). High-quality features directly lead to better model performance.</p>
+                            <div class="funny-example-small">
+                                <p><strong> Example:</strong> "After using amazing features, my model is so smart, it can predict if I'm going to order pizza just by looking at my browser history. It even pre-orders my favorite toppings! It's like having a psychic AI!" 🍕🔮</p>
+                            </div>
+                            <p><strong>Formula:</strong> <code>Performance = f(Feature Quality, Feature Relevance, Feature Engineering)</code></p>
+                            <p><strong>Example:</strong> Bad features → 60% accuracy, Good features → 95% accuracy (psychic AI level performance!)</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Feature Engineering Success</h4>
+                    <p>Good feature engineering should improve model performance while reducing computational complexity. Always compare different approaches!</p>
+                </div>
+                
+                <div class="code-block">
+# Example: Calculating Classification Metrics in Python
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import classification_report, confusion_matrix
+
+# Example predictions and true labels
+y_true = [0, 1, 0, 1, 1, 0, 1, 0, 0, 1]  # True labels
+y_pred = [0, 1, 0, 0, 1, 0, 1, 1, 0, 1]  # Predicted labels
+
+# Calculate metrics
+accuracy = accuracy_score(y_true, y_pred)
+precision = precision_score(y_true, y_pred)
+recall = recall_score(y_true, y_pred)
+f1 = f1_score(y_true, y_pred)
+
+print(f"Accuracy: {accuracy:.2f}")
+print(f"Precision: {precision:.2f}")
+print(f"Recall: {recall:.2f}")
+print(f"F1-Score: {f1:.2f}")
+
+# Detailed report
+print(classification_report(y_true, y_pred))
+                </div>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Metrics Comparison Table:</h4>
+                    <div style="overflow-x: auto; margin-top: 1rem;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 1.2rem;">
+                            <thead>
+                                <tr style="background: var(--primary-blue); color: white;">
+                                    <th style="padding: 0.8rem; border: 1px solid #ddd;">Metric</th>
+                                    <th style="padding: 0.8rem; border: 1px solid #ddd;">Formula</th>
+                                    <th style="padding: 0.8rem; border: 1px solid #ddd;">Best When</th>
+                                    <th style="padding: 0.8rem; border: 1px solid #ddd;">Watch Out For</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd; font-weight: bold;">Accuracy</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">(TP + TN) / (TP + TN + FP + FN)</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">Balanced datasets</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">Misleading with imbalanced data</td>
+                                </tr>
+                                <tr style="background: #f8f9fa;">
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd; font-weight: bold;">Precision</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">TP / (TP + FP)</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">False positives are costly</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">Can be high by being too conservative</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd; font-weight: bold;">Recall</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">TP / (TP + FN)</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">False negatives are costly</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">Can be high by flagging everything</td>
+                                </tr>
+                                <tr style="background: #f8f9fa;">
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd; font-weight: bold;">F1-Score</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">2 × (Precision × Recall) / (Precision + Recall)</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">Need balance between precision and recall</td>
+                                    <td style="padding: 0.8rem; border: 1px solid #ddd;">Can be low if either precision or recall is poor</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="margin-top: 1rem; font-size: 1.1rem; color: var(--medium-gray);">
+                        <strong>Legend:</strong> TP = True Positives, TN = True Negatives, FP = False Positives, FN = False Negatives
+                    </p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Feature Engineering Report Card:</h4>
+                    <p><strong>Accuracy:</strong> "How many did I get right?" (like a test score) 📝<br>
+                    <strong>Precision:</strong> "When I said 'spam', how often was I right?" (like a spam detector's confidence) 📧<br>
+                    <strong>Recall:</strong> "How many actual spam emails did I catch?" (like a fishing net's effectiveness) 🎣<br>
+                    <strong>F1-Score:</strong> "The balanced report card that considers both precision and recall" ⚖️</p>
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> The Success Formula:</h4>
+                    <p>Good feature engineering should improve all these metrics! It's like having a student who gets better grades in all subjects, not just one! 🎓</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Common Pitfalls -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 18 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Common Pitfalls</h1>
+                <p class="slide-subtitle">What to avoid in feature engineering</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Avoid These Mistakes</h2>
+                    <p class="section-subtitle">Learn from common errors</p>
+                </div>
+                
+                <div class="error-box">
+                    <h4><i class="fas fa-times-circle"></i> Data Leakage</h4>
+                    <p>Using future information to predict the past. Always ensure your features don't contain information that wouldn't be available at prediction time.</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Overfitting to Training Data</h4>
+                    <p>Creating features that work perfectly on training data but fail on new data. Always validate on held-out test sets.</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Ignoring Domain Knowledge</h4>
+                    <p>Don't just throw all features at the model. Use your understanding of the problem to guide feature selection and creation.</p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The "Kitchen Sink" Approach:</h4>
+                    <p><strong>Student:</strong> "I'll use all 50,000 features!"<br>
+                    <strong>Result:</strong> Model takes 3 hours to train and performs worse<br>
+                    <strong>Lesson:</strong> More features ≠ better performance! 😅</p>
+                </div>
+                
+                <div class="error-box">
+                    <h4><i class="fas fa-bug"></i> The Feature Engineering Minefield:</h4>
+                    <p><strong>Data Leakage:</strong> "I'll use future information to predict the past!"<br>
+                    Like using tomorrow's weather to predict today's temperature! 🌤️<br>
+                    <strong>Overfitting:</strong> "My model works perfectly on training data!"<br>
+                    Like memorizing answers to a test but failing on new questions! 📚</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Learn from Others' Mistakes:</h4>
+                    <p>Learn from others' mistakes - it's cheaper than making them yourself! It's like having a GPS that warns you about traffic jams before you hit them! 🚗</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Advanced Techniques -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 19 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Advanced Techniques</h1>
+                <p class="slide-subtitle">Beyond basic feature engineering</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Advanced Feature Engineering</h2>
+                    <p class="section-subtitle">Sophisticated approaches for better results</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">N-gram Features</h3>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-layer-group"></i> Bigrams and Trigrams</h4>
+                            <p><strong>What it is:</strong> Instead of just individual words, N-grams look at sequences of words. Bigrams are pairs of words, trigrams are triplets.</p>
+                            <div class="funny-example-small">
+                                <p><strong>Example:</strong> "I'm not just looking at 'apple' and 'pie' separately; I'm looking for 'apple pie'! It's a whole different delicious entity!" 🍎🥧</p>
+                            </div>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-sort"></i> Word Order Preservation</h4>
+                            <p><strong>What it is:</strong> N-grams inherently preserve some word order, which is crucial for meaning. "Man bites dog" is very different from "Dog bites man."</p>
+                            <div class="funny-example-small">
+                                <p><strong>Example:</strong> If you only looked at individual words, "I ate the cake" and "The cake ate me" would look similar. N-grams ensure we don't accidentally turn into dessert! 🍰👻</p>
+                            </div>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-chart-line"></i> Phrase-level Features</h4>
+                            <p><strong>What it is:</strong> N-grams help identify common phrases or multi-word expressions that carry specific meanings, like "New York City" or "machine learning."</p>
+                            <div class="funny-example-small">
+                                <p><strong>Example:</strong> A computer without phrase-level features might think "hot dog" is a dog with a fever. With phrase-level features, it knows it's a delicious snack! 🌭🌡️</p>
+                            </div>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-calculator"></i> Higher Dimensionality</h4>
+                            <p><strong>What it is:</strong> N-grams create many more features. If you have 10,000 unique words, you might have millions of unique bigrams and trigrams.</p>
+                            <div class="funny-example-small">
+                                <p><strong>Example:</strong> It's like inviting everyone you know (words) to a party, and then realizing you also have to invite every possible pair and trio of friends (N-grams). Your guest list just exploded! 🎉🤯</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Character-level Features</h3>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-font"></i> Character n-grams</h4>
+                            <p><strong>What it is:</strong> Similar to word N-grams, but applied to characters. "apple" becomes "ap," "pp," "pl," "le" (bigrams) or "app," "ppl," "ple" (trigrams).</p>
+                            <div class="funny-example-small">
+                                <p><strong>Example:</strong> If a word is a brick, character n-grams are like examining the individual grains of sand and cement that make up the brick. "Is this a 'cat' or a 'car'? Let's check the 'a' and 't' vs 'a' and 'r'!" 🐈🚗</p>
+                            </div>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-language"></i> Morphological Patterns</h4>
+                            <p><strong>What it is:</strong> These features capture information about word structure, prefixes, suffixes, and roots. For instance, "un-happy," "happi-ness," "re-do."</p>
+                            <div class="funny-example-small">
+                                <p><strong>Example:</strong> It's like knowing that if a word ends in "-ing," it's probably an action, even if you've never seen that specific word before. "Oh, 'flumphing'? Must be some kind of action!" 🏃‍♀️💨</p>
+                            </div>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-bug"></i> Typo Tolerance</h4>
+                            <p><strong>What it is:</strong> Character-level features are excellent for dealing with typos or variations in spelling. A model can recognize "recieve" as similar to "receive."</p>
+                            <div class="funny-example-small">
+                                <p><strong>Example:</strong> Your model becomes the ultimate proofreader. "You typed 'teh'? I know you meant 'the'! I'm smarter than your clumsy fingers!" ⌨️🤓</p>
+                            </div>
+                        </div>
+                        <div class="metric-explanation">
+                            <h4><i class="fas fa-globe"></i> Cross-language Features</h4>
+                            <p><strong>What it is:</strong> Character-level features can be more robust across different languages, especially when dealing with out-of-vocabulary words.</p>
+                            <div class="funny-example-small">
+                                <p><strong>Example:</strong> It's like a universal translator that doesn't need a dictionary for every single word. "I don't know 'Bonjour,' but I recognize 'B-o-n-j-o-u-r' as a greeting pattern!" 👋🌍</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-magic"></i> Hybrid Approaches</h4>
+                    <p>Combine multiple feature types: word embeddings + TF-IDF + character features + domain-specific features for maximum performance.</p>
+                </div>
+                
+                <div class="code-block">
+# Example: N-gram Features in Python
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Sample text
+texts = [
+    "I love machine learning",
+    "Machine learning is amazing",
+    "I love amazing algorithms"
+]
+
+# Word-level n-grams (1-gram, 2-gram, 3-gram)
+vectorizer_words = TfidfVectorizer(ngram_range=(1, 3))
+X_words = vectorizer_words.fit_transform(texts)
+print("Word n-grams shape:", X_words.shape)
+print("Word n-grams features:", vectorizer_words.get_feature_names_out()[:10])
+
+# Character-level n-grams
+vectorizer_chars = TfidfVectorizer(analyzer='char', ngram_range=(2, 4))
+X_chars = vectorizer_chars.fit_transform(texts)
+print("Character n-grams shape:", X_chars.shape)
+print("Character n-grams features:", vectorizer_chars.get_feature_names_out()[:10])
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> When to Use Each Approach:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div>
+                            <h5 style="color: var(--primary-blue); margin-bottom: 0.5rem;">N-gram Features:</h5>
+                            <ul style="font-size: 1.2rem; color: var(--charcoal);">
+                                <li><strong>Use when:</strong> Word order matters, dealing with phrases, need context</li>
+                                <li><strong>Examples:</strong> Sentiment analysis, topic modeling, language modeling</li>
+                                <li><strong>Trade-off:</strong> More features, better context, but higher dimensionality</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: var(--success-green); margin-bottom: 0.5rem;">Character-level Features:</h5>
+                            <ul style="font-size: 1.2rem; color: var(--charcoal);">
+                                <li><strong>Use when:</strong> Dealing with typos, new words, morphological analysis</li>
+                                <li><strong>Examples:</strong> Spell checking, language identification, social media text</li>
+                                <li><strong>Trade-off:</strong> Robust to variations, but can be noisy</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Feature Engineering Masterclass:</h4>
+                    <p><strong>N-gram Features:</strong> "The cat sat on the mat" → ["the cat", "cat sat", "sat on", "on the", "the mat"]<br>
+                    Like capturing word relationships in pairs or triplets! 🤝<br>
+                    <strong>Character-level Features:</strong> "pizza" → ["piz", "izz", "zza"]<br>
+                    Like analyzing handwriting patterns to understand meaning! ✍️<br>
+                    <strong>Hybrid Approaches:</strong> Combine everything for maximum power!<br>
+                    Like a superhero team where each member has different powers! 🦸‍♂️</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Advanced Techniques Capture Hidden Patterns:</h4>
+                    <p>Advanced techniques can capture patterns that basic methods miss. It's like having a magnifying glass that reveals details invisible to the naked eye! 🔍</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20: Quiz -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 20 of 20</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Knowledge Check Quiz</h1>
+                <p class="slide-subtitle">Test your understanding of NLP Feature Engineering</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Multiple Choice Quiz</h2>
+                    <p class="section-subtitle">Choose the best answer for each question</p>
+                </div>
+                
+                <div class="quiz-container">
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question"></i> Question 1: What is the main limitation of Bag-of-Words?</h4>
+                        <div class="quiz-options">
+                            <label><input type="radio" name="q1" value="a"> A) It's too slow to compute</label>
+                            <label><input type="radio" name="q1" value="b"> B) It ignores word order and context</label>
+                            <label><input type="radio" name="q1" value="c"> C) It only works with English text</label>
+                            <label><input type="radio" name="q1" value="d"> D) It requires too much memory</label>
+                            </div>
+                        <div class="quiz-answer" id="answer1" style="display: none;">
+                            <strong>Correct Answer: B</strong> - BoW ignores word order and context, treating "not good" the same as "good not"
+                    </div>
+                </div>
+                
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question"></i> Question 2: What does TF-IDF stand for?</h4>
+                        <div class="quiz-options">
+                            <label><input type="radio" name="q2" value="a"> A) Term Frequency - Inverse Document Frequency</label>
+                            <label><input type="radio" name="q2" value="b"> B) Text Feature - Information Density Factor</label>
+                            <label><input type="radio" name="q2" value="c"> C) Total Frequency - Index Document Factor</label>
+                            <label><input type="radio" name="q2" value="d"> D) Token Frequency - Inverse Data Frequency</label>
+                </div>
+                        <div class="quiz-answer" id="answer2" style="display: none;">
+                            <strong>Correct Answer: A</strong> - TF-IDF = Term Frequency × Inverse Document Frequency
+            </div>
+        </div>
+
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question"></i> Question 3: Which method creates dense vector representations of words?</h4>
+                        <div class="quiz-options">
+                            <label><input type="radio" name="q3" value="a"> A) Bag-of-Words</label>
+                            <label><input type="radio" name="q3" value="b"> B) TF-IDF</label>
+                            <label><input type="radio" name="q3" value="c"> C) Word2Vec</label>
+                            <label><input type="radio" name="q3" value="d"> D) All of the above</label>
+                    </div>
+                        <div class="quiz-answer" id="answer3" style="display: none;">
+                            <strong>Correct Answer: C</strong> - Word2Vec creates dense vector representations, while BoW and TF-IDF create sparse vectors
+                </div>
+                </div>
+                
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question"></i> Question 4: What is the formula for Precision?</h4>
+                        <div class="quiz-options">
+                            <label><input type="radio" name="q4" value="a"> A) TP / (TP + TN)</label>
+                            <label><input type="radio" name="q4" value="b"> B) TP / (TP + FP)</label>
+                            <label><input type="radio" name="q4" value="c"> C) TP / (TP + FN)</label>
+                            <label><input type="radio" name="q4" value="d"> D) (TP + TN) / (TP + TN + FP + FN)</label>
+                            </div>
+                        <div class="quiz-answer" id="answer4" style="display: none;">
+                            <strong>Correct Answer: B</strong> - Precision = TP / (TP + FP) measures how many predicted positives were actually positive
+                    </div>
+                </div>
+                
+                    <div class="quiz-question">
+                        <h4><i class="fas fa-question"></i> Question 5: Which technique helps reduce the curse of dimensionality?</h4>
+                        <div class="quiz-options">
+                            <label><input type="radio" name="q5" value="a"> A) Adding more features</label>
+                            <label><input type="radio" name="q5" value="b"> B) Dimensionality reduction</label>
+                            <label><input type="radio" name="q5" value="c"> C) Increasing training data</label>
+                            <label><input type="radio" name="q5" value="d"> D) Using more complex models</label>
+                </div>
+                        <div class="quiz-answer" id="answer5" style="display: none;">
+                            <strong>Correct Answer: B</strong> - Dimensionality reduction reduces the number of features while retaining important information
+                </div>
+            </div>
+        </div>
+
+                <div class="quiz-controls">
+                    <button class="quiz-btn" onclick="showAnswers()">Show Answers</button>
+                    <button class="quiz-btn" onclick="hideAnswers()">Hide Answers</button>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-lightbulb"></i> Quiz Tips:</h4>
+                    <p><strong>Think about:</strong> The key concepts from each slide<br>
+                    <strong>Remember:</strong> Formulas, advantages, and limitations of each method<br>
+                    <strong>Consider:</strong> When to use each technique in practice</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+                <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+                Next <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            if (direction === 1 && currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            } else if (direction === -1 && currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+
+        // Quiz functions
+        function showAnswers() {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById('answer' + i).style.display = 'block';
+            }
+        }
+        
+        function hideAnswers() {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById('answer' + i).style.display = 'none';
+            }
+        }
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

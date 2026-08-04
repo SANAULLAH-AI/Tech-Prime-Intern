@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 6: Parsing - Syntax, Constituency & Dependency Parsing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --white: #ffffff;
+            --light-gray: #f1f5f9;
+            --medium-gray: #64748b;
+            --charcoal: #1e293b;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            --gradient-error: linear-gradient(135deg, var(--error-red) 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, var(--purple) 0%, #a855f7 100%);
+            --gradient-pink: linear-gradient(135deg, var(--pink) 0%, #f472b6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
+            color: var(--primary-navy);
+            overflow: hidden;
+            height: 100vh;
+            line-height: 1.8;
+            font-size: 18px;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem 3rem;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            padding-right: 280px;
+        }
+
+        .slide-number-container {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-number {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 1.15rem;
+        }
+
+        .slide-icon {
+            color: var(--white);
+            font-size: 1.3rem;
+        }
+
+        .slide-title {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-subtitle {
+            font-size: 1.55rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            background: var(--white);
+            font-size: 1.25rem;
+            line-height: 1.9;
+        }
+
+        /* Force readable body text even when inline styles exist */
+        .slide-content p {
+            font-size: 1.3rem !important;
+            line-height: 1.9;
+        }
+
+        .slide-content li {
+            font-size: 1.25rem !important;
+            line-height: 1.8;
+        }
+
+        .section-title {
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.45rem;
+            color: var(--medium-gray);
+            margin-bottom: 2rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mb-5 { margin-bottom: 3rem; }
+
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .two-col { grid-template-columns: repeat(2, 1fr); }
+        .three-col { grid-template-columns: repeat(3, 1fr); }
+
+        .content-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--light-gray);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--white);
+            font-size: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.25rem;
+            color: var(--charcoal);
+        }
+
+        .feature-list i {
+            color: var(--accent-blue);
+            width: 20px;
+            text-align: center;
+        }
+
+        .code-block {
+            background: var(--charcoal);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            margin: 2rem 0;
+            overflow-x: auto;
+            border: 1px solid #374151;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-left: 5px solid var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-left: 5px solid var(--success-green);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .success-box h4 {
+            color: var(--success-green);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 5px solid var(--warning-orange);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box h4 {
+            color: var(--warning-orange);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .error-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left: 5px solid var(--error-red);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .error-box h4 {
+            color: var(--error-red);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .practical-exercise {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border-left: 5px solid var(--purple);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .practical-exercise h4 {
+            color: var(--purple);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .slide-header {
+                padding: 1.5rem;
+                padding-right: 200px;
+            }
+            
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .slide-title {
+                font-size: 2.4rem;
+            }
+            
+            .card-grid.two-col,
+            .card-grid.three-col {
+                grid-template-columns: 1fr;
+            }
+            
+            .slide-number-container {
+                right: 1rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation-container">
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 1 of 7</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Syntactic Parsing</h1>
+                <p class="slide-subtitle">Lecture 6: Understanding Sentence Structure</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-5">
+                    <div class="icon-large" style="background: var(--gradient-primary); margin: 0 auto 2rem;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h2 class="section-title">Welcome to Parsing!</h2>
+                    <p class="section-subtitle">Understanding How Sentences Are Structured</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">What We'll Learn</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-sitemap"></i> Context-Free Grammars (CFG)</li>
+                            <li><i class="fas fa-tree"></i> Constituency Parsing</li>
+                            <li><i class="fas fa-project-diagram"></i> Dependency Parsing</li>
+                            <li><i class="fas fa-code"></i> Parsing Algorithms</li>
+                            <li><i class="fas fa-chart-line"></i> Evaluation Metrics</li>
+                            <li><i class="fas fa-tools"></i> Practical Implementation</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Why Parsing Matters</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-language"></i> Understand sentence structure</li>
+                            <li><i class="fas fa-brain"></i> Extract relationships between words</li>
+                            <li><i class="fas fa-search"></i> Improve information extraction</li>
+                            <li><i class="fas fa-robot"></i> Build better NLP applications</li>
+                            <li><i class="fas fa-question"></i> Resolve ambiguity</li>
+                            <li><i class="fas fa-cogs"></i> Foundation for advanced NLP</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🌳 NLP Pipeline Progress</h3>
+                    <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Preprocessing → Features → Classification → <span class="highlight" style="background: rgba(255,255,255,0.2);">Parsing</span> → Semantics</div>
+                    <div style="font-size: 1rem; opacity: 0.8; margin-top: 0.5rem;">Today we learn how to understand sentence structure!</div>
+                </div>
+                
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-lightbulb"></i> Quick Warm-up (2 minutes):</h4>
+                    <p>Look at this sentence: "The ninja stole my sandwich." Can you identify which word is the subject? Which is the verb? How are the words related to each other? This is what parsing helps us understand!</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> What is Parsing?</h4>
+                    <p><strong>Parsing</strong> is the process of analyzing a string of symbols (words) according to the rules of a formal grammar. It determines the syntactic structure of a sentence by identifying relationships between words.<br>
+                    <strong>Two Main Approaches:</strong> Constituency Parsing (phrase structure) and Dependency Parsing (word relationships)<br>
+                    <strong>Applications:</strong> Machine translation, question answering, information extraction, sentiment analysis</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Key Challenges in Parsing:</h4>
+                    <p>• Ambiguity: "I saw her fly" - is "fly" a noun (insect) or verb (action)?<br>
+                    • Complex sentences with multiple clauses<br>
+                    • Different languages have different structures<br>
+                    • Computational complexity of parsing algorithms</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Introduction to Parsing -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 2 of 7</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Introduction to Parsing</h1>
+                <p class="slide-subtitle">Understanding sentence structure and relationships</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">What is Parsing?</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Breaking down sentences to understand how words work together</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Parsing</strong> = Figuring out how words in a sentence connect to each other<br>
+                        Like a detective solving how words work together to make meaning!
+                    </p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-tree"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Constituency Parsing</h3>
+                        <p style="margin-bottom: 1.5rem; color: var(--charcoal); font-size: 1.1rem; text-align: center; font-weight: 600;">
+                            Groups words into phrases (like building blocks)
+                        </p>
+                        
+                        <div style="background: #f0f9ff; padding: 1.2rem; border-radius: 10px; margin-bottom: 1.5rem; border-left: 4px solid var(--success-green);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📝 What it does:</strong>
+                            <p style="margin-top: 0.5rem; color: var(--charcoal); font-size: 1rem;">
+                                Shows how words form groups (phrases), and how phrases form bigger groups
+                            </p>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem; display: block; margin-bottom: 0.8rem;">🔤 Important Labels:</strong>
+                            <div style="background: #e0f2fe; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                                <strong style="color: var(--primary-blue);">NP = Noun Phrase</strong><br>
+                                <span style="font-size: 0.95rem; color: var(--charcoal);">A group of words that acts like a noun</span><br>
+                                <span style="font-size: 0.9rem; color: var(--medium-gray); font-style: italic;">Examples: "the ninja", "my sandwich", "a dancing robot"</span>
+                            </div>
+                            <div style="background: #dcfce7; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                                <strong style="color: var(--success-green);">VP = Verb Phrase</strong><br>
+                                <span style="font-size: 0.95rem; color: var(--charcoal);">A group of words with a verb and what it does</span><br>
+                                <span style="font-size: 0.9rem; color: var(--medium-gray); font-style: italic;">Examples: "stole my lunch", "danced wildly", "flew away"</span>
+                            </div>
+                            <div style="background: #fef3c7; padding: 1rem; border-radius: 8px;">
+                                <strong style="color: var(--warning-orange);">PP = Prepositional Phrase</strong><br>
+                                <span style="font-size: 0.95rem; color: var(--charcoal);">A preposition + noun phrase (shows location/time)</span><br>
+                                <span style="font-size: 0.9rem; color: var(--medium-gray); font-style: italic;">Examples: "at the party", "in the kitchen", "on the moon"</span>
+                            </div>
+                        </div>
+
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">💡 Example:</strong><br>
+                            <div style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                <strong>"The ninja stole my sandwich"</strong><br><br>
+                                <span style="font-size: 0.95rem;">
+                                • "The ninja" = NP (Noun Phrase)<br>
+                                • "stole my sandwich" = VP (Verb Phrase)<br>
+                                • "my sandwich" = NP (inside the VP)<br>
+                                • "my" = determiner describing "sandwich"
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Dependency Parsing</h3>
+                        <p style="margin-bottom: 1.5rem; color: var(--charcoal); font-size: 1.1rem; text-align: center; font-weight: 600;">
+                            Shows which word connects to which word
+                        </p>
+                        
+                        <div style="background: #fff7ed; padding: 1.2rem; border-radius: 10px; margin-bottom: 1.5rem; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📝 What it does:</strong>
+                            <p style="margin-top: 0.5rem; color: var(--charcoal); font-size: 1rem;">
+                                Shows direct connections: which word modifies or depends on which other word
+                            </p>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem; display: block; margin-bottom: 0.8rem;">🔗 Key Concepts:</strong>
+                            <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                                <strong>Word Relationships</strong><br>
+                                <span style="font-size: 0.95rem; color: var(--charcoal);">Shows how words connect</span><br>
+                                <span style="font-size: 0.9rem; color: var(--medium-gray); font-style: italic;">Example: "ninja" is the subject of "stole"</span>
+                            </div>
+                            <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                                <strong>Head-Dependent</strong><br>
+                                <span style="font-size: 0.95rem; color: var(--charcoal);">Each word depends on one main word</span><br>
+                                <span style="font-size: 0.9rem; color: var(--medium-gray); font-style: italic;">Example: "The" depends on "ninja"</span>
+                            </div>
+                            <div style="background: #fef3c7; padding: 1rem; border-radius: 8px;">
+                                <strong>Relation Labels</strong><br>
+                                <span style="font-size: 0.95rem; color: var(--charcoal);">Describes the connection type</span><br>
+                                <span style="font-size: 0.9rem; color: var(--medium-gray); font-style: italic;">Example: subject, object, determiner</span>
+                            </div>
+                        </div>
+
+                        <div style="background: #fed7aa; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">💡 Example:</strong><br>
+                            <div style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                <strong>"The ninja stole my sandwich"</strong><br><br>
+                                <span style="font-size: 0.95rem;">
+                                • "stole" = main word (root)<br>
+                                • "ninja" → depends on "stole" (subject)<br>
+                                • "The" → depends on "ninja" (describes it)<br>
+                                • "sandwich" → depends on "stole" (what was stolen)<br>
+                                • "my" → depends on "sandwich" (describes it)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Applications</h3>
+                        <p style="margin-bottom: 1.5rem; color: var(--charcoal); font-size: 1.1rem; text-align: center; font-weight: 600;">
+                            Where we use parsing in real life
+                        </p>
+                        
+                        <div style="background: #fef2f2; padding: 1.2rem; border-radius: 10px; margin-bottom: 1.5rem; border-left: 4px solid var(--error-red);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📝 What it does:</strong>
+                            <p style="margin-top: 0.5rem; color: var(--charcoal); font-size: 1rem;">
+                                Parsing helps computers understand language better for many useful tasks
+                            </p>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="background: #fee2e2; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                                <strong style="color: var(--error-red);">🌐 Machine Translation</strong><br>
+                                <span style="font-size: 0.95rem; color: var(--charcoal);">Helps translate sentences correctly</span><br>
+                                <span style="font-size: 0.9rem; color: var(--medium-gray); font-style: italic;">Example: Google Translate uses parsing</span>
+                            </div>
+                            <div style="background: #fee2e2; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                                <strong style="color: var(--error-red);">❓ Question Answering</strong><br>
+                                <span style="font-size: 0.95rem; color: var(--charcoal);">Helps find answers in text</span><br>
+                                <span style="font-size: 0.9rem; color: var(--medium-gray); font-style: italic;">Example: Siri, Alexa answering questions</span>
+                            </div>
+                            <div style="background: #fee2e2; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                                <strong style="color: var(--error-red);">🔍 Information Extraction</strong><br>
+                                <span style="font-size: 0.95rem; color: var(--charcoal);">Finds important facts from text</span><br>
+                                <span style="font-size: 0.9rem; color: var(--medium-gray); font-style: italic;">Example: Finding names, dates, places</span>
+                            </div>
+                            <div style="background: #fee2e2; padding: 1rem; border-radius: 8px;">
+                                <strong style="color: var(--error-red);">❤️ Sentiment Analysis</strong><br>
+                                <span style="font-size: 0.95rem; color: var(--charcoal);">Understands if text is positive or negative</span><br>
+                                <span style="font-size: 0.9rem; color: var(--medium-gray); font-style: italic;">Example: Review analysis, social media</span>
+                            </div>
+                        </div>
+
+                        <div style="background: #fecaca; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--error-red);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">💡 Real Example:</strong><br>
+                            <div style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                <strong>Sentence:</strong> "The robot danced at the party"<br><br>
+                                <span style="font-size: 0.95rem;">
+                                Parsing finds:<br>
+                                • Subject: robot<br>
+                                • Action: danced<br>
+                                • Location: party<br>
+                                • Relationship: danced at
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Complete Example: "The ninja stole my sandwich"</strong>
+
+<strong style="color: #34d399;">Constituency Parsing (Groups):</strong>
+<pre style="margin: 0.5rem 0; line-height: 1.6; color: #ffffff;">
+                    SENTENCE
+                    ╱        ╲
+            ┌─────────┴─────────┐
+            │                   │
+        NOUN PHRASE        VERB PHRASE
+        "The ninja"    "stole my sandwich"
+        ╱      ╲          ╱         ╲
+       │        │         │           │
+    "The"   "ninja"    "stole"   NOUN PHRASE
+   (article) (noun)    (verb)    "my sandwich"
+                                    ╱      ╲
+                                   │       │
+                                "my"   "sandwich"
+                            (determiner)  (noun)
+</pre>
+
+<strong style="color: #fbbf24;">Dependency Parsing (Connections):</strong>
+<pre style="margin: 0.5rem 0; line-height: 1.6; color: #ffffff;">
+                  stole (ROOT)
+                    ╱         ╲
+                   │           │
+            ninja (nsubj)  sandwich (dobj)
+              ╱                    ╱
+             │                    │
+        The (det)            my (det)
+</pre>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Why Do We Need Parsing?</h4>
+                    <ul style="font-size: 1.05rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Understand Structure:</strong> Know which words describe which other words</li>
+                        <li><strong>Solve Confusion:</strong> "I saw her fly" - is fly an insect or an action? Parsing helps decide!</li>
+                        <li><strong>Find Information:</strong> Extract who did what to whom (e.g., "The ninja stole my sandwich" → Subject: ninja, Verb: stole, Object: sandwich)</li>
+                        <li><strong>Better AI:</strong> Makes translation, Q&A, and text understanding work better</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Context-Free Grammars -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 3 of 7</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Context-Free Grammars (CFG)</h1>
+                <p class="slide-subtitle">Formal rules for sentence structure</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Grammar Rules (CFG)</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">The recipe book for building sentences</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> What is CFG?</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Context-Free Grammar (CFG)</strong> = Rules that tell us how to build sentences<br>
+                        Like a recipe: "A sentence needs a noun phrase + verb phrase"
+                    </p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">The Rules</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--success-green);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📋 Basic Rules:</strong>
+                            <div style="margin-top: 1rem; font-size: 1rem; color: var(--charcoal); line-height: 1.8;">
+                                • <strong>Sentence</strong> = Noun Phrase + Verb Phrase<br>
+                                • <strong>Noun Phrase</strong> = Determiner + Noun<br>
+                                • <strong>Verb Phrase</strong> = Verb + (maybe Prepositional Phrase)<br>
+                                • <strong>Prepositional Phrase</strong> = Preposition + Noun Phrase
+                            </div>
+                        </div>
+                        <div style="background: #e0f2fe; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--primary-blue);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">💡 Example:</strong>
+                            <div style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                <strong>"The robot danced"</strong><br>
+                                Sentence = [NP "The robot"] + [VP "danced"]
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">The Problem: Ambiguity</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">🤔 What is Ambiguity?</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                Sometimes one sentence can be understood in multiple ways!
+                            </p>
+                        </div>
+                        <div style="background: #fed7aa; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">💡 Example:</strong>
+                            <div style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                <strong>"I saw her fly"</strong><br><br>
+                                <span style="font-size: 0.95rem;">
+                                Could mean:<br>
+                                1. I saw [her fly] → fly = insect (noun) 🪰<br>
+                                2. I saw her [fly] → fly = action (verb) ✈️
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Complete Example: "The ninja stole my sandwich"</strong>
+
+<strong style="color: #34d399;">Step 1: Apply the Rules</strong>
+Sentence (S) → Noun Phrase (NP) + Verb Phrase (VP)
+
+<strong style="color: #34d399;">Step 2: Break Down Each Part</strong>
+<pre style="margin: 0.5rem 0; line-height: 1.6; color: #ffffff;">
+                    SENTENCE
+                    ╱        ╲
+            ┌─────────┴─────────┐
+            │                   │
+        NOUN PHRASE        VERB PHRASE
+        "The ninja"    "stole my sandwich"
+        ╱      ╲          ╱         ╲
+       │        │         │           │
+    "The"  "ninja"     "stole"   NOUN PHRASE
+   (article) (noun)    (verb)    "my sandwich"
+                                    ╱      ╲
+                                   │       │
+                                "my"   "sandwich"
+                            (determiner)  (noun)
+</pre>
+
+<strong style="color: #fbbf24;">Result: A tree structure showing how words group together!</strong>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Common Labels You'll See:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+                        <div style="background: #e0f2fe; padding: 1rem; border-radius: 8px;">
+                            <strong style="color: var(--primary-blue);">S</strong> = Sentence<br>
+                            <strong style="color: var(--primary-blue);">NP</strong> = Noun Phrase<br>
+                            <strong style="color: var(--primary-blue);">VP</strong> = Verb Phrase
+                        </div>
+                        <div style="background: #dcfce7; padding: 1rem; border-radius: 8px;">
+                            <strong style="color: var(--success-green);">PP</strong> = Prepositional Phrase<br>
+                            <strong style="color: var(--success-green);">DT</strong> = Determiner (the, a, an)<br>
+                            <strong style="color: var(--success-green);">NN</strong> = Noun
+                        </div>
+                        <div style="background: #fef3c7; padding: 1rem; border-radius: 8px;">
+                            <strong style="color: var(--warning-orange);">VBD</strong> = Past tense verb<br>
+                            <strong style="color: var(--warning-orange);">IN</strong> = Preposition<br>
+                            <strong style="color: var(--warning-orange);">JJ</strong> = Adjective
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Constituency Parsing -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 4 of 7</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Constituency Parsing</h1>
+                <p class="slide-subtitle">Building phrase structure trees</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Constituency Parsing in Detail</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Building sentence trees step by step</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> How It Works:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        Constituency parsing builds a <strong>tree</strong> showing how words group into phrases, and phrases into bigger phrases.<br>
+                        Think of it like Russian nesting dolls - smaller groups inside bigger groups!
+                    </p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-sitemap"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">The Process</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--success-green);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📝 Steps:</strong>
+                            <div style="margin-top: 1rem; font-size: 1rem; color: var(--charcoal); line-height: 2;">
+                                1. Find small groups (words → phrases)<br>
+                                2. Find bigger groups (phrases → bigger phrases)<br>
+                                3. Build the tree from bottom to top<br>
+                                4. Label each group (NP, VP, PP, etc.)
+                            </div>
+                        </div>
+                        <div style="background: #e0f2fe; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--primary-blue);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">💡 Simple Example:</strong>
+                            <div style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                <strong>"The angry robot"</strong><br>
+                                Words: "The" + "angry" + "robot"<br>
+                                → Group: Noun Phrase (NP)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-tree"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Tree Structure</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">🌳 What You Get:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                A tree diagram showing:<br>
+                                • Which words belong together<br>
+                                • How phrases are nested<br>
+                                • The complete sentence structure
+                            </p>
+                        </div>
+                        <div style="background: #fed7aa; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">💡 Visual:</strong>
+                            <div style="margin-top: 0.8rem; font-size: 0.95rem; color: var(--charcoal); font-family: 'Courier New', monospace; line-height: 1.8;">
+<pre style="margin: 0; color: #ffffff;">
+        SENTENCE
+        ╱    ╲
+       │      │
+    NP      VP
+"The ninja" "stole"
+</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Complete Example: "The ninja stole my sandwich"</strong>
+
+<strong style="color: #34d399;">The Tree Structure:</strong>
+<pre style="margin: 0.5rem 0; line-height: 1.6; color: #ffffff;">
+                    SENTENCE
+                    ╱        ╲
+            ┌─────────┴─────────┐
+            │                   │
+        NOUN PHRASE        VERB PHRASE
+        "The ninja"    "stole my sandwich"
+        ╱      ╲          ╱         ╲
+       │        │         │           │
+    "The"  "ninja"     "stole"   NOUN PHRASE
+   (article) (noun)    (verb)    "my sandwich"
+                                    ╱      ╲
+                                   │       │
+                                "my"   "sandwich"
+                            (determiner)  (noun)
+</pre>
+
+<strong style="color: #fbbf24;">Key Point: Notice how "my sandwich" is a Noun Phrase INSIDE the Verb Phrase!</strong>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Why Use Constituency Parsing?</h4>
+                    <ul style="font-size: 1.05rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>See the Big Picture:</strong> Understand how entire phrases work together</li>
+                        <li><strong>Find Phrases:</strong> Identify complete phrases, not just individual words</li>
+                        <li><strong>Grammar Rules:</strong> Follows traditional grammar structure</li>
+                        <li><strong>Easy to Visualize:</strong> Tree diagrams are easy to understand</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Dependency Parsing -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 5 of 7</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Dependency Parsing</h1>
+                <p class="slide-subtitle">Identifying word-to-word relationships</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Dependency Parsing in Detail</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Finding direct connections between words</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> How It Works:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        Dependency parsing finds <strong>direct relationships</strong> between words.<br>
+                        Each word (except one) depends on another word - like a family tree!
+                    </p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Key Concepts</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">🔗 The Root:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                One main word (usually the verb) that everything else connects to
+                            </p>
+                        </div>
+                        <div style="background: #fed7aa; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">🔗 Dependencies:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                Each word points to the word it depends on (modifies or relates to)
+                            </p>
+                        </div>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">🏷️ Labels:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                Each connection has a label (subject, object, determiner, etc.)
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Common Labels</h3>
+                        <div style="background: #d1fae5; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                            <strong style="color: var(--success-green);">nsubj</strong> = subject<br>
+                            <span style="font-size: 0.9rem; color: var(--medium-gray);">Example: "ninja" in "The ninja stole"</span>
+                        </div>
+                        <div style="background: #d1fae5; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                            <strong style="color: var(--success-green);">dobj</strong> = direct object<br>
+                            <span style="font-size: 0.9rem; color: var(--medium-gray);">Example: "sandwich" in "I ate the sandwich"</span>
+                        </div>
+                        <div style="background: #d1fae5; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                            <strong style="color: var(--success-green);">det</strong> = determiner<br>
+                            <span style="font-size: 0.9rem; color: var(--medium-gray);">Example: "The" in "The ninja"</span>
+                        </div>
+                        <div style="background: #d1fae5; padding: 1rem; border-radius: 8px;">
+                            <strong style="color: var(--success-green);">prep</strong> = preposition<br>
+                            <span style="font-size: 0.9rem; color: var(--medium-gray);">Example: "my" in "stole my sandwich"</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Complete Example: "The ninja stole my sandwich"</strong>
+
+<strong style="color: #fbbf24;">Dependency Structure:</strong>
+<pre style="margin: 0.5rem 0; line-height: 1.6; color: #ffffff;">
+                  stole (ROOT)
+                    ╱         ╲
+                   │           │
+            ninja (nsubj)  sandwich (dobj)
+              ╱                    ╱
+             │                    │
+        The (det)            my (det)
+</pre>
+
+<strong style="color: #34d399;">Key Point: "stole" is the root. Everything else connects to it or to words connected to it!</strong>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Why Use Dependency Parsing?</h4>
+                    <ul style="font-size: 1.05rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Direct Relationships:</strong> See exactly which word connects to which</li>
+                        <li><strong>Simple Structure:</strong> Easier to understand than phrase trees</li>
+                        <li><strong>Find Roles:</strong> Quickly identify subject, object, modifiers</li>
+                        <li><strong>Works for Many Languages:</strong> Good for languages with different word orders</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Practical Examples & Tools -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 6 of 7</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Practical Examples & Tools</h1>
+                <p class="slide-subtitle">Using NLTK and spaCy for parsing</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Tools for Parsing</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Python libraries that make parsing easy</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Popular Tools:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        There are great Python libraries that can parse sentences for you!<br>
+                        You don't need to write all the rules yourself - these tools do it automatically.
+                    </p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">spaCy</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--success-green);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">✅ Best For:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                • Dependency parsing (very fast!)<br>
+                                • Production applications<br>
+                                • Easy to use
+                            </p>
+                        </div>
+                        <div style="background: #e0f2fe; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--primary-blue);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">💡 Simple Example:</strong>
+                            <div style="margin-top: 0.8rem; font-size: 0.95rem; color: var(--charcoal); font-family: monospace;">
+                                import spacy<br>
+                                nlp = spacy.load("en_core_web_sm")<br>
+                                doc = nlp("The robot danced")<br>
+                                # Get dependencies!
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">NLTK</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">✅ Best For:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                • Learning and education<br>
+                                • Constituency parsing<br>
+                                • Many NLP tools
+                            </p>
+                        </div>
+                        <div style="background: #fed7aa; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">💡 Simple Example:</strong>
+                            <div style="margin-top: 0.8rem; font-size: 0.95rem; color: var(--charcoal); font-family: monospace;">
+                                import nltk<br>
+                                from nltk.parse import *<br>
+                                # Parse sentences!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1rem; padding: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Quick Comparison:</strong>
+
+<strong style="color: #34d399;">spaCy:</strong>
+  ✅ Very fast
+  ✅ Great for dependency parsing
+  ✅ Easy to use
+  ✅ Production-ready
+  ❌ Less control over parsing
+
+<strong style="color: #fbbf24;">NLTK:</strong>
+  ✅ Great for learning
+  ✅ Many parsing options
+  ✅ Good for constituency parsing
+  ❌ Slower than spaCy
+  ❌ More complex setup
+
+<strong style="color: #ef4444;">Which to Choose?</strong>
+  • Learning: Start with NLTK
+  • Real projects: Use spaCy
+  • Both are free and open source!
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Getting Started:</h4>
+                    <ul style="font-size: 1.05rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Install:</strong> <code>pip install spacy</code> or <code>pip install nltk</code></li>
+                        <li><strong>Download models:</strong> Both need language models (English, etc.)</li>
+                        <li><strong>Try examples:</strong> Start with simple sentences like "The robot danced"</li>
+                        <li><strong>Practice:</strong> Parse different sentences to see how it works!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Parsing Evaluation Metrics -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 7 of 7</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Parsing Evaluation Metrics</h1>
+                <p class="slide-subtitle">Measuring parse quality and accuracy</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">How Good is Your Parser?</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Measuring if parsing is correct</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Why Evaluate?</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        We need to check if our parser is working correctly!<br>
+                        We compare what the parser found with what the correct answer should be.
+                    </p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">For Dependency Parsing</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--success-green);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📊 UAS (Unlabeled Attachment Score):</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                How many words are connected to the correct parent word?<br>
+                                <strong>Example:</strong> 90% UAS = 90% of connections are correct
+                            </p>
+                        </div>
+                        <div style="background: #e0f2fe; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--primary-blue);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📊 LAS (Labeled Attachment Score):</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                How many words have both correct parent AND correct label?<br>
+                                <strong>Example:</strong> 85% LAS = 85% have correct connection + label
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-tree"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">For Constituency Parsing</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📊 F1 Score:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                How many phrases match the correct answer?<br>
+                                <strong>Example:</strong> 88% F1 = 88% of phrases are correct
+                            </p>
+                        </div>
+                        <div style="background: #fed7aa; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📊 Exact Match:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                Is the entire tree exactly correct?<br>
+                                <strong>Example:</strong> 70% exact match = 70% of sentences are perfect
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Simple Example:</strong>
+
+<strong style="color: #34d399;">Sentence:</strong> "The robot danced"
+
+<strong style="color: #34d399;">Correct Dependency:</strong>
+<pre style="margin: 0.5rem 0; line-height: 1.6; color: #ffffff;">
+      danced (ROOT)
+        ╱     ╲
+       │       │
+  robot (nsubj) The (det)
+                │
+            connects to "robot"
+</pre>
+
+<strong style="color: #fbbf24;">Parser Found:</strong>
+<pre style="margin: 0.5rem 0; line-height: 1.6; color: #ffffff;">
+      danced (ROOT) ✅
+        ╱     ╲
+       │       │
+  robot (nsubj) ✅ The (det) ✅
+                │
+            connects to "robot" ✅
+</pre>
+
+<strong style="color: #34d399;">Result:</strong> 100% UAS and 100% LAS (perfect!)
+
+<strong style="color: #ef4444;">If parser said "The" → "danced" instead:</strong>
+<pre style="margin: 0.5rem 0; line-height: 1.6; color: #ffffff;">
+      danced (ROOT)
+        ╱     ╲
+       │       │
+  robot (nsubj) The (det) ❌
+                │
+            WRONG! Should connect to "robot"
+            ❌ Wrong parent = Lower UAS
+            ❌ Wrong connection = Lower LAS
+</pre>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> What Makes a Good Parser?</h4>
+                    <ul style="font-size: 1.05rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>High Scores:</strong> UAS/LAS above 90% is very good!</li>
+                        <li><strong>Consistent:</strong> Works well on different types of sentences</li>
+                        <li><strong>Fast:</strong> Parses sentences quickly</li>
+                        <li><strong>Handles Ambiguity:</strong> Chooses the most likely correct parse</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

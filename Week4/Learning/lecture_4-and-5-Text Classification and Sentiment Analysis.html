@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 4: Text Classification and Sentiment Analysis - 3 Hour Session</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --white: #ffffff;
+            --light-gray: #f1f5f9;
+            --medium-gray: #64748b;
+            --charcoal: #1e293b;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            --gradient-error: linear-gradient(135deg, var(--error-red) 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, var(--purple) 0%, #a855f7 100%);
+            --gradient-pink: linear-gradient(135deg, var(--pink) 0%, #f472b6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
+            color: var(--primary-navy);
+            overflow: hidden;
+            height: 100vh;
+            line-height: 1.75;
+            font-size: 18px;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 0.85rem 3rem;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            padding-right: 280px;
+        }
+
+        .slide-number-container {
+            position: absolute;
+            top: 0.6rem;
+            right: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-number {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 1.15rem;
+        }
+
+        .slide-icon {
+            color: var(--white);
+            font-size: 1.1rem;
+        }
+
+        .slide-title {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-subtitle {
+            font-size: 1.55rem;
+            opacity: 0.9;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            background: var(--white);
+            font-size: 1.25rem;
+        }
+        .slide-content p {
+            font-size: 1.3rem;
+            line-height: 1.8;
+        }
+        .slide-content h3, .slide-content h4 {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .section-title {
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 1.45rem;
+            color: var(--medium-gray);
+            text-align: center;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-grid.two-col {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .card-grid.three-col {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .content-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .content-card p {
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--white);
+            font-size: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.25rem;
+            line-height: 1.7;
+            color: var(--charcoal);
+        }
+
+        .feature-list i {
+            color: var(--accent-blue);
+            width: 20px;
+            text-align: center;
+        }
+
+        .code-block {
+            background: var(--charcoal);
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 1.15rem;
+            line-height: 1.7;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            border: 1px solid #374151;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .code-block pre {
+            margin: 0;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            white-space: pre-wrap;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #fef3c7 0%, #fde68a 100%);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid var(--warning-orange);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid var(--accent-blue);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid var(--success-green);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .error-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 2px solid var(--error-red);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .funny-example {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border: 2px solid var(--purple);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            margin: 2rem 0;
+        }
+
+        .quiz-question {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 2px solid var(--accent-blue);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .quiz-question h4 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-size: 1.45rem;
+        }
+
+        .quiz-options {
+            margin: 1rem 0;
+        }
+
+        .quiz-options label {
+            display: block;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 1.25rem;
+        }
+
+        .quiz-options label:hover {
+            background-color: var(--light-gray);
+        }
+
+        .quiz-options input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+
+        .quiz-answer {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid var(--success-green);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: var(--dark-gray);
+            font-size: 1.2rem;
+        }
+
+        .quiz-controls {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .quiz-btn {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .metric-explanation {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--light-gray);
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .metric-explanation h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            font-size: 1.35rem;
+        }
+
+        .metric-explanation p {
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            line-height: 1.7;
+        }
+
+        .funny-example-small {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid var(--warning-orange);
+            border-radius: 8px;
+            padding: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .funny-example-small p {
+            margin: 0;
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+
+        .practical-exercise {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid var(--success-green);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: var(--white);
+            border: 2px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.15rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn:hover {
+            background: var(--accent-blue);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--accent-blue);
+            transition: width 0.3s ease;
+            z-index: 1001;
+        }
+
+        .quiz-question {
+            background: var(--light-gray);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border-left: 5px solid var(--accent-blue);
+        }
+
+        .quiz-options {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .quiz-options li {
+            background: var(--white);
+            margin: 0.5rem 0;
+            padding: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 1.25rem;
+        }
+
+        .quiz-options li:hover {
+            border-color: var(--accent-blue);
+            transform: translateX(5px);
+        }
+
+        .quiz-options li.correct {
+            background: var(--success-green);
+            color: var(--white);
+            border-color: var(--success-green);
+        }
+
+        .quiz-options li.incorrect {
+            background: var(--error-red);
+            color: var(--white);
+            border-color: var(--error-red);
+        }
+
+        @media (max-width: 768px) {
+            .slide-header {
+                padding: 0.75rem 2rem;
+                padding-right: 200px;
+            }
+            
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .slide-title {
+                font-size: 2.4rem;
+            }
+            
+            .card-grid.two-col,
+            .card-grid.three-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation-container">
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 1 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Text Classification and Sentiment Analysis</h1>
+                <p class="slide-subtitle">Lecture 4: Teaching Machines to Read Between the Lines</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-5">
+                    <div class="icon-large" style="background: var(--gradient-primary); margin: 0 auto 2rem;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h2 class="section-title">Welcome to Lecture 4!</h2>
+                    <p class="section-subtitle">From Text Features to Smart Predictions</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">What We'll Learn</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-tags"></i> Text Classification Methods</li>
+                            <li><i class="fas fa-heart"></i> Sentiment Analysis Techniques</li>
+                            <li><i class="fas fa-chart-bar"></i> Classification Algorithms</li>
+                            <li><i class="fas fa-balance-scale"></i> Evaluation Metrics</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Session Structure</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-play"></i> 3-hour comprehensive session</li>
+                            <li><i class="fas fa-coffee"></i> Two 15-minute breaks</li>
+                            <li><i class="fas fa-hands"></i> Hands-on coding exercises</li>
+                            <li><i class="fas fa-question"></i> Interactive quizzes</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">NLP Pipeline Progress</h3>
+                    <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">Lecture 1: Introduction → Lecture 2: Preprocessing → Lecture 3: Feature Engineering → <span class="highlight" style="background: rgba(255,255,255,0.2);">Lecture 4: Classification</span></div>
+                    <div style="font-size: 1.25rem; opacity: 0.8; margin-top: 0.5rem;">Today we use features to make smart predictions!</div>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-lightbulb"></i> Quick Warm-up (2 minutes):</h4>
+                    <p>Look at this text: "This movie is absolutely terrible!" How would you teach a computer to understand that this is negative sentiment? What words give it away?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Lecture 2 Summary -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 2 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Lecture 3 Summary</h1>
+                <p class="slide-subtitle">What we learned about feature engineering and text representation</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-3">
+                    <h2 class="section-title">Recap: Feature Engineering & Text Representation</h2>
+                    <p class="section-subtitle">Key concepts from our third lecture</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-broom"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Traditional Methods</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-shopping-bag"></i> Bag of Words (BoW)</li>
+                            <li><i class="fas fa-chart-line"></i> TF-IDF</li>
+                            <li><i class="fas fa-brain"></i> Word2Vec</li>
+                            <li><i class="fas fa-globe"></i> GloVe</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-scissors"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Modern Methods</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-layer-group"></i> ELMo</li>
+                            <li><i class="fas fa-brain"></i> BERT</li>
+                            <li><i class="fas fa-sync"></i> Contextual embeddings</li>
+                            <li><i class="fas fa-robot"></i> Transformer models</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Evaluation Metrics</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-bullseye"></i> Accuracy</li>
+                            <li><i class="fas fa-chart-line"></i> Precision & Recall</li>
+                            <li><i class="fas fa-balance-scale"></i> F1-Score</li>
+                            <li><i class="fas fa-chart-bar"></i> Feature quality metrics</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Key Challenges</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-compress"></i> Dimensionality reduction</li>
+                            <li><i class="fas fa-clock"></i> Training time</li>
+                            <li><i class="fas fa-memory"></i> Memory usage</li>
+                            <li><i class="fas fa-chart-line"></i> Model performance</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Feature Engineering Pipeline Output</h3>
+                    <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">Clean Tokens → Numerical Features → Ready for Classification</div>
+                    <div style="font-size: 1.25rem; opacity: 0.8; margin-top: 0.5rem;">Today we use these features to make smart predictions!</div>
+                </div>
+
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> Remember This Feature Engineering Win:</h4>
+                    <p><strong>Text:</strong> "This movie is absolutely terrible!"<br>
+                    <strong>BoW Features:</strong> [0,1,0,1,0,1,0,0,1] (sparse vector)<br>
+                    <strong>TF-IDF Features:</strong> [0,0.8,0,0.9,0,0.7,0,0,0.6] (weighted)<br>
+                    <strong>Result:</strong> Numbers that capture sentiment! 🎯</p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-tasks"></i> Quick Review (3 minutes):</h4>
+                    <p>Think about the feature engineering methods we learned. How do you think these numerical features can be used to classify text? What kind of problems can we solve?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: What is Feature Engineering? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 3 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is Text Classification?</h1>
+                <p class="slide-subtitle">Teaching machines to categorize and understand text content</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Text Classification in NLP</h2>
+                    <p class="section-subtitle">Using numerical features to make smart predictions about text</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Definition</h4>
+                    <p><strong>Text Classification</strong> is the process of automatically categorizing text documents into predefined classes or categories based on their content, using machine learning algorithms.</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">The Challenge</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-language"></i> Text has complex meanings</li>
+                            <li><i class="fas fa-question-circle"></i> Context matters for classification</li>
+                            <li><i class="fas fa-balance-scale"></i> Ambiguous cases exist</li>
+                            <li><i class="fas fa-chart-line"></i> Need accurate predictions</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">The Solution</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-tags"></i> Use numerical features</li>
+                            <li><i class="fas fa-brain"></i> Train ML algorithms</li>
+                            <li><i class="fas fa-chart-bar"></i> Learn from examples</li>
+                            <li><i class="fas fa-bullseye"></i> Make predictions</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Why Text Classification Matters</h4>
+                    <p>Text classification is everywhere! From spam detection to sentiment analysis, it helps us automatically organize and understand vast amounts of text data.</p>
+                </div>
+                
+                <div class="code-block">
+# Example: Text Classification Pipeline
+text = "This movie is absolutely terrible!"
+# Step 1: Convert to features (from Lecture 3)
+features = [0, 0.8, 0, 0.9, 0, 0.7, 0, 0, 0.6]  # TF-IDF
+
+# Step 2: Use trained classifier
+prediction = classifier.predict(features)
+# Result: "negative" sentiment
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Classification Challenge:</h4>
+                    <p><strong>Text:</strong> "This movie is so bad it's good!"<br>
+                    <strong>Human:</strong> "That's sarcasm, so it's positive!"<br>
+                    <strong>Computer:</strong> "I see 'bad' and 'good' - confused! 🤖"<br>
+                    <strong>Result:</strong> Context matters in classification! 😂</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-lightbulb"></i> The Smart Approach:</h4>
+                    <p><strong>Before:</strong> "This movie is terrible!" → Computer: "I don't understand words!" 🤖<br>
+                    <strong>After Classification:</strong> "This movie is terrible!" → Computer: "Features [0.8, 0.9, 0.7] → Negative sentiment with 85% confidence!" 😞</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Bag of Words -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 4 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Types of Text Classification</h1>
+                <p class="slide-subtitle">Different ways to categorize and organize text data</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Classification Categories</h2>
+                    <p class="section-subtitle">Understanding different classification problems</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Classification Types</h4>
+                    <p>Text classification can be categorized based on the number of classes and the nature of the problem we're trying to solve.</p>
+                </div>
+                
+                <div class="code-block">
+# Example: Different Classification Types
+
+# Binary Classification (2 classes)
+Email: "You've won $1,000,000!" → Spam/Not Spam
+Sentiment: "I love this movie!" → Positive/Negative
+
+# Multi-class Classification (3+ classes)
+News: "Stock market rises 5%" → Sports/Business/Tech
+Topic: "Python programming tutorial" → Programming/Data Science/Web Dev
+
+# Multi-label Classification (multiple labels)
+Article: "AI and machine learning in healthcare" → [AI, Healthcare, Technology]
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-lightbulb"></i> Clear Explanation:</h4>
+                    <p><strong>Binary:</strong> Only TWO choices (Yes/No, Positive/Negative)<br>
+                    <strong>Multi-class:</strong> Multiple categories, but ONE label per text<br>
+                    <strong>Multi-label:</strong> Multiple labels can be assigned to the same text</p>
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> Binary Classification</h4>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-envelope"></i> Spam detection</li>
+                        <li><i class="fas fa-heart"></i> Sentiment analysis</li>
+                        <li><i class="fas fa-user-check"></i> Fake news detection</li>
+                    </ul>
+                </div>
+                
+                <div class="error-box">
+                    <h4><i class="fas fa-times-circle"></i> Multi-class Classification</h4>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-newspaper"></i> News categorization</li>
+                        <li><i class="fas fa-tags"></i> Topic classification</li>
+                        <li><i class="fas fa-language"></i> Language detection</li>
+                    </ul>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Classification Confusion:</h4>
+                    <p><strong>Email:</strong> "You've won $1,000,000! Click here now!"<br>
+                    <strong>Human:</strong> "Obviously spam!"<br>
+                    <strong>Computer:</strong> "I see 'won' and 'click' - could be legitimate! 🤔"<br>
+                    <strong>Result:</strong> Context and patterns matter! 🎯</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Real-World Analogy:</h4>
+                    <p>Text classification is like organizing a library - you need to decide which shelf each book belongs on based on its content. Some books might belong to multiple categories! 📚</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: TF-IDF -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 5 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Traditional Classification Methods</h1>
+                <p class="slide-subtitle">Classic machine learning algorithms for text classification</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Classic ML Algorithms</h2>
+                    <p class="section-subtitle">Proven methods for text classification tasks</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Why These Methods Work</h4>
+                    <p>These algorithms have been proven effective for text classification because they can learn patterns from numerical features and make accurate predictions.</p>
+                </div>
+                
+                <div class="code-block">
+# Popular Classification Algorithms
+
+# 1. Naive Bayes
+from sklearn.naive_bayes import MultinomialNB
+classifier = MultinomialNB()
+classifier.fit(X_train, y_train)
+
+# 2. Support Vector Machine (SVM)
+from sklearn.svm import SVC
+classifier = SVC(kernel='linear')
+classifier.fit(X_train, y_train)
+
+# 3. Logistic Regression
+from sklearn.linear_model import LogisticRegression
+classifier = LogisticRegression()
+classifier.fit(X_train, y_train)
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-calculator"></i> Naive Bayes</h4>
+                    <p><strong>Best for:</strong> Text classification, spam detection, sentiment analysis</p>
+                    <p><strong>Why it works:</strong> Assumes word independence, fast training, good with small datasets</p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Naive Bayes "Naive" Problem:</h4>
+                    <p><strong>Text:</strong> "I don't like this movie"<br>
+                    <strong>Naive Bayes:</strong> "I see 'don't' and 'like' - that's positive!"<br>
+                    <strong>Human:</strong> "No, that's negative because of 'don't'!"<br>
+                    <strong>Result:</strong> Naive Bayes assumes words are independent - but they're not! 😅</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Algorithm Selection Guide:</h4>
+                    <p>Choose Naive Bayes for speed, SVM for accuracy, Logistic Regression for interpretability. It's like choosing the right tool for the job! 🔧</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Word Embeddings Introduction -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 6 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Sentiment Analysis Deep Dive</h1>
+                <p class="slide-subtitle">Understanding emotions and opinions in text</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">What is Sentiment Analysis?</h2>
+                    <p class="section-subtitle">Automatically detecting emotions and opinions in text</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> What is Sentiment Analysis?</h4>
+                    <p>Sentiment analysis is the process of determining the emotional tone or opinion expressed in text, typically classifying it as positive, negative, or neutral.</p>
+                </div>
+                
+                <div class="code-block">
+# Example: Word embeddings in action
+king = [0.1, 0.3, -0.2, 0.8, ...]
+queen = [0.2, 0.4, -0.1, 0.7, ...]
+man = [0.0, 0.2, -0.3, 0.9, ...]
+woman = [0.1, 0.3, -0.2, 0.8, ...]
+
+# The famous analogy:
+king - man + woman ≈ queen
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> Advantages over BoW/TF-IDF</h4>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-compress"></i> Much smaller dimensions</li>
+                        <li><i class="fas fa-brain"></i> Captures semantic relationships</li>
+                        <li><i class="fas fa-calculator"></i> Enables vector arithmetic</li>
+                    </ul>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Semantic Relationship Discovery:</h4>
+                    <p><strong>Traditional approach:</strong> "king" = [1, 0, 0, 0], "queen" = [0, 1, 0, 0] (no relationship)<br>
+                    <strong>Word embeddings:</strong> "king" = [0.1, 0.3, -0.2, 0.8], "queen" = [0.2, 0.4, -0.1, 0.7] (similar vectors!)<br>
+                    <strong>The magic:</strong> king - man + woman ≈ queen! 👑<br>
+                    <strong>Why it's amazing:</strong> The computer learned that kings and queens are both royalty, just like we did! 🤯</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Semantic GPS System:</h4>
+                    <p>Word embeddings are like a GPS for meaning - words with similar meanings end up close together in the vector space, just like similar places are close on a map! 🗺️</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Sentiment Analysis Approaches -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 7 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Sentiment Analysis Approaches</h1>
+                <p class="slide-subtitle">Different methods to detect emotions and opinions in text</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">How to Analyze Sentiment</h2>
+                    <p class="section-subtitle">From simple rules to sophisticated machine learning</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Sentiment Analysis Methods</h4>
+                    <p>There are several approaches to sentiment analysis, ranging from simple rule-based methods to advanced machine learning techniques.</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Rule-Based Methods</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-thumbs-up"></i> Positive word lists: "good", "great", "amazing"</li>
+                            <li><i class="fas fa-thumbs-down"></i> Negative word lists: "bad", "terrible", "awful"</li>
+                            <li><i class="fas fa-calculator"></i> Simple scoring: +1 for positive, -1 for negative</li>
+                            <li><i class="fas fa-exclamation-triangle"></i> Handle negations: "not good" = negative</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Machine Learning Methods</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-shopping-bag"></i> Bag of Words + Naive Bayes</li>
+                            <li><i class="fas fa-chart-line"></i> TF-IDF + SVM/Logistic Regression</li>
+                            <li><i class="fas fa-layer-group"></i> Word embeddings + Neural networks</li>
+                            <li><i class="fas fa-robot"></i> Pre-trained models (BERT, RoBERTa)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-block">
+# Example: Rule-based sentiment analysis
+positive_words = ["good", "great", "amazing", "excellent", "love"]
+negative_words = ["bad", "terrible", "awful", "hate", "disgusting"]
+
+def simple_sentiment(text):
+    words = text.lower().split()
+    pos_count = sum(1 for word in words if word in positive_words)
+    neg_count = sum(1 for word in words if word in negative_words)
+    
+    if pos_count > neg_count:
+        return "positive"
+    elif neg_count > pos_count:
+        return "negative"
+    else:
+        return "neutral"
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Rule-Based Confusion:</h4>
+                    <p><strong>Text:</strong> "This movie is so bad it's good!"<br>
+                    <strong>Rule-based system:</strong> "I see 'bad' (-1) and 'good' (+1) = neutral (0)"<br>
+                    <strong>Human:</strong> "That's clearly positive - it's sarcastic praise!"<br>
+                    <strong>Result:</strong> Context and sarcasm are hard for simple rules! 😅</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Evolution of Sentiment Analysis:</h4>
+                    <p><strong>Early days:</strong> "I love this!" → Count positive words<br>
+                    <strong>Modern approach:</strong> "I love this!" → Use context-aware embeddings → Predict sentiment with 95% accuracy<br>
+                    <strong>The difference:</strong> From word counting to understanding meaning! 🧠</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Evaluation Metrics -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 8 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Evaluation Metrics</h1>
+                <p class="slide-subtitle">How to measure the performance of text classification models</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Measuring Model Performance</h2>
+                    <p class="section-subtitle">Understanding how well our classifiers work</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Why Evaluation Matters</h4>
+                    <p>We need metrics to understand how well our text classification models are performing and to compare different approaches.</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Basic Metrics</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check-circle"></i> Accuracy: Correct predictions / Total predictions</li>
+                            <li><i class="fas fa-bullseye"></i> Precision: True Positives / (True Positives + False Positives)</li>
+                            <li><i class="fas fa-search"></i> Recall: True Positives / (True Positives + False Negatives)</li>
+                            <li><i class="fas fa-balance-scale"></i> F1-Score: 2 × (Precision × Recall) / (Precision + Recall)</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Advanced Metrics</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-table"></i> Confusion Matrix: Detailed breakdown of predictions</li>
+                            <li><i class="fas fa-chart-area"></i> ROC Curve: True Positive Rate vs False Positive Rate</li>
+                            <li><i class="fas fa-chart-pie"></i> AUC Score: Area under the ROC curve</li>
+                            <li><i class="fas fa-layer-group"></i> Cross-validation: Robust performance estimation</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-block">
+# Example: Confusion Matrix for Sentiment Analysis
+from sklearn.metrics import confusion_matrix, classification_report
+
+# True labels vs Predicted labels
+y_true = ['positive', 'negative', 'positive', 'neutral', 'negative']
+y_pred = ['positive', 'negative', 'neutral', 'neutral', 'negative']
+
+print("Confusion Matrix:")
+print(confusion_matrix(y_true, y_pred, labels=['positive', 'negative', 'neutral']))
+print("\nClassification Report:")
+print(classification_report(y_true, y_pred))
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Accuracy Trap:</h4>
+                    <p><strong>Scenario:</strong> 90% of emails are spam<br>
+                    <strong>Naive approach:</strong> "I'll just predict 'spam' for everything!"<br>
+                    <strong>Result:</strong> 90% accuracy - looks great! 🎉<br>
+                    <strong>Reality:</strong> Model is useless - it never catches legitimate emails! 😱<br>
+                    <strong>Lesson:</strong> Accuracy alone can be misleading! Use precision and recall too! 📊</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Balanced Approach:</h4>
+                    <p><strong>High Precision:</strong> "When I say it's spam, I'm usually right" (few false positives)<br>
+                    <strong>High Recall:</strong> "I catch most of the actual spam" (few false negatives)<br>
+                    <strong>F1-Score:</strong> Balances both precision and recall for a single metric! ⚖️</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Confusion Matrices -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 9 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-table"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Confusion Matrices</h1>
+                <p class="slide-subtitle">Detailed breakdown of classification performance</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Understanding Confusion Matrices</h2>
+                    <p class="section-subtitle">Visualizing where our model makes mistakes</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> What is a Confusion Matrix?</h4>
+                    <p>A confusion matrix shows the detailed breakdown of correct and incorrect predictions for each class, helping us understand where our model struggles.</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Binary Classification</h3>
+                        <div class="code-block" style="font-size: 1.15rem;">
+                    Predicted
+Actual    Spam  Not Spam
+Spam        45      5
+Not Spam     8     42
+                        </div>
+                        <p style="color: var(--charcoal); font-size: 1.2rem; margin-top: 1rem;">
+                        <strong>True Positives:</strong> 45 (correctly identified spam)<br>
+                        <strong>False Negatives:</strong> 5 (missed spam)<br>
+                        <strong>False Positives:</strong> 8 (false alarms)<br>
+                        <strong>True Negatives:</strong> 42 (correctly identified legitimate)</p>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Multi-class Example</h3>
+                        <div class="code-block" style="font-size: 1.05rem;">
+Sentiment Analysis:
+Actual vs Predicted
+        Pos  Neg  Neu
+Pos     120   5   15
+Neg      8   95   12
+Neu     12   8   125
+                        </div>
+                        <p style="color: var(--charcoal); font-size: 1.2rem; margin-top: 1rem;">
+                        <strong>Diagonal:</strong> Correct predictions<br>
+                        <strong>Off-diagonal:</strong> Misclassifications<br>
+                        <strong>Pattern:</strong> Shows which classes are confused</p>
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-chart-line"></i> Reading the Matrix</h4>
+                    <p><strong>Perfect classifier:</strong> All numbers on diagonal, zeros elsewhere<br>
+                    <strong>Random classifier:</strong> Numbers spread evenly across all cells<br>
+                    <strong>Good classifier:</strong> Large numbers on diagonal, small numbers elsewhere</p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Confusion Matrix Confusion:</h4>
+                    <p><strong>Student:</strong> "Why is it called a 'confusion' matrix?" 🤔<br>
+                    <strong>Professor:</strong> "Because it shows where the model gets confused!" 😅<br>
+                    <strong>Student:</strong> "Oh! So if it's not confused, it's a 'clarity matrix'?"<br>
+                    <strong>Professor:</strong> "Exactly! But we still call it confusion matrix because that's the standard term!" 📊</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Diagnostic Power:</h4>
+                    <p>Confusion matrices are like X-rays for your model - they show exactly where the problems are! If you see many misclassifications between 'positive' and 'negative', your model might be struggling with sarcasm or context! 🔍</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Break Time -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 10 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Lab Task Preparation</h1>
+                <p class="slide-subtitle">15-minute coffee break and hands-on practice</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-5">
+                    <div class="icon-large" style="background: var(--gradient-warning); margin: 0 auto 2rem;">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                    <h2 class="section-title">Time for a Break!</h2>
+                    <p class="section-subtitle">15 minutes to refresh and practice</p>
+                </div>
+                
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-hands"></i> Practice Exercise:</h4>
+                    <p>Try implementing Bag of Words and TF-IDF on sample documents. Calculate TF-IDF scores and discuss the results with your neighbors!</p>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Break Time Realization:</h4>
+                    <p><strong>During break:</strong> Students frantically trying to implement TF-IDF<br>
+                    <strong>The realization:</strong> "Wait, why is my 'the' getting a higher score than 'pizza'?!" 🤔<br>
+                    <strong>The learning moment:</strong> "Oh! I need to check my vocabulary size and document frequency!" 💡</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Practice Makes Perfect:</h4>
+                    <p>Practice makes perfect - and coffee makes everything better! This is your chance to experiment with the concepts we've learned. ☕✨</p>
+                </div>
+                
+                <div style="background: var(--gradient-warning); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Break Activities</h3>
+                    <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">☕ Get coffee/tea • 🧠 Practice exercises • 💬 Discuss with peers</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Practical Implementation -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 11 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Practical Implementation</h1>
+                <p class="slide-subtitle">Building a complete text classification pipeline</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">End-to-End Text Classification</h2>
+                    <p class="section-subtitle">From raw text to predictions</p>
+                </div>
+                
+                <div class="code-block">
+# Complete Text Classification Pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import classification_report
+
+# 1. Prepare data
+texts = ["I love this movie!", "This film is terrible", "Amazing performance"]
+labels = ["positive", "negative", "positive"]
+
+# 2. Feature extraction
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(texts)
+
+# 3. Train classifier
+X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.3)
+classifier = MultinomialNB()
+classifier.fit(X_train, y_train)
+
+# 4. Make predictions
+predictions = classifier.predict(X_test)
+print(classification_report(y_test, predictions))
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Pipeline Steps</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-file-text"></i> 1. Data collection and preprocessing</li>
+                            <li><i class="fas fa-chart-line"></i> 2. Feature extraction (TF-IDF, embeddings)</li>
+                            <li><i class="fas fa-brain"></i> 3. Model training and validation</li>
+                            <li><i class="fas fa-bullseye"></i> 4. Prediction and evaluation</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Key Libraries</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-python"></i> scikit-learn: ML algorithms</li>
+                            <li><i class="fas fa-chart-bar"></i> pandas: Data manipulation</li>
+                            <li><i class="fas fa-brain"></i> transformers: Pre-trained models</li>
+                            <li><i class="fas fa-chart-line"></i> matplotlib: Visualization</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Implementation Reality Check:</h4>
+                    <p><strong>Student:</strong> "This looks easy! I'll build a sentiment analyzer in 5 minutes!" ⏰<br>
+                    <strong>Reality:</strong> 3 hours later, still debugging the data preprocessing... 😅<br>
+                    <strong>The lesson:</strong> "Easy in theory, challenging in practice!"<br>
+                    <strong>Pro tip:</strong> Start with a simple example, then gradually add complexity! 🚀</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The 80/20 Rule:</h4>
+                    <p>80% of your time will be spent on data preprocessing and feature engineering, 20% on actual model training. The data quality determines the model quality! 📊</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Real-World Applications -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 12 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Real-World Applications</h1>
+                <p class="slide-subtitle">Text classification in action across industries</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Where Text Classification Works</h2>
+                    <p class="section-subtitle">From social media to healthcare</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Email & Communication</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-shield-alt"></i> Spam detection</li>
+                            <li><i class="fas fa-priority"></i> Priority classification</li>
+                            <li><i class="fas fa-tags"></i> Auto-categorization</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Social Media</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-smile"></i> Sentiment analysis</li>
+                            <li><i class="fas fa-flag"></i> Content moderation</li>
+                            <li><i class="fas fa-trending-up"></i> Trend detection</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Healthcare</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-file-medical"></i> Medical record analysis</li>
+                            <li><i class="fas fa-pills"></i> Drug review classification</li>
+                            <li><i class="fas fa-user-md"></i> Symptom categorization</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Spam Filter Evolution:</h4>
+                    <p><strong>1990s:</strong> "You've won $1,000,000!" → Human: "Obviously spam!"<br>
+                    <strong>2000s:</strong> "Congratulations! You've been selected..." → Human: "Still spam!"<br>
+                    <strong>2010s:</strong> "Hi John, your Amazon order #12345..." → Human: "Wait, is this real?" 🤔<br>
+                    <strong>2020s:</strong> AI can detect sophisticated phishing attempts that fool humans! 🤖<br>
+                    <strong>Result:</strong> The arms race between spammers and filters continues! ⚔️</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Business Impact:</h4>
+                    <p>Text classification saves companies millions by automating customer service, detecting fraud, and improving user experience. It's not just academic - it's business-critical! 💼</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Challenges and Limitations -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 13 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Challenges and Limitations</h1>
+                <p class="slide-subtitle">Understanding the limitations of text classification</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Where Text Classification Struggles</h2>
+                    <p class="section-subtitle">The hard problems in NLP</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Linguistic Challenges</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-comments"></i> Sarcasm and irony</li>
+                            <li><i class="fas fa-language"></i> Context-dependent meaning</li>
+                            <li><i class="fas fa-balance-scale"></i> Ambiguous statements</li>
+                            <li><i class="fas fa-globe"></i> Cultural differences</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Data Challenges</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-balance-scale"></i> Imbalanced datasets</li>
+                            <li><i class="fas fa-tag"></i> Labeling inconsistencies</li>
+                            <li><i class="fas fa-chart-line"></i> Domain adaptation</li>
+                            <li><i class="fas fa-clock"></i> Concept drift over time</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Sarcasm Problem:</h4>
+                    <p><strong>Text:</strong> "Oh great, another meeting!"<br>
+                    <strong>Human:</strong> "That's clearly sarcastic - they hate meetings!" 😒<br>
+                    <strong>AI:</strong> "I see 'great' - that's positive sentiment!" 😊<br>
+                    <strong>Result:</strong> AI completely misses the sarcasm! 🤖<br>
+                    <strong>Lesson:</strong> Tone and context are incredibly hard for machines! 🎭</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Human Advantage:</h4>
+                    <p>Humans excel at understanding context, cultural nuances, and emotional undertones. These remain the biggest challenges for AI systems! 🧠</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Future Directions -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 14 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Future Directions</h1>
+                <p class="slide-subtitle">The next frontier in text classification</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">What's Next in NLP?</h2>
+                    <p class="section-subtitle">Emerging trends and technologies</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Large Language Models</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-robot"></i> GPT, BERT, T5 models</li>
+                            <li><i class="fas fa-sync"></i> Few-shot learning</li>
+                            <li><i class="fas fa-magic"></i> Zero-shot classification</li>
+                            <li><i class="fas fa-globe"></i> Multilingual capabilities</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Emerging Trends</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-shield-alt"></i> Ethical AI and bias detection</li>
+                            <li><i class="fas fa-cogs"></i> Automated ML (AutoML)</li>
+                            <li><i class="fas fa-mobile-alt"></i> Edge deployment</li>
+                            <li><i class="fas fa-users"></i> Human-AI collaboration</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The AI Evolution:</h4>
+                    <p><strong>2010s:</strong> "I need 10,000 examples to train a classifier" 📊<br>
+                    <strong>2020s:</strong> "I need 10 examples to fine-tune GPT-3" 🤖<br>
+                    <strong>2030s:</strong> "I just need to describe what I want in plain English" 🗣️<br>
+                    <strong>Result:</strong> From data-hungry to instruction-following! 🚀</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> The Democratization of AI:</h4>
+                    <p>Text classification is becoming more accessible - you don't need a PhD to build powerful NLP systems anymore! The future is about making AI tools available to everyone! 🌍</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Conclusion -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 15 of 15</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-flag-checkered"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Conclusion</h1>
+                <p class="slide-subtitle">You're now ready to build text classification systems!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">What You've Learned</h2>
+                    <p class="section-subtitle">From theory to practice</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-primary);">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Key Concepts</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-tags"></i> Text classification fundamentals</li>
+                            <li><i class="fas fa-heart"></i> Sentiment analysis approaches</li>
+                            <li><i class="fas fa-chart-bar"></i> Evaluation metrics</li>
+                            <li><i class="fas fa-code"></i> Practical implementation</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Next Steps</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-hands"></i> Practice with real datasets</li>
+                            <li><i class="fas fa-brain"></i> Experiment with different models</li>
+                            <li><i class="fas fa-globe"></i> Explore real-world applications</li>
+                            <li><i class="fas fa-rocket"></i> Stay updated with new techniques</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">You're Ready to Build!</h3>
+                    <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">From spam detection to sentiment analysis - you have the tools!</div>
+                    <div style="font-size: 1.25rem; opacity: 0.8; margin-top: 0.5rem;">Remember: Start simple, iterate, and always validate your results! 🚀</div>
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The NLP Journey:</h4>
+                    <p><strong>Before:</strong> "Text is just words, right?" 🤷‍♂️<br>
+                    <strong>Now:</strong> "I can build AI systems that understand text!" 🤖<br>
+                    <strong>Future:</strong> "I'm ready to tackle any NLP challenge!" 🚀<br>
+                    <strong>Result:</strong> From text newbie to NLP practitioner! ✨</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Keep Learning:</h4>
+                    <p>Text classification is just the beginning! Explore named entity recognition, question answering, and other exciting NLP tasks. The field is constantly evolving - stay curious! 🔬</p>
+                </div>
+            </div>
+        </div>
+
+# Standardize the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Apply LDA to reduce to 1 component (max_components = n_classes - 1)
+lda = LinearDiscriminantAnalysis(n_components=1)
+X_lda = lda.fit_transform(X_scaled, y)
+
+print(f"Original dimensions: {X.shape}")
+print(f"Reduced dimensions: {X_lda.shape}")
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> When to Use Each Method</h4>
+                    <p><strong>PCA:</strong> When you want to reduce dimensions without considering class labels<br>
+                    <strong>LDA:</strong> When you have labeled data and want to maximize class separation</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Key Differences Between PCA and LDA:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div>
+                            <h5 style="color: var(--primary-blue); margin-bottom: 0.5rem;">PCA (Unsupervised):</h5>
+                            <ul style="font-size: 1.15rem; color: var(--charcoal);">
+                                <li><strong>Goal:</strong> Maximize variance in the data</li>
+                                <li><strong>Input:</strong> Only features (X), no labels needed</li>
+                                <li><strong>Output:</strong> Components that capture most data spread</li>
+                                <li><strong>Use case:</strong> Data visualization, noise reduction, general dimensionality reduction</li>
+                                <li><strong>Components:</strong> Can have as many as original features</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: var(--success-green); margin-bottom: 0.5rem;">LDA (Supervised):</h5>
+                            <ul style="font-size: 1.15rem; color: var(--charcoal);">
+                                <li><strong>Goal:</strong> Maximize class separation</li>
+                                <li><strong>Input:</strong> Features (X) AND class labels (y)</li>
+                                <li><strong>Output:</strong> Components that best separate classes</li>
+                                <li><strong>Use case:</strong> Classification tasks, finding discriminative features</li>
+                                <li><strong>Components:</strong> Maximum = number of classes - 1</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block">
+# Practical Example: When to Use PCA vs LDA
+
+# Scenario 1: You have unlabeled data and want to visualize it
+# Use PCA
+from sklearn.decomposition import PCA
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_unlabeled)
+
+# Scenario 2: You have labeled data and want to improve classification
+# Use LDA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+lda = LinearDiscriminantAnalysis(n_components=1)
+X_lda = lda.fit_transform(X_labeled, y_labels)
+
+# Scenario 3: You want to reduce noise before classification
+# Use PCA first, then LDA
+X_pca = pca.fit_transform(X_labeled)
+X_lda = lda.fit_transform(X_pca, y_labels)
+                </div>
+                
+                <div class="funny-example">
+                    <h4><i class="fas fa-laugh"></i> The Feature Compression Machine:</h4>
+                    <p><strong>PCA (Principal Component Analysis):</strong> Like a photographer who finds the best angle to capture the essence of a scene 📸<br>
+                    "I'll compress 1000 features into 100, but keep 95% of the important information!"<br>
+                    <strong>LDA (Linear Discriminant Analysis):</strong> Like a teacher who finds the best way to separate different student groups 👩‍🏫<br>
+                    "I'll find the line that best separates cats from dogs in feature space!"</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Sometimes Less is More:</h4>
+                    <p>Compression can actually improve performance! It's like having a well-organized closet vs. a messy one - you can find what you need faster! 🗂️</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+                <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+                Next <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            if (direction === 1 && currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            } else if (direction === -1 && currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+
+        // Quiz functions
+        function showAnswers() {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById('answer' + i).style.display = 'block';
+            }
+        }
+        
+        function hideAnswers() {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById('answer' + i).style.display = 'none';
+            }
+        }
+
+        // Quiz functions
+        function showAnswers() {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById('answer' + i).style.display = 'block';
+            }
+        }
+        
+        function hideAnswers() {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById('answer' + i).style.display = 'none';
+            }
+        }
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
