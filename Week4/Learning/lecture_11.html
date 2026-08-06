@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 11: Neural Networks for NLP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --white: #ffffff;
+            --light-gray: #f1f5f9;
+            --medium-gray: #64748b;
+            --charcoal: #1e293b;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            --gradient-error: linear-gradient(135deg, var(--error-red) 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, var(--purple) 0%, #a855f7 100%);
+            --gradient-pink: linear-gradient(135deg, var(--pink) 0%, #f472b6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
+            color: var(--primary-navy);
+            overflow: hidden;
+            height: 100vh;
+            line-height: 1.6;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1rem 2rem;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            padding-right: 280px;
+        }
+
+        .slide-number-container {
+            position: absolute;
+            top: 0.8rem;
+            right: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-number {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .slide-icon {
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .slide-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            background: var(--white);
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--medium-gray);
+            margin-bottom: 2rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mb-5 { margin-bottom: 3rem; }
+
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .two-col { grid-template-columns: repeat(2, 1fr); }
+        .three-col { grid-template-columns: repeat(3, 1fr); }
+
+        .content-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--light-gray);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--white);
+            font-size: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            color: var(--charcoal);
+        }
+
+        .feature-list i {
+            color: var(--accent-blue);
+            width: 20px;
+            text-align: center;
+        }
+
+        .code-block {
+            background: var(--charcoal);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 2rem 0;
+            overflow-x: auto;
+            border: 1px solid #374151;
+            white-space: pre-line;
+        }
+        
+        .code-block > * {
+            white-space: pre-line;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-left: 5px solid var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-left: 5px solid var(--success-green);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .success-box h4 {
+            color: var(--success-green);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 5px solid var(--warning-orange);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box h4 {
+            color: var(--warning-orange);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .error-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left: 5px solid var(--error-red);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .error-box h4 {
+            color: var(--error-red);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .practical-exercise {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border-left: 5px solid var(--purple);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .practical-exercise h4 {
+            color: var(--purple);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .slide-header {
+                padding: 0.8rem 1.5rem;
+                padding-right: 200px;
+            }
+            
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .slide-title {
+                font-size: 2rem;
+            }
+            
+            .card-grid.two-col,
+            .card-grid.three-col {
+                grid-template-columns: 1fr;
+            }
+            
+            .slide-number-container {
+                right: 1rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation-container">
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 1 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Neural Networks for NLP</h1>
+                <p class="slide-subtitle">Lecture 11: RNN, LSTM & GRU - The Memory Masters! 🧠</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-5">
+                    <div class="icon-large" style="background: var(--gradient-purple); margin: 0 auto 2rem;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h2 class="section-title">Welcome to Neural Networks! 🎉</h2>
+                    <p class="section-subtitle">Today we learn how computers remember things like humans do!</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-redo"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">RNN</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-memory"></i> Remembers previous words</li>
+                            <li><i class="fas fa-arrow-right"></i> Processes text one word at a time</li>
+                            <li><i class="fas fa-link"></i> Connects past to present</li>
+                            <li><i class="fas fa-lightbulb"></i> Like reading a book and remembering what happened</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">LSTM & GRU</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-vault"></i> Super memory powers!</li>
+                            <li><i class="fas fa-filter"></i> Decides what to remember</li>
+                            <li><i class="fas fa-trash"></i> Decides what to forget</li>
+                            <li><i class="fas fa-star"></i> Better at long sentences!</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-purple); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🎯 Today's Mission</h3>
+                    <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Learn how computers can:</div>
+                    <div style="font-size: 1rem; opacity: 0.9; margin-top: 0.5rem;">
+                        🧠 Remember what came before (like reading a story!)<br>
+                        🔗 Connect words in a sentence<br>
+                        💡 Predict the next word intelligently<br>
+                        ⚡ Handle long sentences without forgetting!
+                    </div>
+                </div>
+                
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-lightbulb"></i> Fun Example to Think About:</h4>
+                    <p>Imagine you're reading: "The cat sat on the..."<br>
+                    You can probably guess the next word is "mat" or "floor"!<br>
+                    But how? Because you REMEMBERED that there was a cat!<br>
+                    That's what RNN, LSTM, and GRU do - they remember context! 🐱✨</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: The Problem with Regular Neural Networks -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 2 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">The Problem with Regular Neural Networks</h1>
+                <p class="slide-subtitle">Why we need something smarter!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Regular Neural Networks = Goldfish Memory! 🐠</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">They forget everything immediately!</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> The Problem:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Regular Neural Networks</strong> process each word independently<br>
+                        They don't remember what came before!<br>
+                        It's like reading each word of a sentence without understanding the context! 😅
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Funny Example:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Sentence:</strong> "I love pizza because it's delicious"<br>
+                        <strong>Regular NN sees:</strong> "I" → "love" → "pizza" → "because" → "it's" → "delicious"<br>
+                        <strong>Problem:</strong> When it sees "it's", it doesn't remember that "it" refers to "pizza"!<br>
+                        <strong>Result:</strong> Confusion! 🤯
+                    </p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Regular NN Problems</h3>
+                        <div style="background: #fee2e2; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--error-red);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ❌ Can't remember previous words<br>
+                                ❌ Doesn't understand word order<br>
+                                ❌ Can't handle sequences<br>
+                                ❌ Like reading with amnesia! 😵
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">What We Need</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Remembers previous words<br>
+                                ✅ Understands context<br>
+                                ✅ Processes sequences<br>
+                                ✅ Like reading with a good memory! 🧠
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Example: Predicting Next Word</strong>
+
+<strong style="color: #34d399;">Sentence:</strong> "The cat sat on the..."
+
+<strong style="color: #f87171;">Regular Neural Network:</strong>
+<span style="white-space: nowrap; display: block;">• Sees "the" → Doesn't remember anything</span>
+<span style="white-space: nowrap; display: block;">• Sees "cat" → Doesn't remember "the"</span>
+<span style="white-space: nowrap; display: block;">• Sees "sat" → Doesn't remember "cat" or "the"</span>
+<span style="white-space: nowrap; display: block;">• Sees "on" → Doesn't remember anything before</span>
+<span style="white-space: nowrap; display: block;">• Sees "the" → Still doesn't remember "cat"!</span>
+<span style="white-space: nowrap; display: block;">• Tries to predict next word → Confused! 🤯</span>
+
+<strong style="color: #10b981;">RNN/LSTM/GRU:</strong>
+<span style="white-space: nowrap; display: block;">• Sees "the" → Remembers it</span>
+<span style="white-space: nowrap; display: block;">• Sees "cat" → Remembers "the cat"</span>
+<span style="white-space: nowrap; display: block;">• Sees "sat" → Remembers "the cat sat"</span>
+<span style="white-space: nowrap; display: block;">• Sees "on" → Remembers "the cat sat on"</span>
+<span style="white-space: nowrap; display: block;">• Sees "the" → Remembers everything!</span>
+<span style="white-space: nowrap; display: block;">• Predicts next word → "mat" or "floor" ✅</span>
+
+<strong style="color: #ec4899;">That's why we need RNN, LSTM, and GRU! 🎯</strong>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Key Insight:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        <strong>Language is sequential!</strong> Words depend on previous words.<br>
+                        "The cat" makes sense, but "cat the" doesn't!<br>
+                        We need networks that understand this order and remember context!<br>
+                        That's where RNN, LSTM, and GRU come in! 🚀
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: What is RNN? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 3 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-redo"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is RNN? (Recurrent Neural Network)</h1>
+                <p class="slide-subtitle">The network that remembers!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">RNN = Recurrent Neural Network 🔄</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">The network with a memory loop!</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>RNN</strong> = A neural network that has a "memory loop"<br>
+                        It processes words one by one AND remembers what came before!<br>
+                        It's like reading a book and remembering the story as you go! 📖
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-book"></i> How RNN Works:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Sentence:</strong> "I love pizza"<br>
+                        <strong>Step 1:</strong> Process "I" → Store in memory<br>
+                        <strong>Step 2:</strong> Process "love" → Use memory of "I" + "love" → Store in memory<br>
+                        <strong>Step 3:</strong> Process "pizza" → Use memory of "I love" + "pizza" → Understand full sentence!<br>
+                        <strong>Result:</strong> RNN understands the whole sentence, not just individual words! 🎯
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 RNN Processing Example: "The cat sat"</strong>
+
+<strong style="color: #34d399;">Time Step 1: Process "The"</strong>
+Input: "The"
+Memory: [] (empty at start)
+Output: Hidden state 1 = "I saw 'The'"
+New Memory: ["The"]
+
+<strong style="color: #34d399;">Time Step 2: Process "cat"</strong>
+Input: "cat"
+Memory: ["The"] (remembers previous word!)
+Output: Hidden state 2 = "I saw 'The cat'"
+New Memory: ["The", "cat"]
+
+<strong style="color: #34d399;">Time Step 3: Process "sat"</strong>
+Input: "sat"
+Memory: ["The", "cat"] (remembers all previous words!)
+Output: Hidden state 3 = "I saw 'The cat sat'"
+New Memory: ["The", "cat", "sat"]
+
+<strong style="color: #10b981;">✅ RNN understands the full sentence by remembering context!</strong>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">RNN Advantages</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Remembers previous words<br>
+                                ✅ Understands sequences<br>
+                                ✅ Can process variable-length text<br>
+                                ✅ Simple and easy to understand
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">RNN Problems</h3>
+                        <div style="background: #fee2e2; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--error-red);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ❌ Forgets things from long ago<br>
+                                ❌ Struggles with long sentences<br>
+                                ❌ "Vanishing gradient" problem<br>
+                                ❌ Like having short-term memory loss 😅
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> Key Point:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        RNN is like reading a book and remembering the last few pages, but forgetting what happened in chapter 1!<br>
+                        It's good for short sentences, but struggles with long ones.<br>
+                        That's why we created LSTM and GRU - they have better memory! 🧠✨
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: The Vanishing Gradient Problem -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 4 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">The Vanishing Gradient Problem</h1>
+                <p class="slide-subtitle">Why RNN forgets long sentences!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">The Vanishing Gradient = Memory Fading Away! 📉</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Why RNN struggles with long sentences</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Vanishing Gradient</strong> = When RNN tries to remember things from long ago, the memory gets weaker and weaker<br>
+                        It's like trying to remember what you had for breakfast last week - the memory fades!<br>
+                        After many words, RNN almost forgets the beginning! 😅
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-book"></i> Funny Example:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Long Sentence:</strong> "The cat that I saw yesterday in the park near my house sat on the mat"<br>
+                        <strong>RNN Processing:</strong><br>
+                        • "The cat" → Remembers 100% ✅<br>
+                        • "that I saw" → Remembers 80% 📉<br>
+                        • "yesterday in the park" → Remembers 50% 📉📉<br>
+                        • "near my house sat" → Remembers 20% 📉📉📉<br>
+                        • "on the mat" → Forgot about "The cat"! 🤯<br>
+                        <strong>Result:</strong> RNN doesn't know what "sat" on the mat! 😅
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 How Memory Fades in RNN</strong>
+
+<strong style="color: #34d399;">Short Sentence: "I love pizza"</strong>
+Word 1: "I" → Memory strength = 100% ✅
+Word 2: "love" → Memory strength = 95% ✅ (remembers "I")
+Word 3: "pizza" → Memory strength = 90% ✅ (remembers "I love")
+→ Works great! 🎉
+
+<strong style="color: #f87171;">Long Sentence: "The cat that I saw yesterday..." (20 words)</strong>
+Word 1: "The" → Memory strength = 100% ✅
+Word 5: "saw" → Memory strength = 60% 📉
+Word 10: "park" → Memory strength = 30% 📉📉
+Word 15: "house" → Memory strength = 10% 📉📉📉
+Word 20: "mat" → Memory strength = 2% 📉📉📉📉
+→ Forgot the beginning! 😵
+
+<strong style="color: #ec4899;">This is the "Vanishing Gradient" problem!</strong>
+The gradient (how much we remember) gets smaller and smaller until it "vanishes"!
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Short Sentences</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                "I love pizza"<br>
+                                RNN remembers everything! ✅<br>
+                                Works perfectly! 🎯
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Long Sentences</h3>
+                        <div style="background: #fee2e2; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--error-red);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                "The cat that I saw yesterday..."<br>
+                                RNN forgets the beginning! ❌<br>
+                                Struggles a lot! 😅
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="warning-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-exclamation-triangle"></i> The Solution:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        We need networks that can decide WHAT to remember and WHAT to forget!<br>
+                        That's exactly what LSTM and GRU do!<br>
+                        They have "gates" that control memory - like a smart filing system! 🗂️<br>
+                        <strong>Next slides: LSTM and GRU to the rescue! 🦸</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: What is LSTM? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 5 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is LSTM? (Long Short-Term Memory)</h1>
+                <p class="slide-subtitle">The network with super memory!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">LSTM = Long Short-Term Memory 🧠💪</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">RNN's smarter cousin with better memory!</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>LSTM</strong> = A special type of RNN with "gates" that control memory<br>
+                        It can decide what to remember, what to forget, and what to output!<br>
+                        It's like having a smart assistant who knows what's important to remember! 🎯
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> The Key Idea:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>LSTM has 3 Gates (like doors that open/close):</strong><br>
+                        🚪 <strong>Forget Gate:</strong> "Should I forget this old information?"<br>
+                        🚪 <strong>Input Gate:</strong> "Should I remember this new information?"<br>
+                        🚪 <strong>Output Gate:</strong> "What should I output/use?"<br>
+                        <strong>Result:</strong> LSTM only remembers what's important! 🎯
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 LSTM Processing Example: "The cat sat on the mat"</strong>
+
+<strong style="color: #34d399;">Step 1: Process "The cat"</strong>
+Forget Gate: "Forget nothing yet" → Keep everything ✅
+Input Gate: "Remember 'The cat'" → Store it! 💾
+Output Gate: "Output: 'I see The cat'" → Use it! 📤
+Memory: ["The cat"] ✅
+
+<strong style="color: #34d399;">Step 2: Process "sat"</strong>
+Forget Gate: "Keep 'The cat' (it's important!)" → Don't forget! ✅
+Input Gate: "Remember 'sat'" → Add to memory! 💾
+Output Gate: "Output: 'The cat sat'" → Use it! 📤
+Memory: ["The cat", "sat"] ✅
+
+<strong style="color: #34d399;">Step 3: Process "on the mat"</strong>
+Forget Gate: "Keep everything (all important!)" → Remember all! ✅
+Input Gate: "Remember 'on the mat'" → Add to memory! 💾
+Output Gate: "Output: 'The cat sat on the mat'" → Perfect! 📤
+Memory: ["The cat", "sat", "on the mat"] ✅
+
+<strong style="color: #10b981;">✅ LSTM remembers everything important from the beginning!</strong>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">LSTM Advantages</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Remembers long sequences<br>
+                                ✅ Decides what to forget<br>
+                                ✅ Decides what to remember<br>
+                                ✅ Solves vanishing gradient!<br>
+                                ✅ Like having perfect memory! 🧠
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">LSTM Trade-offs</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ⚠️ More complex than RNN<br>
+                                ⚠️ Takes longer to train<br>
+                                ⚠️ Uses more memory<br>
+                                ⚠️ But worth it for long sentences! 💪
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Key Point:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        LSTM is like having a smart filing cabinet!<br>
+                        Instead of keeping everything (like RNN tries to do), it decides:<br>
+                        • "This is important → Keep it!" 📁<br>
+                        • "This is old news → Throw it away!" 🗑️<br>
+                        • "This is useful now → Use it!" 📤<br>
+                        <strong>Result: Perfect memory for important things! 🎯</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: What is GRU? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 6 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-sync"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is GRU? (Gated Recurrent Unit)</h1>
+                <p class="slide-subtitle">LSTM's simpler, faster cousin!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">GRU = Gated Recurrent Unit ⚡</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">LSTM's simpler but still powerful version!</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>GRU</strong> = A simpler version of LSTM with only 2 gates instead of 3<br>
+                        It's like LSTM but faster and easier to train!<br>
+                        Think of it as LSTM's younger sibling who's just as smart but more efficient! 🚀
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> The Key Difference:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>LSTM has 3 gates:</strong> Forget, Input, Output (more complex) 🚪🚪🚪<br>
+                        <strong>GRU has 2 gates:</strong> Reset, Update (simpler!) 🚪🚪<br>
+                        <strong>Result:</strong> GRU is faster but still remembers well! ⚡
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 GRU vs LSTM: The Simple Comparison</strong>
+
+<strong style="color: #34d399;">LSTM (3 Gates):</strong>
+🚪 Forget Gate: "Should I forget old info?"
+🚪 Input Gate: "Should I remember new info?"
+🚪 Output Gate: "What should I output?"
+→ More control, but more complex! 🧠
+
+<strong style="color: #fbbf24;">GRU (2 Gates):</strong>
+🚪 Reset Gate: "How much old info to forget?"
+🚪 Update Gate: "How much new info to remember?"
+→ Simpler, but still powerful! ⚡
+
+<strong style="color: #ec4899;">Funny Analogy:</strong>
+LSTM = A car with 3 pedals (brake, gas, clutch) - more control
+GRU = A car with 2 pedals (brake, gas) - simpler, still works great!
+
+<strong style="color: #10b981;">Both solve the vanishing gradient problem! ✅</strong>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">GRU Advantages</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Simpler than LSTM<br>
+                                ✅ Faster to train<br>
+                                ✅ Uses less memory<br>
+                                ✅ Still remembers well!<br>
+                                ✅ Good balance! ⚖️
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">When to Use GRU</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ When you need speed<br>
+                                ✅ When data is limited<br>
+                                ✅ When LSTM is too complex<br>
+                                ✅ For most NLP tasks!<br>
+                                ✅ Great default choice! 🎯
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Key Point:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        GRU is like LSTM's efficient cousin!<br>
+                        It does almost the same job but with less complexity.<br>
+                        For most tasks, GRU works just as well as LSTM but faster!<br>
+                        <strong>Think of it as: LSTM = Full-featured, GRU = Streamlined! 🚀</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Comparison -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 7 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">RNN vs LSTM vs GRU</h1>
+                <p class="slide-subtitle">Which one to choose?</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">The Great Comparison! 🏆</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Understanding the differences</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">RNN</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.05rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>✅ Pros:</strong><br>
+                                • Simple<br>
+                                • Fast<br>
+                                • Good for short text<br><br>
+                                <strong>❌ Cons:</strong><br>
+                                • Forgets long sequences<br>
+                                • Vanishing gradient<br>
+                                • Struggles with long sentences
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">LSTM</h3>
+                        <div style="background: #e0f2fe; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--primary-blue);">
+                            <p style="font-size: 1.05rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>✅ Pros:</strong><br>
+                                • Remembers long sequences<br>
+                                • Solves vanishing gradient<br>
+                                • Very powerful<br>
+                                • 3 gates (more control)<br><br>
+                                <strong>❌ Cons:</strong><br>
+                                • More complex<br>
+                                • Slower to train
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">GRU</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.05rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>✅ Pros:</strong><br>
+                                • Simpler than LSTM<br>
+                                • Faster than LSTM<br>
+                                • Still remembers well<br>
+                                • Good balance<br><br>
+                                <strong>❌ Cons:</strong><br>
+                                • Slightly less control than LSTM
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 When to Use Each:</strong>
+
+<strong style="color: #34d399;">Use RNN when:</strong>
+• Text is very short (1-5 words)
+• You need something simple
+• Speed is critical
+• Example: "I love pizza" ✅
+
+<strong style="color: #fbbf24;">Use LSTM when:</strong>
+• Text is very long (paragraphs)
+• You need maximum memory power
+• Complexity is okay
+• Example: Long articles, stories 📚
+
+<strong style="color: #ec4899;">Use GRU when:</strong>
+• Text is medium to long (sentences to paragraphs)
+• You want good balance
+• Speed matters but so does memory
+• Example: Most NLP tasks! 🎯
+
+<strong style="color: #10b981;">General Rule: Start with GRU, upgrade to LSTM if needed! 🚀</strong>
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Decision Tree:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        <strong>Short text (1-5 words)?</strong> → Use RNN ✅<br>
+                        <strong>Medium text (sentences)?</strong> → Use GRU ✅ (Recommended!)<br>
+                        <strong>Long text (paragraphs)?</strong> → Use LSTM ✅<br>
+                        <strong>Not sure?</strong> → Start with GRU! It's the sweet spot! 🎯<br><br>
+                        <strong>Funny Analogy:</strong> RNN = Bicycle, GRU = Car, LSTM = Truck. Most of the time, you want a car! 🚗
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Applications -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 8 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Real-World Applications</h1>
+                <p class="slide-subtitle">Where RNN, LSTM, and GRU are used!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Where You See This Every Day! 🌟</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">RNN, LSTM, and GRU in action</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-keyboard"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Text Prediction</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>📱 Your Phone Keyboard:</strong><br>
+                                When you type "I love", it suggests "pizza"!<br>
+                                How? RNN/LSTM/GRU remembers what you typed!<br><br>
+                                <strong>Example:</strong><br>
+                                You: "I love"<br>
+                                Phone: "pizza", "you", "this" (suggestions)<br>
+                                → Network remembers context! 🎯
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Machine Translation</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>🌍 Google Translate:</strong><br>
+                                Translates entire sentences, not just words!<br>
+                                How? LSTM/GRU remembers the whole sentence!<br><br>
+                                <strong>Example:</strong><br>
+                                English: "I love pizza"<br>
+                                Spanish: "Me encanta la pizza"<br>
+                                → Network understands context! 🎯
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-purple);">
+                            <i class="fas fa-comment"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Chatbots</h3>
+                        <div style="background: #f3e8ff; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--purple);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>💬 Customer Service Bots:</strong><br>
+                                Chatbots remember the conversation!<br>
+                                How? LSTM/GRU remembers what you said!<br><br>
+                                <strong>Example:</strong><br>
+                                You: "I want pizza"<br>
+                                Bot: "What size?"<br>
+                                You: "Large"<br>
+                                Bot: "Large pizza, got it!"<br>
+                                → Bot remembers "pizza"! 🎯
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-pink);">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Sentiment Analysis</h3>
+                        <div style="background: #fce7f3; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--pink);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>😊 Review Analysis:</strong><br>
+                                Understands sentiment in long reviews!<br>
+                                How? LSTM/GRU remembers the whole review!<br><br>
+                                <strong>Example:</strong><br>
+                                Review: "I thought this pizza would be bad, but it was actually amazing!"<br>
+                                Analysis: Positive (remembers "amazing" despite "bad")<br>
+                                → Network understands context! 🎯
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1rem; padding: 1.5rem; font-family: 'Courier New', monospace; margin-top: 2rem;">
+<strong style="color: #60a5fa;">📚 More Applications:</strong>
+
+<strong style="color: #34d399;">📝 Text Generation:</strong>
+• Write stories, articles, code
+• Example: GPT models use LSTM/GRU-like architectures
+• Remembers what it wrote before!
+
+<strong style="color: #fbbf24;">🎤 Speech Recognition:</strong>
+• Converts speech to text
+• Remembers previous words in the sentence
+• Example: Siri, Alexa
+
+<strong style="color: #ec4899;">📊 Time Series Prediction:</strong>
+• Predict stock prices, weather
+• Remembers past patterns
+• Example: Weather forecasting
+
+<strong style="color: #10b981;">All of these need memory - that's why RNN/LSTM/GRU are perfect! 🎯</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Summary -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 9 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Summary & Key Takeaways</h1>
+                <p class="slide-subtitle">What we learned today!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">You're Now a Neural Network Expert! 🎉</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Let's review what we learned</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-redo"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">RNN</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <ul style="font-size: 1.1rem; color: var(--charcoal); line-height: 2;">
+                                <li>✅ Remembers previous words</li>
+                                <li>✅ Processes sequences</li>
+                                <li>✅ Simple and fast</li>
+                                <li>❌ Forgets long sequences</li>
+                                <li>❌ Vanishing gradient problem</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">LSTM & GRU</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <ul style="font-size: 1.1rem; color: var(--charcoal); line-height: 2;">
+                                <li>✅ Remembers long sequences</li>
+                                <li>✅ Solves vanishing gradient</li>
+                                <li>✅ Gates control memory</li>
+                                <li>✅ LSTM: 3 gates (more control)</li>
+                                <li>✅ GRU: 2 gates (faster, simpler)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Key Concepts to Remember:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Regular NN:</strong> Forgets everything (like goldfish memory!) 🐠</li>
+                        <li><strong>RNN:</strong> Remembers previous words (like reading a book) 📖</li>
+                        <li><strong>Vanishing Gradient:</strong> RNN forgets things from long ago (memory fades) 📉</li>
+                        <li><strong>LSTM:</strong> Has gates that decide what to remember/forget (smart memory!) 🧠</li>
+                        <li><strong>GRU:</strong> Simpler version of LSTM, faster but still powerful (efficient!) ⚡</li>
+                        <li><strong>When to use:</strong> Short text → RNN, Medium text → GRU, Long text → LSTM 🎯</li>
+                    </ul>
+                </div>
+                
+                <div style="background: var(--gradient-purple); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🎓 Congratulations!</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        You now understand how computers:<br>
+                        🧠 Remember context in text (RNN, LSTM, GRU)<br>
+                        🔗 Connect words in sequences<br>
+                        💡 Predict next words intelligently<br>
+                        ⚡ Handle long sentences without forgetting!<br><br>
+                        <strong>Next time your phone suggests a word, you'll know the magic behind it! ✨</strong>
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-rocket"></i> Lab Exercise Ideas:</h4>
+                    <p>1. Build a simple RNN to predict next word in a sentence<br>
+                    2. Compare RNN vs LSTM vs GRU on the same task<br>
+                    3. Build a text generator using LSTM<br>
+                    4. Create a sentiment analyzer using GRU<br>
+                    5. Measure how well each network remembers long sequences<br><br>
+                    <strong>Have fun experimenting! 🎉</strong></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACPSO Neural Dashboard | SANAULLAH 7964</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dashboard: {
+                            bg: '#0a0f18',
+                            card: '#161f2e',
+                            accent: '#00f2ff', // Electric Cyan
+                            accentDim: 'rgba(0, 242, 255, 0.1)',
+                            border: '#2d3a4f',
+                            text: '#e2e8f0',
+                            danger: '#ff4d4d',
+                            success: '#00ff9d'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        glow: {
+                            'from': { 'box-shadow': '0 0 5px rgba(0, 242, 255, 0.2)' },
+                            'to': { 'box-shadow': '0 0 20px rgba(0, 242, 255, 0.6)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0a0f18;
+            background-image: 
+                radial-gradient(circle at 50% -20%, #1e293b 0%, transparent 50%),
+                radial-gradient(circle at 0% 100%, #0f172a 0%, transparent 40%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .glass-panel {
+            background: rgba(22, 31, 46, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2d3a4f;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #00f2ff;
+        }
+
+        .entropy-badge {
+            background: linear-gradient(90deg, #ff4d4d 0%, #f97316 100%);
+            box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
+        }
+
+        .code-block {
+            background: #0d1117;
+            border-left: 4px solid #00f2ff;
+        }
+
+        .status-terminal {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto w-full mb-8 text-center">
+        <div class="inline-block px-4 py-1 mb-4 border border-dashboard-accent/30 rounded-full bg-dashboard-accent/5">
+            <span class="text-xs font-bold tracking-widest text-dashboard-accent uppercase">Neural Core v4.0.2</span>
+        </div>
+        <h1 class="text-4xl md:text-6xl font-display font-extrabold tracking-tight mb-2">
+            ACPSO <span class="text-dashboard-accent">Neural Dashboard</span>
+        </h1>
+        <p class="text-slate-400 font-medium tracking-wide">Secure Interface for SANAULLAH 7964</p>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto w-full flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 mb-20">
+        
+        <!-- Top Control Section (Left/Top) -->
+        <aside class="lg:col-span-4 flex flex-col gap-6">
+            <section class="glass-panel p-6 border-l-4 border-l-dashboard-accent shadow-2xl">
+                <h2 class="text-xl font-display font-bold mb-6 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-dashboard-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    System Controls
+                </h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label for="node-id" class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Smart City Node ID</label>
+                        <div class="relative">
+                            <input type="text" id="node-id" readonly value="SC-ISB-ZONE1-SEC01" 
+                                class="w-full bg-slate-900 border border-dashboard-border rounded-lg px-4 py-3 text-dashboard-accent font-mono focus:outline-none focus:ring-2 focus:ring-dashboard-accent/50 transition-all">
+                            <div class="absolute right-3 top-3.5 w-2 h-2 rounded-full bg-dashboard-accent animate-pulse"></div>
+                        </div>
+                    </div>
+
+                    <button id="scan-btn" class="w-full group relative overflow-hidden bg-dashboard-accent text-dashboard-bg font-display font-extrabold py-4 rounded-lg transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(0,242,255,0.3)]">
+                        <span class="relative z-10 flex items-center justify-center gap-2">
+                            INITIATE NEURAL SCAN
+                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </span>
+                        <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    </button>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-900/50 p-3 rounded-lg border border-dashboard-border/50">
+                            <p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Encryption</p>
+                            <p class="text-sm font-mono text-slate-300">ML-KEM 768</p>
+                        </div>
+                        <div class="bg-slate-900/50 p-3 rounded-lg border border-dashboard-border/50">
+                            <p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Heuristics</p>
+                            <p class="text-sm font-mono text-slate-300">Enabled</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Metrics Overlay -->
+            <div class="hidden lg:block glass-panel p-6 bg-dashboard-accentDim/10 border-dashed border-2 border-dashboard-accent/20">
+                <h3 class="text-sm font-bold text-dashboard-accent uppercase tracking-tighter mb-4">Core Telemetry</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-400">Neutral Load</span>
+                        <span class="text-xs font-mono text-dashboard-accent">14.2%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+                        <div class="bg-dashboard-accent h-full w-[14%]"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Bottom 'Status Log' Section (Right/Bottom) -->
+        <div class="lg:col-span-8 flex flex-col h-full min-h-[600px]">
+            <section class="glass-panel flex-grow flex flex-col overflow-hidden border-t-4 border-t-dashboard-accent/50 shadow-2xl">
+                <div class="px-6 py-4 border-b border-dashboard-border flex justify-between items-center bg-slate-900/30">
+                    <h2 class="text-xl font-display font-bold flex items-center gap-3">
+                        <span class="flex h-3 w-3 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-dashboard-accent opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-dashboard-accent"></span>
+                        </span>
+                        Status Log
+                    </h2>
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 rounded-full bg-dashboard-danger/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-dashboard-success/50"></div>
+                    </div>
+                </div>
+
+                <div id="log-output" class="p-6 overflow-y-auto custom-scrollbar status-terminal flex-grow space-y-8">
+                    
+                    <!-- Metadata Header -->
+                    <div class="bg-dashboard-card/50 p-4 rounded border border-dashboard-border">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <span class="text-slate-500 block text-[10px] uppercase font-bold">Node ID</span>
+                                <span class="text-dashboard-accent font-bold">SC-ISB-ZONE1-SEC01</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 block text-[10px] uppercase font-bold">Analysis Date</span>
+                                <span class="text-slate-200">April 5, 2026</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 block text-[10px] uppercase font-bold">Security Threshold</span>
+                                <span class="text-dashboard-danger font-bold">0.85 (Critical)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 1: JSON Traffic -->
+                    <div>
+                        <h3 class="text-dashboard-accent font-display font-bold mb-4 flex items-center gap-2">
+                            <span class="text-xs px-2 py-0.5 rounded bg-dashboard-accent/20">01</span>
+                            Synthetic IoT Traffic Data (JSON)
+                        </h3>
+                        <div class="code-block p-4 rounded-lg overflow-x-auto">
+<pre class="text-blue-300 text-sm"><code>[
+  {
+    "node_id": "SC-ISB-ZONE1-SEC01",
+    "timestamp": "2023-10-27T10:00:00Z",
+    "sensor_data": {
+      "temperature": 19.42,
+      "humidity": 43.72,
+      "vibration": 0.0454,
+      "status": "OK"
+    }
+  },
+  {
+    "node_id": "SC-ISB-ZONE1-SEC01",
+    "timestamp": "2023-10-27T10:15:00Z",
+    "sensor_data": {
+      "temperature": 105.5,
+      "status": "ERROR_OVERHEAT",
+      "debug_info": "';' OR '1'='1'; &lt;script&gt;var x=1;&lt;/script&gt;; sudo rm -rf /etc; ..."
+    }
+  }
+]</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Heuristic Analysis -->
+                    <div>
+                        <h3 class="text-dashboard-accent font-display font-bold mb-4 flex items-center gap-2">
+                            <span class="text-xs px-2 py-0.5 rounded bg-dashboard-accent/20">02</span>
+                            Nested Heuristic Anomaly Analysis
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="bg-slate-900 border border-dashboard-border p-4 rounded-lg">
+                                <span class="text-slate-500 text-[10px] uppercase font-black">Max Shannon Entropy</span>
+                                <div class="mt-2 flex items-center gap-3">
+                                    <span class="text-2xl font-bold entropy-badge px-3 py-1 rounded text-white">5.86 bits</span>
+                                    <span class="text-dashboard-danger animate-pulse">● ABNORMAL</span>
+                                </div>
+                            </div>
+                            <div class="bg-slate-900 border border-dashboard-border p-4 rounded-lg">
+                                <span class="text-slate-500 text-[10px] uppercase font-black">Maximum Anomaly Score</span>
+                                <div class="mt-2 flex items-center gap-3">
+                                    <span class="text-2xl font-bold text-dashboard-danger">0.9096</span>
+                                    <span class="text-xs text-dashboard-danger font-bold uppercase tracking-tighter bg-dashboard-danger/10 px-2 py-1 rounded">CRITICAL</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-dashboard-danger/5 border border-dashboard-danger/30 p-4 rounded-lg">
+                            <p class="text-sm text-slate-300 leading-relaxed">
+                                <strong class="text-dashboard-danger uppercase">Assessment:</strong> The detected anomaly score (0.9096) significantly exceeds the 0.85 threshold, indicating a high-probability security breach or malicious payload injection targeting node <span class="font-mono text-dashboard-accent">SC-ISB-ZONE1-SEC01</span>.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Remediation Patch -->
+                    <div>
+                        <div class="flex justify-between items-end mb-4">
+                            <h3 class="text-dashboard-accent font-display font-bold flex items-center gap-2">
+                                <span class="text-xs px-2 py-0.5 rounded bg-dashboard-accent/20">03</span>
+                                Quantum-Resistant Remediation Patch
+                            </h3>
+                            <span class="text-[10px] font-mono text-slate-500">NIST-FIPS-203-MLKEM</span>
+                        </div>
+                        <div class="code-block rounded-lg overflow-hidden border border-dashboard-border">
+                            <div class="bg-slate-800/50 px-4 py-2 border-b border-dashboard-border flex justify-between items-center">
+                                <span class="text-xs font-mono text-slate-400">pqc_remediation_v4.py</span>
+                                <button class="text-xs text-dashboard-accent hover:underline uppercase font-bold">Copy Code</button>
+                            </div>
+<pre class="p-4 text-sm text-slate-300 overflow-x-auto"><code><span class="text-slate-500">"""
+PATCH_ID: NIST-FIPS-203-MLKEM-UPGRADE
+TARGET_NODE: SC-ISB-ZONE1-SEC01
+ENCRYPTION_STANDARD: ML-KEM (Kyber-768)
+"""</span>
+
+<span class="text-purple-400">import</span> re, secrets, base64
+
+<span class="text-purple-400">def</span> <span class="text-blue-400">_0x4a12b</span>(_0x1f9e2):
+    <span class="text-slate-500"># Sanitize input vectors with hardened regex</span>
+    _0x55d8c = <span class="text-green-400">r"^[a-zA-Z0-9_\-\.\s]{1,256}$"</span>
+    _0x22b10 = <span class="text-green-400">r"(;|\"|'|`|\||&|\$|<|>|\.\.|\/)"</span>
+    
+    <span class="text-purple-400">if not</span> re.match(_0x55d8c, _0x1f9e2): <span class="text-purple-400">return False</span>
+    <span class="text-purple-400">if</span> re.search(_0x22b10, _0x1f9e2): <span class="text-purple-400">return False</span>
+    <span class="text-purple-400">return True</span>
+
+<span class="text-purple-400">def</span> <span class="text-blue-400">apply_patch</span>():
+    _0xbc412 = <span class="text-green-400">"SC-ISB-ZONE1-SEC01"</span>
+    print(<span class="text-green-400">f"[*] Initializing Quantum-Resistant Patch..."</span>)
+    <span class="text-slate-500"># NIST FIPS 203 compliance enforced.</span></code></pre>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-dashboard-border pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block w-2 h-2 rounded-full bg-yellow-400"></span>
+                            <span class="text-xs font-bold uppercase tracking-widest text-slate-400">Deployment Status: <span class="text-yellow-400">PENDING APPROVAL</span></span>
+                        </div>
+                        <span class="text-[10px] font-mono text-slate-600">-- Status Log Compilation Complete --</span>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="fixed bottom-0 left-0 w-full glass-panel rounded-none border-t border-dashboard-accent/30 bg-dashboard-bg/95 z-50 px-6 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-dashboard-accent/10 flex items-center justify-center border border-dashboard-accent/40">
+                    <span class="text-dashboard-accent font-bold text-xs">S79</span>
+                </div>
+                <p class="text-[10px] md:text-xs text-slate-400 leading-tight max-w-2xl italic">
+                    This application and its proprietary heuristic logic were developed by: <span class="text-dashboard-accent font-bold">SANAULLAH 7964</span>, BSCS Student at Abasyn University Islamabad Campus. Unauthorized replication of this architecture is strictly prohibited.
+                </p>
+            </div>
+            <div class="hidden md:flex gap-4">
+                <span class="text-[10px] text-dashboard-success font-mono">ENCRYPTED_LINK_ACTIVE</span>
+                <span class="text-[10px] text-slate-600 font-mono">v1.2.9-STABLE</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Subtle interaction for the scan button
+        const scanBtn = document.getElementById('scan-btn');
+        const logOutput = document.getElementById('log-output');
+
+        scanBtn.addEventListener('click', () => {
+            scanBtn.innerText = "REFRESHING NEURAL DATA...";
+            scanBtn.classList.add('animate-pulse');
+            
+            // Visual feedback
+            logOutput.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+
+            setTimeout(() => {
+                scanBtn.innerHTML = `
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        SCAN COMPLETE
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </span>`;
+                scanBtn.classList.remove('animate-pulse');
+                scanBtn.classList.remove('bg-dashboard-accent');
+                scanBtn.classList.add('bg-dashboard-success');
+                
+                setTimeout(() => {
+                    scanBtn.innerHTML = `
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        INITIATE NEURAL SCAN
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </span>`;
+                    scanBtn.classList.remove('bg-dashboard-success');
+                    scanBtn.classList.add('bg-dashboard-accent');
+                }, 2000);
+            }, 1500);
+        });
+
+        // Add small glitch effect to entropy scores occasionally
+        setInterval(() => {
+            const entropy = document.querySelector('.entropy-badge');
+            entropy.style.opacity = 0.8;
+            setTimeout(() => entropy.style.opacity = 1, 50);
+        }, 4000);
+    </script>
+</body>
+</html>

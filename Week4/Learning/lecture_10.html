@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 10: Sentiment Analysis & Information Retrieval</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --white: #ffffff;
+            --light-gray: #f1f5f9;
+            --medium-gray: #64748b;
+            --charcoal: #1e293b;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            --gradient-error: linear-gradient(135deg, var(--error-red) 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, var(--purple) 0%, #a855f7 100%);
+            --gradient-pink: linear-gradient(135deg, var(--pink) 0%, #f472b6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
+            color: var(--primary-navy);
+            overflow: hidden;
+            height: 100vh;
+            line-height: 1.6;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1rem 2rem;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            padding-right: 280px;
+        }
+
+        .slide-number-container {
+            position: absolute;
+            top: 0.8rem;
+            right: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-number {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .slide-icon {
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .slide-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            background: var(--white);
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--medium-gray);
+            margin-bottom: 2rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mb-5 { margin-bottom: 3rem; }
+
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .two-col { grid-template-columns: repeat(2, 1fr); }
+        .three-col { grid-template-columns: repeat(3, 1fr); }
+
+        .content-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--light-gray);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--white);
+            font-size: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            color: var(--charcoal);
+        }
+
+        .feature-list i {
+            color: var(--accent-blue);
+            width: 20px;
+            text-align: center;
+        }
+
+        .code-block {
+            background: var(--charcoal);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 2rem 0;
+            overflow-x: auto;
+            border: 1px solid #374151;
+            white-space: pre-line;
+        }
+        
+        .code-block > * {
+            white-space: pre-line;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-left: 5px solid var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-left: 5px solid var(--success-green);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .success-box h4 {
+            color: var(--success-green);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 5px solid var(--warning-orange);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box h4 {
+            color: var(--warning-orange);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .error-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left: 5px solid var(--error-red);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .error-box h4 {
+            color: var(--error-red);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .practical-exercise {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border-left: 5px solid var(--purple);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .practical-exercise h4 {
+            color: var(--purple);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .slide-header {
+                padding: 0.8rem 1.5rem;
+                padding-right: 200px;
+            }
+            
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .slide-title {
+                font-size: 2rem;
+            }
+            
+            .card-grid.two-col,
+            .card-grid.three-col {
+                grid-template-columns: 1fr;
+            }
+            
+            .slide-number-container {
+                right: 1rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation-container">
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 1 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Sentiment Analysis & Information Retrieval</h1>
+                <p class="slide-subtitle">Lecture 10: Understanding Feelings & Finding Stuff!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-5">
+                    <div class="icon-large" style="background: var(--gradient-pink); margin: 0 auto 2rem;">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                    <h2 class="section-title">Welcome to the Fun Stuff! 🎉</h2>
+                    <p class="section-subtitle">Today we learn how computers understand feelings and find information!</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Sentiment Analysis</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-smile"></i> Is this review happy or sad?</li>
+                            <li><i class="fas fa-star"></i> What do people think about pizza?</li>
+                            <li><i class="fas fa-comment"></i> Are tweets positive or negative?</li>
+                            <li><i class="fas fa-thumbs-up"></i> Does this movie review like the film?</li>
+                            <li><i class="fas fa-emoji"></i> Understanding emotions in text!</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Information Retrieval</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-magnifying-glass"></i> How Google finds stuff</li>
+                            <li><i class="fas fa-book"></i> Finding relevant documents</li>
+                            <li><i class="fas fa-list"></i> Ranking search results</li>
+                            <li><i class="fas fa-lightbulb"></i> Making search engines smart</li>
+                            <li><i class="fas fa-rocket"></i> Getting the best results first!</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-pink); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🎯 Today's Mission</h3>
+                    <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Learn how computers can:</div>
+                    <div style="font-size: 1rem; opacity: 0.9; margin-top: 0.5rem;">
+                        😊 Understand if text is happy, sad, or neutral<br>
+                        🔍 Find the most relevant documents when you search<br>
+                        ⚡ Make search engines work like magic!
+                    </div>
+                </div>
+                
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-lightbulb"></i> Fun Example to Think About:</h4>
+                    <p>Imagine you wrote a review: "This pizza is AMAZING! Best pizza ever! 🍕😍"<br>
+                    A computer can read this and think: "Wow, this person REALLY likes pizza! This is super positive!"<br>
+                    That's sentiment analysis! And when you search "best pizza near me", Google uses information retrieval to find the most relevant pizza places. Cool, right? 🎉</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: What is Sentiment Analysis? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 2 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is Sentiment Analysis?</h1>
+                <p class="slide-subtitle">Teaching computers to understand feelings!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Sentiment Analysis = Reading Emotions! 😊</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Computers learning to understand if text is happy, sad, or neutral</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Sentiment Analysis</strong> = Teaching computers to understand if text is positive, negative, or neutral<br>
+                        It's like teaching a robot to read between the lines and understand emotions!<br>
+                        Example: "I love this movie!" → Computer thinks: "This is positive! 😊"
+                    </p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Positive 😊</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                "This pizza is amazing!"<br>
+                                "I love this movie!"<br>
+                                "Best day ever! 🎉"<br>
+                                "This product is fantastic!"
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-frown"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Negative 😞</h3>
+                        <div style="background: #fee2e2; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--error-red);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                "This pizza is terrible!"<br>
+                                "I hate this movie!"<br>
+                                "Worst day ever 😢"<br>
+                                "This product is awful!"
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-meh"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Neutral 😐</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                "I bought a pizza."<br>
+                                "The movie is 2 hours long."<br>
+                                "Today is Monday."<br>
+                                "The product arrived."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Funny Real-World Examples:</strong>
+
+<strong style="color: #34d399;">Restaurant Review:</strong>
+"I ordered pizza and it arrived in 10 minutes! The cheese was perfect, 
+the crust was crispy, and the toppings were amazing! 5 stars! ⭐⭐⭐⭐⭐"
+→ Sentiment: <strong style="color: #10b981;">POSITIVE</strong> 😊
+
+<strong style="color: #f87171;">Movie Review:</strong>
+"This movie was so boring! I fell asleep halfway through. 
+Waste of my time and money. Don't watch it!"
+→ Sentiment: <strong style="color: #ef4444;">NEGATIVE</strong> 😞
+
+<strong style="color: #fbbf24;">Product Description:</strong>
+"This is a blue t-shirt. It's made of cotton. Size: Medium."
+→ Sentiment: <strong style="color: #f59e0b;">NEUTRAL</strong> 😐
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Why This is Useful:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Businesses:</strong> Know what customers think about their products</li>
+                        <li><strong>Social Media:</strong> Monitor public opinion about brands or topics</li>
+                        <li><strong>Customer Service:</strong> Find unhappy customers who need help</li>
+                        <li><strong>Marketing:</strong> Understand which ads work and which don't</li>
+                        <li><strong>Research:</strong> Analyze public opinion on any topic!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: How Sentiment Analysis Works -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 3 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">How Sentiment Analysis Works</h1>
+                <p class="slide-subtitle">Step-by-step: from text to emotion!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">The Magic Behind the Scenes! ✨</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">How computers figure out if text is happy or sad</p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-pizza-slice"></i> Example: Pizza Review</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong style="color: var(--warning-orange);">Review:</strong> "This pizza is absolutely amazing! The cheese is perfect and the crust is crispy. I love it! 🍕😍"
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8;">
+<strong style="color: #60a5fa;">📚 Step 1: Look for Positive Words</strong>
+
+<strong style="color: #34d399;">Positive words in the review:</strong>
+<span style="white-space: nowrap; display: block;">• "amazing" → +2 points (very positive!)</span>
+<span style="white-space: nowrap; display: block;">• "perfect" → +2 points (very positive!)</span>
+<span style="white-space: nowrap; display: block;">• "crispy" → +1 point (positive)</span>
+<span style="white-space: nowrap; display: block;">• "love" → +3 points (super positive!)</span>
+
+<strong style="color: #fbbf24;">Total positive score: 8 points</strong>
+
+<strong style="color: #ec4899;">Negative words found: None!</strong>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 2: Look for Negative Words</strong>
+
+<strong style="color: #f87171;">Negative words in the review:</strong>
+<span style="white-space: nowrap; display: block;">• None found! ✅</span>
+
+<strong style="color: #34d399;">Total negative score: 0 points</strong>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 3: Check for Intensifiers (Words that Make Feelings Stronger)</strong>
+
+<strong style="color: #fbbf24;">Intensifiers found:</strong>
+<span style="white-space: nowrap; display: block;">• "absolutely" → Makes "amazing" even stronger! (multiply by 1.5)</span>
+<span style="white-space: nowrap; display: block;">• Emoji 😍 → Adds extra positive points!</span>
+
+<strong style="color: #34d399;">Adjusted positive score: 8 × 1.5 + 2 (emoji) = 14 points</strong>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem; background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">
+<strong style="color: #fbbf24;">📚 Step 4: Calculate Final Sentiment</strong>
+
+<strong style="color: #34d399;">Positive Score: 14 points</strong>
+<strong style="color: #f87171;">Negative Score: 0 points</strong>
+
+<strong style="color: #ec4899;">Final Calculation:</strong>
+<span style="white-space: nowrap; display: block;">14 - 0 = 14 (very positive!)</span>
+
+<strong style="color: #10b981; font-size: 1.1rem;">✅ RESULT: POSITIVE SENTIMENT 😊</strong>
+
+<strong style="color: #60a5fa;">Confidence Level: 95% (very confident this is positive!)</strong>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> Key Points:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Step 1:</strong> Find positive words (love, amazing, perfect, etc.)</li>
+                        <li><strong>Step 2:</strong> Find negative words (hate, terrible, awful, etc.)</li>
+                        <li><strong>Step 3:</strong> Look for intensifiers (very, absolutely, extremely) and emojis</li>
+                        <li><strong>Step 4:</strong> Calculate: Positive score - Negative score = Final sentiment</li>
+                        <li><strong>Simple Rule:</strong> More positive words = positive sentiment! More negative words = negative sentiment!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Sentiment Analysis Methods -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 4 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Methods for Sentiment Analysis</h1>
+                <p class="slide-subtitle">Different ways to understand feelings!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Three Ways to Do Sentiment Analysis</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">From simple word lists to smart machine learning</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">1. Lexicon-Based</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>How it works:</strong><br>
+                                Use a dictionary of positive and negative words!<br><br>
+                                <strong>Example:</strong><br>
+                                Positive words: love, amazing, great, perfect<br>
+                                Negative words: hate, terrible, awful, bad<br><br>
+                                <strong>Simple but works!</strong> ✅
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">2. Machine Learning</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>How it works:</strong><br>
+                                Train a model on examples!<br><br>
+                                <strong>Example:</strong><br>
+                                Show 1000 positive reviews → Model learns patterns<br>
+                                Show 1000 negative reviews → Model learns patterns<br><br>
+                                <strong>Smart and accurate!</strong> 🧠
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-purple);">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">3. Deep Learning</h3>
+                        <div style="background: #f3e8ff; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--purple);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>How it works:</strong><br>
+                                Use neural networks (like a mini brain)!<br><br>
+                                <strong>Example:</strong><br>
+                                Very complex, understands context better<br>
+                                Can handle sarcasm and jokes!<br><br>
+                                <strong>Most advanced!</strong> 🤖
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Funny Example: "This pizza is not bad"</strong>
+
+<strong style="color: #34d399;">Lexicon-Based Method:</strong>
+<span style="white-space: nowrap; display: block;">• Sees "bad" → Thinks: "Negative!" ❌</span>
+<span style="white-space: nowrap; display: block;">• Doesn't understand "not bad" = actually positive!</span>
+<span style="white-space: nowrap; display: block;">• Result: WRONG! 😅</span>
+
+<strong style="color: #fbbf24;">Machine Learning Method:</strong>
+<span style="white-space: nowrap; display: block;">• Sees "not bad" together → Learned this means positive!</span>
+<span style="white-space: nowrap; display: block;">• Understands context better</span>
+<span style="white-space: nowrap; display: block;">• Result: CORRECT! ✅</span>
+
+<strong style="color: #ec4899;">Deep Learning Method:</strong>
+<span style="white-space: nowrap; display: block;">• Understands "not bad" = actually good (understatement!)</span>
+<span style="white-space: nowrap; display: block;">• Can even detect sarcasm!</span>
+<span style="white-space: nowrap; display: block;">• Result: VERY CORRECT! 🎯</span>
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Which One to Use?</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        <strong>Lexicon-Based:</strong> Quick and simple, good for basic tasks<br>
+                        <strong>Machine Learning:</strong> More accurate, needs training data<br>
+                        <strong>Deep Learning:</strong> Most accurate, but needs lots of data and computing power<br><br>
+                        <strong>Start simple, then upgrade!</strong> Like leveling up in a video game! 🎮
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: What is Information Retrieval? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 5 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is Information Retrieval?</h1>
+                <p class="slide-subtitle">How search engines find stuff!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Information Retrieval = Smart Searching! 🔍</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Finding the most relevant documents when you search</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Information Retrieval (IR)</strong> = Finding the best documents that match your search query<br>
+                        It's like having a super smart librarian who knows exactly where everything is!<br>
+                        Example: Search "best pizza recipe" → Get the most relevant pizza recipes first!
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-magnifying-glass"></i> Real-World Example:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>You search:</strong> "How to make pizza at home"<br>
+                        <strong>Google finds:</strong> 1 million pizza recipes<br>
+                        <strong>IR System's job:</strong> Show you the BEST recipes first (most relevant, highest quality, most helpful)!<br>
+                        <strong>Result:</strong> You see the top 10 best recipes, not random ones! 🎯
+                    </p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">The Problem</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>Challenge:</strong><br>
+                                There are BILLIONS of documents on the internet!<br><br>
+                                When you search "pizza", you get millions of results!<br><br>
+                                <strong>Question:</strong> Which ones should show up first?<br>
+                                <strong>Answer:</strong> The most relevant ones! 🎯
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">The Solution</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>IR System:</strong><br>
+                                1. Understands your query<br>
+                                2. Searches through documents<br>
+                                3. Ranks them by relevance<br>
+                                4. Shows best matches first!<br><br>
+                                <strong>Result:</strong> You find what you need quickly! ⚡
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Funny Example: Searching for "Pizza"</strong>
+
+<strong style="color: #34d399;">Documents in the database:</strong>
+1. "How to make pizza at home" (mentions pizza 10 times)
+2. "Best pizza restaurants in NYC" (mentions pizza 8 times)
+3. "History of pizza in Italy" (mentions pizza 15 times)
+4. "My cat's name is Pizza" (mentions pizza 1 time)
+5. "Pizza delivery near me" (mentions pizza 5 times)
+
+<strong style="color: #fbbf24;">IR System ranks them:</strong>
+1. "History of pizza in Italy" → Most mentions of "pizza" (15 times) = Rank 1
+2. "How to make pizza at home" → 10 mentions = Rank 2
+3. "Best pizza restaurants in NYC" → 8 mentions = Rank 3
+4. "Pizza delivery near me" → 5 mentions = Rank 4
+5. "My cat's name is Pizza" → Only 1 mention = Rank 5
+
+<strong style="color: #ec4899;">You see the most relevant ones first! 🎯</strong>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Why IR is Important:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Google Search:</strong> Finds relevant web pages for your query</li>
+                        <li><strong>Library Systems:</strong> Helps find books and articles</li>
+                        <li><strong>E-commerce:</strong> Shows relevant products when you search</li>
+                        <li><strong>Email Search:</strong> Finds emails containing specific keywords</li>
+                        <li><strong>Document Management:</strong> Helps companies find documents quickly</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: How Search Works -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 6 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">How Search Works</h1>
+                <p class="slide-subtitle">Step-by-step: from query to results!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">The Search Engine Magic! ✨</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">What happens when you search for something</p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-search"></i> Example Search Query</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong style="color: var(--warning-orange);">You search:</strong> "best pizza recipe"
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8;">
+<strong style="color: #60a5fa;">📚 Step 1: Understand Your Query</strong>
+
+<strong style="color: #34d399;">Query: "best pizza recipe"</strong>
+
+<strong style="color: #34d399;">Keywords extracted:</strong>
+<span style="white-space: nowrap; display: block;">• "best" (important word)</span>
+<span style="white-space: nowrap; display: block;">• "pizza" (main topic)</span>
+<span style="white-space: nowrap; display: block;">• "recipe" (what you want)</span>
+
+<strong style="color: #fbbf24;">What the system thinks:</strong>
+<span style="white-space: nowrap; display: block;">"User wants pizza recipes, and wants the BEST ones!"</span>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 2: Search Through Documents</strong>
+
+<strong style="color: #34d399;">Documents in database:</strong>
+<span style="white-space: nowrap; display: block;">Doc 1: "Easy pizza recipe for beginners"</span>
+<span style="white-space: nowrap; display: block;">Doc 2: "Best pizza recipe from Italy"</span>
+<span style="white-space: nowrap; display: block;">Doc 3: "How to make pizza at home"</span>
+<span style="white-space: nowrap; display: block;">Doc 4: "Pizza delivery services"</span>
+<span style="white-space: nowrap; display: block;">Doc 5: "Best pizza restaurants"</span>
+
+<strong style="color: #fbbf24;">System checks each document:</strong>
+<span style="white-space: nowrap; display: block;">• Does it contain "pizza"? ✅ (all do!)</span>
+<span style="white-space: nowrap; display: block;">• Does it contain "recipe"? ✅ (Docs 1, 2, 3)</span>
+<span style="white-space: nowrap; display: block;">• Does it contain "best"? ✅ (Docs 2, 5)</span>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 3: Calculate Relevance Score</strong>
+
+<strong style="color: #34d399;">Scoring system:</strong>
+<span style="white-space: nowrap; display: block;">• Has "pizza" = +10 points</span>
+<span style="white-space: nowrap; display: block;">• Has "recipe" = +20 points (more important!)</span>
+<span style="white-space: nowrap; display: block;">• Has "best" = +15 points</span>
+<span style="white-space: nowrap; display: block;">• All keywords match = +10 bonus points</span>
+
+<strong style="color: #fbbf24;">Scores:</strong>
+<span style="white-space: nowrap; display: block;">Doc 1: 10 (pizza) + 20 (recipe) = 30 points</span>
+<span style="white-space: nowrap; display: block;">Doc 2: 10 (pizza) + 20 (recipe) + 15 (best) + 10 (bonus) = 55 points ⭐</span>
+<span style="white-space: nowrap; display: block;">Doc 3: 10 (pizza) + 20 (recipe) = 30 points</span>
+<span style="white-space: nowrap; display: block;">Doc 4: 10 (pizza) = 10 points</span>
+<span style="white-space: nowrap; display: block;">Doc 5: 10 (pizza) + 15 (best) = 25 points</span>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem; background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">
+<strong style="color: #fbbf24;">📚 Step 4: Rank and Return Results</strong>
+
+<strong style="color: #34d399;">Ranked by score (highest first):</strong>
+<span style="white-space: nowrap; display: block;">1. Doc 2: "Best pizza recipe from Italy" → 55 points 🥇</span>
+<span style="white-space: nowrap; display: block;">2. Doc 1: "Easy pizza recipe for beginners" → 30 points 🥈</span>
+<span style="white-space: nowrap; display: block;">3. Doc 3: "How to make pizza at home" → 30 points 🥈</span>
+<span style="white-space: nowrap; display: block;">4. Doc 5: "Best pizza restaurants" → 25 points</span>
+<span style="white-space: nowrap; display: block;">5. Doc 4: "Pizza delivery services" → 10 points</span>
+
+<strong style="color: #10b981; font-size: 1.1rem;">✅ RESULT: You see Doc 2 first (most relevant!)</strong>
+
+<strong style="color: #60a5fa;">Why Doc 2 wins:</strong> It has ALL the keywords: "best", "pizza", AND "recipe"!
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> Key Points:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Step 1:</strong> Understand what the user is searching for (extract keywords)</li>
+                        <li><strong>Step 2:</strong> Search through all documents to find matches</li>
+                        <li><strong>Step 3:</strong> Calculate a relevance score for each document</li>
+                        <li><strong>Step 4:</strong> Rank documents by score and show best ones first</li>
+                        <li><strong>Simple Rule:</strong> More matching keywords = Higher score = Better ranking!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: IR Metrics -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 7 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Measuring Search Quality</h1>
+                <p class="slide-subtitle">How good is your search engine?</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">IR Evaluation Metrics</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Measuring if search results are good or not</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Precision</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>Question:</strong> Are the results I show actually relevant?<br><br>
+                                <strong>Formula:</strong><br>
+                                Relevant results shown / Total results shown<br><br>
+                                <strong>Example:</strong><br>
+                                Show 10 results, 8 are relevant<br>
+                                Precision = 8/10 = 80% ✅
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Recall</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>Question:</strong> Did I find all the relevant documents?<br><br>
+                                <strong>Formula:</strong><br>
+                                Relevant results shown / Total relevant documents<br><br>
+                                <strong>Example:</strong><br>
+                                20 relevant docs exist, I show 15<br>
+                                Recall = 15/20 = 75% ✅
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Funny Example: Searching for "Pizza Recipe"</strong>
+
+<strong style="color: #34d399;">Total relevant documents in database: 20</strong>
+<strong style="color: #34d399;">Search engine shows: 10 results</strong>
+<strong style="color: #34d399;">Out of 10 shown, 8 are actually relevant</strong>
+
+<strong style="color: #fbbf24;">Calculations:</strong>
+Precision = 8 relevant / 10 shown = 80%
+→ "80% of what I show is good!" ✅
+
+Recall = 8 shown / 20 total relevant = 40%
+→ "I only found 40% of all good documents" 😅
+
+<strong style="color: #ec4899;">Interpretation:</strong>
+<span style="white-space: nowrap; display: block;">• High Precision = Results are good quality (not much junk)</span>
+<span style="white-space: nowrap; display: block;">• High Recall = Found most of the good stuff (not missing much)</span>
+
+<strong style="color: #10b981;">Goal: High Precision AND High Recall! 🎯</strong>
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> The Trade-off:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        <strong>High Precision, Low Recall:</strong> Show only the best results, but miss some good ones<br>
+                        <strong>Low Precision, High Recall:</strong> Show many results, but some are not relevant<br>
+                        <strong>Perfect System:</strong> High Precision AND High Recall (shows all good results, and they're all relevant!)<br><br>
+                        <strong>Real Example:</strong> Google tries to balance both - show relevant results (precision) and don't miss important pages (recall)!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Practical Examples -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 8 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Practical Examples</h1>
+                <p class="slide-subtitle">Real-world applications!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Where You See This Every Day! 🌟</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Sentiment analysis and IR in action</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Sentiment Analysis Examples</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>🍕 Restaurant Reviews:</strong><br>
+                                Yelp analyzes reviews to show overall rating<br><br>
+                                <strong>📱 Social Media:</strong><br>
+                                Twitter analyzes tweets about brands<br><br>
+                                <strong>🛒 E-commerce:</strong><br>
+                                Amazon shows "Most helpful positive/negative reviews"<br><br>
+                                <strong>📺 Entertainment:</strong><br>
+                                Netflix analyzes reviews to recommend shows
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-magnifying-glass"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Information Retrieval Examples</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>🔍 Google Search:</strong><br>
+                                Finds and ranks web pages for your query<br><br>
+                                <strong>📚 Library Systems:</strong><br>
+                                Helps find books and research papers<br><br>
+                                <strong>📧 Email Search:</strong><br>
+                                Gmail finds emails with specific keywords<br><br>
+                                <strong>🛍️ Online Shopping:</strong><br>
+                                Amazon shows relevant products when you search
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Combined Example: Restaurant Review Website</strong>
+
+<strong style="color: #34d399;">Scenario:</strong> You search "best pizza restaurant"
+
+<strong style="color: #fbbf24;">Step 1: Information Retrieval</strong>
+<span style="white-space: nowrap; display: block;">• System finds restaurants with "pizza" in their name/description</span>
+<span style="white-space: nowrap; display: block;">• Ranks them by relevance</span>
+<span style="white-space: nowrap; display: block;">• Shows top 10 results</span>
+
+<strong style="color: #34d399;">Step 2: Sentiment Analysis</strong>
+<span style="white-space: nowrap; display: block;">• For each restaurant, analyzes all reviews</span>
+<span style="white-space: nowrap; display: block;">• Calculates average sentiment score</span>
+<span style="white-space: nowrap; display: block;">• Shows: "4.5/5 stars (based on 200 positive reviews)"</span>
+
+<strong style="color: #ec4899;">Result:</strong>
+You see restaurants ranked by:
+1. Relevance to your search (IR)
+2. Overall customer satisfaction (Sentiment Analysis)
+
+<strong style="color: #10b981;">You get the BEST pizza restaurants that people LOVE! 🍕😊</strong>
+                </div>
+                
+                <div class="practical-exercise" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> Try This at Home:</h4>
+                    <p>1. Go to Amazon and search for "pizza cookbook"<br>
+                    2. Notice how results are ranked (IR at work!)<br>
+                    3. Click on a book and read reviews<br>
+                    4. Notice how Amazon highlights "Most helpful positive/negative reviews" (Sentiment Analysis!)<br>
+                    5. See how they work together to help you find the perfect book! 📚✨</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Summary -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 9 of 9</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Summary & Key Takeaways</h1>
+                <p class="slide-subtitle">What we learned today!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">You're Now a Sentiment & Search Expert! 🎉</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Let's review what we learned</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Sentiment Analysis</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <ul style="font-size: 1.1rem; color: var(--charcoal); line-height: 2;">
+                                <li>✅ Understands if text is positive, negative, or neutral</li>
+                                <li>✅ Uses word lists, ML, or deep learning</li>
+                                <li>✅ Counts positive/negative words</li>
+                                <li>✅ Considers intensifiers and emojis</li>
+                                <li>✅ Used in reviews, social media, business</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Information Retrieval</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <ul style="font-size: 1.1rem; color: var(--charcoal); line-height: 2;">
+                                <li>✅ Finds relevant documents for queries</li>
+                                <li>✅ Ranks results by relevance</li>
+                                <li>✅ Uses keyword matching and scoring</li>
+                                <li>✅ Measured by precision and recall</li>
+                                <li>✅ Powers Google, libraries, e-commerce</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Key Concepts to Remember:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Sentiment Analysis:</strong> Positive words = positive sentiment, Negative words = negative sentiment</li>
+                        <li><strong>Information Retrieval:</strong> More matching keywords = Higher relevance score = Better ranking</li>
+                        <li><strong>Precision:</strong> Are the results I show actually good? (Quality)</li>
+                        <li><strong>Recall:</strong> Did I find all the good stuff? (Completeness)</li>
+                        <li><strong>Both work together:</strong> IR finds documents, Sentiment Analysis tells you what people think about them!</li>
+                    </ul>
+                </div>
+                
+                <div style="background: var(--gradient-pink); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🎓 Congratulations!</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        You now understand how computers:<br>
+                        😊 Read emotions in text (Sentiment Analysis)<br>
+                        🔍 Find the best information (Information Retrieval)<br><br>
+                        <strong>Next time you use Google or read reviews, you'll know the magic behind it! ✨</strong>
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-rocket"></i> Lab Exercise Ideas:</h4>
+                    <p>1. Analyze movie reviews and classify them as positive/negative<br>
+                    2. Build a simple search engine that ranks documents by relevance<br>
+                    3. Combine both: Search for restaurants and show sentiment scores<br>
+                    4. Compare different sentiment analysis methods<br>
+                    5. Measure precision and recall of your search system<br><br>
+                    <strong>Have fun experimenting! 🎉</strong></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

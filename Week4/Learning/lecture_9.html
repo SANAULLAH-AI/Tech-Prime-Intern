@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 9: Machine Learning for NLP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --white: #ffffff;
+            --light-gray: #f1f5f9;
+            --medium-gray: #64748b;
+            --charcoal: #1e293b;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            --gradient-error: linear-gradient(135deg, var(--error-red) 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, var(--purple) 0%, #a855f7 100%);
+            --gradient-pink: linear-gradient(135deg, var(--pink) 0%, #f472b6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
+            color: var(--primary-navy);
+            overflow: hidden;
+            height: 100vh;
+            line-height: 1.6;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1rem 2rem;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            padding-right: 280px;
+        }
+
+        .slide-number-container {
+            position: absolute;
+            top: 0.8rem;
+            right: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-number {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .slide-icon {
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .slide-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            background: var(--white);
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--medium-gray);
+            margin-bottom: 2rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mb-5 { margin-bottom: 3rem; }
+
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .two-col { grid-template-columns: repeat(2, 1fr); }
+        .three-col { grid-template-columns: repeat(3, 1fr); }
+
+        .content-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--light-gray);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--white);
+            font-size: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            color: var(--charcoal);
+        }
+
+        .feature-list i {
+            color: var(--accent-blue);
+            width: 20px;
+            text-align: center;
+        }
+
+        .code-block {
+            background: var(--charcoal);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 2rem 0;
+            overflow-x: auto;
+            border: 1px solid #374151;
+            white-space: pre-line;
+        }
+        
+        .code-block > * {
+            white-space: pre-line;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-left: 5px solid var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-left: 5px solid var(--success-green);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .success-box h4 {
+            color: var(--success-green);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 5px solid var(--warning-orange);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box h4 {
+            color: var(--warning-orange);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .error-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left: 5px solid var(--error-red);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .error-box h4 {
+            color: var(--error-red);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .practical-exercise {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border-left: 5px solid var(--purple);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .practical-exercise h4 {
+            color: var(--purple);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .slide-header {
+                padding: 0.8rem 1.5rem;
+                padding-right: 200px;
+            }
+            
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .slide-title {
+                font-size: 2rem;
+            }
+            
+            .card-grid.two-col,
+            .card-grid.three-col {
+                grid-template-columns: 1fr;
+            }
+            
+            .slide-number-container {
+                right: 1rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation-container">
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 1 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Machine Learning for NLP</h1>
+                <p class="slide-subtitle">Lecture 9: Naïve Bayes, SVM & Decision Trees</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-5">
+                    <div class="icon-large" style="background: var(--gradient-purple); margin: 0 auto 2rem;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h2 class="section-title">Welcome to Machine Learning for NLP!</h2>
+                    <p class="section-subtitle">Applying ML Algorithms to Text Classification</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">What We'll Learn</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-chart-bar"></i> Naïve Bayes Classifier</li>
+                            <li><i class="fas fa-project-diagram"></i> Support Vector Machines (SVM)</li>
+                            <li><i class="fas fa-sitemap"></i> Decision Trees</li>
+                            <li><i class="fas fa-balance-scale"></i> Algorithm Comparison</li>
+                            <li><i class="fas fa-code"></i> Practical Implementation</li>
+                            <li><i class="fas fa-rocket"></i> Real-World Applications</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Why This Matters</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-envelope"></i> Spam detection</li>
+                            <li><i class="fas fa-smile"></i> Sentiment analysis</li>
+                            <li><i class="fas fa-tag"></i> Text classification</li>
+                            <li><i class="fas fa-search"></i> Information retrieval</li>
+                            <li><i class="fas fa-language"></i> Language identification</li>
+                            <li><i class="fas fa-robot"></i> Foundation for advanced NLP</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-purple); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🤖 NLP Pipeline Progress</h3>
+                    <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Preprocessing → Features → <span class="highlight" style="background: rgba(255,255,255,0.2);">ML Models</span> → Applications</div>
+                    <div style="font-size: 1rem; opacity: 0.8; margin-top: 0.5rem;">Today we learn how to classify text using machine learning!</div>
+                </div>
+                
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-lightbulb"></i> Quick Warm-up (2 minutes):</h4>
+                    <p>Think about your email inbox. How does Gmail know which emails are spam? It uses machine learning! Today we'll learn the algorithms that make this possible.</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> What is ML for NLP?</h4>
+                    <p><strong>Machine Learning for NLP</strong> uses algorithms to automatically learn patterns from text data and make predictions or classifications.<br>
+                    <strong>Common Tasks:</strong> Text classification, sentiment analysis, spam detection, language identification<br>
+                    <strong>Key Algorithms:</strong> Naïve Bayes (probabilistic), SVM (margin-based), Decision Trees (rule-based)</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Key Considerations:</h4>
+                    <p>• Feature representation matters (BoW, TF-IDF, embeddings)<br>
+                    • Different algorithms work better for different tasks<br>
+                    • Need labeled training data<br>
+                    • Balance between accuracy and interpretability</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Introduction to ML for NLP -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 2 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Introduction to ML for NLP</h1>
+                <p class="slide-subtitle">Why machine learning for text?</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Why Machine Learning?</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Learning patterns from data automatically</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Machine Learning</strong> = Algorithms that learn from examples<br>
+                        Instead of writing rules manually, we show the computer examples and it learns patterns!<br>
+                        Example: Show 1000 spam emails → Computer learns what makes an email spam
+                    </p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Text Classification</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                Assign categories to text:<br>
+                                • Spam vs Not Spam<br>
+                                • Positive vs Negative<br>
+                                • News vs Sports vs Tech
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Sentiment Analysis</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                Determine emotional tone:<br>
+                                • Positive: "I love this!"<br>
+                                • Negative: "This is terrible"<br>
+                                • Neutral: "It's okay"
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Topic Classification</h3>
+                        <div style="background: #fee2e2; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--error-red);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                Categorize documents:<br>
+                                • Email topics<br>
+                                • News categories<br>
+                                • Product reviews
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 ML Pipeline for NLP</strong>
+
+<strong style="color: #34d399;">Step 1: Prepare Data</strong>
+• Collect labeled examples (spam/not spam)
+• Preprocess text (tokenize, clean)
+• Convert to features (BoW, TF-IDF)
+
+<strong style="color: #fbbf24;">Step 2: Train Model</strong>
+• Choose algorithm (Naïve Bayes, SVM, etc.)
+• Feed training data
+• Model learns patterns
+
+<strong style="color: #34d399;">Step 3: Evaluate</strong>
+• Test on new data
+• Measure accuracy, precision, recall
+• Improve if needed
+
+<strong style="color: #fbbf24;">Step 4: Deploy</strong>
+• Use model to classify new text
+• Monitor performance
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Why ML Works for NLP:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Handles Complexity:</strong> Language has too many rules to code manually</li>
+                        <li><strong>Learns from Data:</strong> Discovers patterns we might miss</li>
+                        <li><strong>Scalable:</strong> Works with large amounts of text</li>
+                        <li><strong>Adaptable:</strong> Can update as language changes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Naïve Bayes -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 3 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Naïve Bayes Classifier</h1>
+                <p class="slide-subtitle">Probabilistic text classification</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Naïve Bayes: Step-by-Step Example</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Solving spam detection like a math problem</p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-book"></i> Example: Spam Detection Training Data</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong style="color: var(--error-red);">Spam:</strong> "Win money now", "Free prize click"<br>
+                        <strong style="color: var(--success-green);">Not Spam:</strong> "Meeting tomorrow", "Project update"<br>
+                        <strong style="color: var(--warning-orange);">Classify:</strong> "Win free money"
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8;">
+<strong style="color: #60a5fa;">📚 Step 1: Count Words in Each Class</strong>
+
+<strong style="color: #34d399;">Spam messages:</strong> "Win money now", "Free prize click"
+<strong style="color: #34d399;">Word counts in Spam:</strong>
+<span style="white-space: nowrap; display: block;">  win: 1, money: 1, now: 1, free: 1, prize: 1, click: 1</span>
+<span style="white-space: nowrap; display: block;">  Total words in Spam = 6</span>
+
+<strong style="color: #fbbf24;">Not Spam messages:</strong> "Meeting tomorrow", "Project update"
+<strong style="color: #fbbf24;">Word counts in Not Spam:</strong>
+<span style="white-space: nowrap; display: block;">  meeting: 1, tomorrow: 1, project: 1, update: 1</span>
+<span style="white-space: nowrap; display: block;">  Total words in Not Spam = 4</span>
+
+<strong style="color: #ec4899;">Total messages:</strong> 2 Spam + 2 Not Spam = 4
+<strong style="color: #ec4899;">Prior probabilities:</strong>
+<span style="white-space: nowrap; display: block;">  P(Spam) = 2/4 = 0.5</span>
+<span style="white-space: nowrap; display: block;">  P(Not Spam) = 2/4 = 0.5</span>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 2: Calculate Word Probabilities (with Add-1 Smoothing)</strong>
+
+<strong style="color: #34d399;">For Spam class:</strong>
+<span style="white-space: nowrap; display: block;">  Vocabulary size V = 10 (win, money, now, free, prize, click, meeting, tomorrow, project, update)</span>
+<span style="white-space: nowrap; display: block;">  </span>
+<span style="white-space: nowrap; display: block;">  P("win" | Spam) = (count("win" in Spam) + 1) / (total words in Spam + V) = (1 + 1) / (6 + 10) = 2/16 = 0.125</span>
+<span style="white-space: nowrap; display: block;">  </span>
+<span style="white-space: nowrap; display: block;">  P("free" | Spam) = (count("free" in Spam) + 1) / (6 + 10) = (1 + 1) / 16 = 2/16 = 0.125</span>
+<span style="white-space: nowrap; display: block;">  </span>
+<span style="white-space: nowrap; display: block;">  P("money" | Spam) = (count("money" in Spam) + 1) / (6 + 10) = (1 + 1) / 16 = 2/16 = 0.125</span>
+
+<strong style="color: #fbbf24;">For Not Spam class:</strong>
+<span style="white-space: nowrap; display: block;">  P("win" | Not Spam) = (count("win" in Not Spam) + 1) / (total words in Not Spam + V) = (0 + 1) / (4 + 10) = 1/14 = 0.071</span>
+<span style="white-space: nowrap; display: block;">  </span>
+<span style="white-space: nowrap; display: block;">  P("free" | Not Spam) = (0 + 1) / (4 + 10) = 1/14 = 0.071</span>
+<span style="white-space: nowrap; display: block;">  </span>
+<span style="white-space: nowrap; display: block;">  P("money" | Not Spam) = (0 + 1) / (4 + 10) = 1/14 = 0.071</span>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 3: Calculate P(Spam | "win free money")</strong>
+
+<strong style="color: #34d399;">Using Bayes' theorem with Naïve assumption:</strong>
+<span style="white-space: nowrap; display: block;">P(Spam | "win free money") = P("win"|Spam) × P("free"|Spam) × P("money"|Spam) × P(Spam)</span>
+
+<strong style="color: #34d399;">Substitute values:</strong>
+<span style="white-space: nowrap; display: block;">P(Spam | "win free money") = 0.125 × 0.125 × 0.125 × 0.5 = 0.0009765625</span>
+
+<strong style="color: #34d399;">Explanation:</strong> Multiply all word probabilities and prior probability
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 4: Calculate P(Not Spam | "win free money")</strong>
+
+<strong style="color: #fbbf24;">Using Bayes' theorem with Naïve assumption:</strong>
+<span style="white-space: nowrap; display: block;">P(Not Spam | "win free money") = P("win"|Not Spam) × P("free"|Not Spam) × P("money"|Not Spam) × P(Not Spam)</span>
+
+<strong style="color: #fbbf24;">Substitute values:</strong>
+<span style="white-space: nowrap; display: block;">P(Not Spam | "win free money") = 0.071 × 0.071 × 0.071 × 0.5 = 0.00017850625</span>
+
+<strong style="color: #fbbf24;">Explanation:</strong> Multiply all word probabilities and prior probability
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem; background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">
+<strong style="color: #fbbf24;">📚 Step 5: Compare and Classify</strong>
+
+<strong style="color: #34d399;">P(Spam | "win free money") = 0.0009765625</strong>
+<strong style="color: #fbbf24;">P(Not Spam | "win free money") = 0.00017850625</strong>
+
+<strong style="color: #ec4899;">Since 0.0009765625 > 0.00017850625</strong>
+<strong style="color: #ec4899;">→ P(Spam) > P(Not Spam)</strong>
+
+<strong style="color: #10b981; font-size: 1.1rem;">✅ RESULT: Classify as SPAM</strong>
+
+<strong style="color: #60a5fa;">Why?</strong> The message "Win free money" has higher probability of being spam because words like "win", "free", and "money" appear more frequently in spam messages.
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> Key Takeaways:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Step 1:</strong> Count words in each class to build the model</li>
+                        <li><strong>Step 2:</strong> Calculate word probabilities using smoothing (handles unseen words)</li>
+                        <li><strong>Step 3-4:</strong> Multiply probabilities for each class (Naïve assumption: words are independent)</li>
+                        <li><strong>Step 5:</strong> Choose the class with the higher probability</li>
+                        <li><strong>Note:</strong> We can ignore P(words) in the denominator since it's the same for both classes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Support Vector Machines (SVM) -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 4 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Support Vector Machines (SVM)</h1>
+                <p class="slide-subtitle">Finding the best boundary</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">SVM: Step-by-Step Example</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Finding the best separating line</p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-book"></i> Example: Spam Detection</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong style="color: var(--error-red);">Spam:</strong> "Win money now", "Free prize click"<br>
+                        <strong style="color: var(--success-green);">Not Spam:</strong> "Meeting tomorrow", "Project update"<br>
+                        <strong style="color: var(--warning-orange);">Classify:</strong> "Win free money"
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8;">
+<strong style="color: #60a5fa;">📚 Step 1: Convert Text to Numerical Vectors (TF-IDF)</strong>
+
+<strong style="color: #34d399;">Vocabulary:</strong> [win, money, now, free, prize, click, meeting, tomorrow, project, update]
+
+<strong style="color: #34d399;">Document 1 (Spam): "Win money now"</strong>
+<span style="white-space: nowrap; display: block;">  Vector: [0.5, 0.5, 0.5, 0, 0, 0, 0, 0, 0, 0]</span>
+<span style="white-space: nowrap; display: block;">  Explanation: "win", "money", "now" appear → values 0.5 each</span>
+
+<strong style="color: #34d399;">Document 2 (Spam): "Free prize click"</strong>
+<span style="white-space: nowrap; display: block;">  Vector: [0, 0, 0, 0.5, 0.5, 0.5, 0, 0, 0, 0]</span>
+<span style="white-space: nowrap; display: block;">  Explanation: "free", "prize", "click" appear → values 0.5 each</span>
+
+<strong style="color: #fbbf24;">Document 3 (Not Spam): "Meeting tomorrow"</strong>
+<span style="white-space: nowrap; display: block;">  Vector: [0, 0, 0, 0, 0, 0, 0.5, 0.5, 0, 0]</span>
+<span style="white-space: nowrap; display: block;">  Explanation: "meeting", "tomorrow" appear → values 0.5 each</span>
+
+<strong style="color: #fbbf24;">Document 4 (Not Spam): "Project update"</strong>
+<span style="white-space: nowrap; display: block;">  Vector: [0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0.5]</span>
+<span style="white-space: nowrap; display: block;">  Explanation: "project", "update" appear → values 0.5 each</span>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 2: Understand the Goal - Find a Separating Line</strong>
+
+<strong style="color: #34d399;">SVM Goal:</strong> Find a line (hyperplane) that:
+<span style="white-space: nowrap; display: block;">  1. Separates Spam from Not Spam</span>
+<span style="white-space: nowrap; display: block;">  2. Has the LARGEST margin (distance to nearest points)</span>
+<span style="white-space: nowrap; display: block;">  3. Uses only the closest points (support vectors)</span>
+
+<strong style="color: #fbbf24;">Simple 2D Example:</strong>
+<span style="white-space: nowrap; display: block;">  Imagine plotting documents in 2D space: • Spam documents on one side • Not Spam documents on the other side • Draw a line between them with maximum distance from both sides</span>
+
+<strong style="color: #ec4899;">Key Insight:</strong> The line is defined by: w·x + b = 0 where w = weight vector, x = document vector, b = bias
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 3: Identify Support Vectors</strong>
+
+<strong style="color: #34d399;">Support Vectors = Documents closest to the boundary</strong>
+
+<strong style="color: #34d399;">For our example:</strong>
+<span style="white-space: nowrap; display: block;">  Support Vector 1 (Spam): "Win money now" → Closest spam document to the boundary</span>
+<span style="white-space: nowrap; display: block;">  Support Vector 2 (Not Spam): "Meeting tomorrow" → Closest not spam document to the boundary</span>
+
+<strong style="color: #fbbf24;">Why these matter:</strong>
+<span style="white-space: nowrap; display: block;">  • Only these points define the boundary</span>
+<span style="white-space: nowrap; display: block;">  • All other points are further away</span>
+<span style="white-space: nowrap; display: block;">  • SVM only needs to remember these support vectors!</span>
+
+<strong style="color: #ec4899;">Margin = Distance between support vectors and the line</strong>
+<span style="white-space: nowrap; display: block;">  Larger margin = Better generalization = More confident predictions</span>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 4: Calculate the Decision Function</strong>
+
+<strong style="color: #34d399;">After training, SVM learns:</strong>
+<span style="white-space: nowrap; display: block;">  • Weight vector w = [w₁, w₂, ..., w₁₀] (one weight per word)</span>
+<span style="white-space: nowrap; display: block;">  • Bias term b = a constant number</span>
+
+<strong style="color: #34d399;">Decision Function:</strong>
+<span style="white-space: nowrap; display: block;">  f(x) = w·x + b where x = document vector, w = learned weights, b = learned bias</span>
+
+<strong style="color: #fbbf24;">Example (simplified):</strong>
+<span style="white-space: nowrap; display: block;">  Let's say after training: w = [0.3, 0.3, 0.1, 0.4, 0.2, 0.2, -0.3, -0.3, -0.2, -0.2] b = -0.1</span>
+<span style="white-space: nowrap; display: block;">  Explanation: Positive weights for spam words (win, money, free, etc.) Negative weights for not spam words (meeting, tomorrow, etc.)</span>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem;">
+<strong style="color: #60a5fa;">📚 Step 5: Classify New Document "Win free money"</strong>
+
+<strong style="color: #34d399;">Step 5a: Convert to vector</strong>
+<span style="white-space: nowrap; display: block;">  "Win free money" → [0.5, 0.5, 0, 0.5, 0, 0, 0, 0, 0, 0] (win=0.5, money=0.5, free=0.5, others=0)</span>
+
+<strong style="color: #34d399;">Step 5b: Calculate f(x) = w·x + b</strong>
+<span style="white-space: nowrap; display: block;">  f(x) = (0.3×0.5) + (0.3×0.5) + (0.1×0) + (0.4×0.5) + ... + (-0.2×0) + (-0.1) = 0.15 + 0.15 + 0 + 0.2 + 0 + 0 + 0 + 0 + 0 + 0 - 0.1 = 0.5 - 0.1 = 0.4</span>
+
+<strong style="color: #fbbf24;">Step 5c: Make Decision</strong>
+<span style="white-space: nowrap; display: block;">  If f(x) > 0 → Classify as SPAM ✅ If f(x) < 0 → Classify as NOT SPAM</span>
+<span style="white-space: nowrap; display: block;">  Since 0.4 > 0 → <strong style="color: #10b981;">RESULT: SPAM</strong></span>
+
+<strong style="color: #ec4899;">Explanation:</strong> The positive value means the document is on the "spam side" of the boundary line.
+                </div>
+                
+                <div class="code-block" style="font-size: 1.05rem; padding: 1.5rem; font-family: 'Courier New', monospace; line-height: 1.8; margin-top: 1.5rem; background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">
+<strong style="color: #fbbf24;">📚 Summary: How SVM Works</strong>
+
+<strong style="color: #34d399;">1. Training Phase:</strong>
+<span style="white-space: nowrap; display: block;">   • Convert all documents to vectors • Find the line that maximizes margin • Identify support vectors • Learn weights (w) and bias (b)</span>
+
+<strong style="color: #fbbf24;">2. Classification Phase:</strong>
+<span style="white-space: nowrap; display: block;">   • Convert new document to vector • Calculate f(x) = w·x + b • If f(x) > 0 → Class 1 (Spam) • If f(x) < 0 → Class 2 (Not Spam)</span>
+
+<strong style="color: #ec4899;">Key Advantage:</strong> Only support vectors matter! SVM doesn't need to store all training data, just the support vectors. This makes it memory efficient for large datasets.
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> Key Takeaways:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Step 1:</strong> Convert text to numerical vectors (TF-IDF or BoW)</li>
+                        <li><strong>Step 2:</strong> SVM finds the best separating line with maximum margin</li>
+                        <li><strong>Step 3:</strong> Support vectors are the closest points that define the boundary</li>
+                        <li><strong>Step 4:</strong> SVM learns weights (w) and bias (b) during training</li>
+                        <li><strong>Step 5:</strong> Classify by calculating f(x) = w·x + b and checking the sign</li>
+                        <li><strong>Why it works:</strong> Large margin = better generalization to new data</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Decision Trees -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 5 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Decision Trees</h1>
+                <p class="slide-subtitle">Rule-based classification</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Decision Trees</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Making decisions through a tree of questions</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> How It Works:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Decision Tree</strong> = A tree of yes/no questions that lead to a classification<br>
+                        Each node asks a question about a feature<br>
+                        Follow the path based on answers → reach a classification
+                    </p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Tree Structure</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>Root:</strong> First question<br>
+                                <strong>Branches:</strong> Answers (yes/no)<br>
+                                <strong>Leaves:</strong> Final classification<br>
+                                <strong>Path:</strong> Series of questions → answer
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Interpretability</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Easy to understand<br>
+                                ✅ Shows decision rules<br>
+                                ✅ Can visualize the tree<br>
+                                ✅ Human-readable
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Example: Spam Detection Tree</strong>
+
+<strong style="color: #34d399;">Decision Tree:</strong>
+<pre style="margin: 0.5rem 0; line-height: 1.6; color: #ffffff;">
+                    Contains "free"?
+                    ╱              ╲
+                   │                │
+                 YES              NO
+                  │                │
+        Contains "money"?    Contains "meeting"?
+            ╱        ╲          ╱        ╲
+           │          │         │          │
+         YES         NO        YES        NO
+          │          │          │          │
+        SPAM      NOT SPAM   NOT SPAM   SPAM
+</pre>
+
+<strong style="color: #fbbf24;">Classify: "Win free money now"</strong>
+→ Contains "free"? YES
+→ Contains "money"? YES
+→ Result: SPAM ✅
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Advantages & Disadvantages:</h4>
+                    <div class="card-grid two-col" style="margin-top: 1rem;">
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <strong style="color: var(--charcoal);">✅ Advantages:</strong>
+                            <ul style="font-size: 1rem; color: var(--charcoal); line-height: 1.8; margin-top: 0.5rem;">
+                                <li>Easy to interpret</li>
+                                <li>No feature scaling needed</li>
+                                <li>Handles non-linear relationships</li>
+                                <li>Can visualize decisions</li>
+                            </ul>
+                        </div>
+                        <div style="background: #fee2e2; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--error-red);">
+                            <strong style="color: var(--charcoal);">❌ Disadvantages:</strong>
+                            <ul style="font-size: 1rem; color: var(--charcoal); line-height: 1.8; margin-top: 0.5rem;">
+                                <li>Can overfit easily</li>
+                                <li>Unstable (small data changes → big tree changes)</li>
+                                <li>May create complex trees</li>
+                                <li>Not always best accuracy</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Algorithm Comparison -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 6 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Algorithm Comparison</h1>
+                <p class="slide-subtitle">Which one to choose?</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Comparing the Algorithms</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Understanding strengths and weaknesses</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Naïve Bayes</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 0.95rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>✅ Pros:</strong><br>
+                                • Fast training<br>
+                                • Simple<br>
+                                • Good baseline<br>
+                                • Works with small data<br><br>
+                                <strong>❌ Cons:</strong><br>
+                                • Naïve assumption<br>
+                                • May not be most accurate
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">SVM</h3>
+                        <div style="background: #e0f2fe; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--primary-blue);">
+                            <p style="font-size: 0.95rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>✅ Pros:</strong><br>
+                                • High accuracy<br>
+                                • Good with many features<br>
+                                • Memory efficient<br>
+                                • Generalizes well<br><br>
+                                <strong>❌ Cons:</strong><br>
+                                • Slower training<br>
+                                • Less interpretable
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Decision Trees</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 0.95rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>✅ Pros:</strong><br>
+                                • Very interpretable<br>
+                                • No scaling needed<br>
+                                • Handles non-linear<br>
+                                • Easy to visualize<br><br>
+                                <strong>❌ Cons:</strong><br>
+                                • Can overfit<br>
+                                • Unstable
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 When to Use Each:</strong>
+
+<strong style="color: #34d399;">Use Naïve Bayes when:</strong>
+  • You need a quick baseline
+  • Training data is small
+  • Speed is important
+  • Simple implementation needed
+
+<strong style="color: #fbbf24;">Use SVM when:</strong>
+  • You want high accuracy
+  • You have many features
+  • You have enough training data
+  • Memory efficiency matters
+
+<strong style="color: #34d399;">Use Decision Trees when:</strong>
+  • Interpretability is important
+  • You want to understand decisions
+  • Non-linear relationships exist
+  • You need human-readable rules
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> General Recommendation:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        Start with <strong>Naïve Bayes</strong> as a baseline, then try <strong>SVM</strong> for better accuracy. 
+                        Use <strong>Decision Trees</strong> when you need to explain why a classification was made.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Evaluation Metrics -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 7 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Evaluation Metrics</h1>
+                <p class="slide-subtitle">Measuring model performance</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">How Good is Your Model?</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Metrics for classification tasks</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Basic Metrics</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--success-green);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📊 Accuracy:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                (Correct predictions) / (Total predictions)<br>
+                                Example: 90% accuracy = 90 out of 100 correct
+                            </p>
+                        </div>
+                        <div style="background: #e0f2fe; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--primary-blue);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📊 Precision:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                (True Positives) / (True Positives + False Positives)<br>
+                                How many predicted positives are actually positive?
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">More Metrics</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📊 Recall:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                (True Positives) / (True Positives + False Negatives)<br>
+                                How many actual positives did we find?
+                            </p>
+                        </div>
+                        <div style="background: #fed7aa; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <strong style="color: var(--charcoal); font-size: 1.1rem;">📊 F1-Score:</strong>
+                            <p style="margin-top: 0.8rem; font-size: 1rem; color: var(--charcoal);">
+                                2 × (Precision × Recall) / (Precision + Recall)<br>
+                                Balance between precision and recall
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Confusion Matrix Example</strong>
+
+<strong style="color: #34d399;">Spam Detection Results:</strong>
+                    Predicted
+                Spam    Not Spam
+Actual Spam      80       20
+      Not Spam   10       90
+
+<strong style="color: #fbbf24;">Calculations:</strong>
+Accuracy = (80 + 90) / 200 = 85%
+Precision = 80 / (80 + 10) = 88.9%
+Recall = 80 / (80 + 20) = 80%
+F1-Score = 2 × (0.889 × 0.8) / (0.889 + 0.8) = 84.2%
+
+<strong style="color: #34d399;">Interpretation:</strong>
+• 85% of emails classified correctly
+• When we predict spam, 88.9% are actually spam
+• We catch 80% of all spam emails
+                </div>
+                
+                <div class="warning-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Important Note:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        <strong>Accuracy can be misleading!</strong> If 95% of emails are not spam, a model that always predicts "not spam" gets 95% accuracy but is useless. 
+                        Always check precision and recall, especially for imbalanced datasets.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Practical Implementation -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 8 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Practical Implementation</h1>
+                <p class="slide-subtitle">Using scikit-learn for ML</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Implementing ML Models</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Python libraries that make it easy</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> scikit-learn:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        The most popular Python library for machine learning!<br>
+                        Provides implementations of Naïve Bayes, SVM, Decision Trees, and many more.
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Complete Example: Text Classification</strong>
+
+<strong style="color: #34d399;">Step 1: Import Libraries</strong>
+<span style="white-space: nowrap; display: block;">from sklearn.feature_extraction.text import TfidfVectorizer</span>
+<span style="white-space: nowrap; display: block;">from sklearn.naive_bayes import MultinomialNB</span>
+<span style="white-space: nowrap; display: block;">from sklearn.svm import SVC</span>
+<span style="white-space: nowrap; display: block;">from sklearn.tree import DecisionTreeClassifier</span>
+<span style="white-space: nowrap; display: block;">from sklearn.model_selection import train_test_split</span>
+<span style="white-space: nowrap; display: block;">from sklearn.metrics import accuracy_score, classification_report</span>
+
+<strong style="color: #fbbf24;">Step 2: Prepare Data</strong>
+<span style="white-space: nowrap; display: block;">documents = ["Win free money now", "Meeting tomorrow at 3pm", "Click here for prize", "Project update needed"]</span>
+<span style="white-space: nowrap; display: block;">labels = ['spam', 'not_spam', 'spam', 'not_spam']</span>
+
+<strong style="color: #34d399;">Step 3: Convert to Features</strong>
+<span style="white-space: nowrap; display: block;">vectorizer = TfidfVectorizer()</span>
+<span style="white-space: nowrap; display: block;">X = vectorizer.fit_transform(documents)</span>
+
+<strong style="color: #fbbf24;">Step 4: Train Model</strong>
+<span style="white-space: nowrap; display: block;"># Naïve Bayes: model = MultinomialNB(); model.fit(X, labels)</span>
+<span style="white-space: nowrap; display: block;"># Or SVM: model = SVC(); model.fit(X, labels)</span>
+<span style="white-space: nowrap; display: block;"># Or Decision Tree: model = DecisionTreeClassifier(); model.fit(X, labels)</span>
+
+<strong style="color: #34d399;">Step 5: Predict</strong>
+<span style="white-space: nowrap; display: block;">new_text = ["Free money click now"]</span>
+<span style="white-space: nowrap; display: block;">X_new = vectorizer.transform(new_text)</span>
+<span style="white-space: nowrap; display: block;">prediction = model.predict(X_new)</span>
+<span style="white-space: nowrap; display: block;">print(prediction)  # ['spam']</span>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Getting Started:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Install:</strong> <code>pip install scikit-learn</code></li>
+                        <li><strong>Preprocess:</strong> Clean and tokenize your text first</li>
+                        <li><strong>Feature extraction:</strong> Use TfidfVectorizer or CountVectorizer</li>
+                        <li><strong>Train/test split:</strong> Always split your data (80/20 or 70/30)</li>
+                        <li><strong>Evaluate:</strong> Test on unseen data, not training data!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Applications & Summary -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 9 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Applications & Summary</h1>
+                <p class="slide-subtitle">Real-world uses and key takeaways</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Real-World Applications</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Where ML for NLP is used</p>
+                </div>
+                
+                <div class="card-grid three-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Spam Detection</h3>
+                        <p style="text-align: center; color: var(--charcoal);">Gmail, Outlook filtering spam emails</p>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Sentiment Analysis</h3>
+                        <p style="text-align: center; color: var(--charcoal);">Social media monitoring, review analysis</p>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">News Classification</h3>
+                        <p style="text-align: center; color: var(--charcoal);">Categorizing articles by topic</p>
+                    </div>
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Key Takeaways:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Naïve Bayes:</strong> Fast, simple baseline for text classification</li>
+                        <li><strong>SVM:</strong> High accuracy, good for high-dimensional text data</li>
+                        <li><strong>Decision Trees:</strong> Interpretable, easy to understand decisions</li>
+                        <li><strong>Feature representation matters:</strong> BoW, TF-IDF, or embeddings</li>
+                        <li><strong>Always evaluate:</strong> Use accuracy, precision, recall, F1-score</li>
+                        <li><strong>Split your data:</strong> Train on one set, test on another</li>
+                    </ul>
+                </div>
+                
+                <div class="practical-exercise" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> Lab Exercise:</h4>
+                    <p>1. Install scikit-learn: <code>pip install scikit-learn</code><br>
+                    2. Load a text dataset (e.g., spam emails, movie reviews)<br>
+                    3. Preprocess the text (tokenize, clean)<br>
+                    4. Convert to features using TF-IDF<br>
+                    5. Train Naïve Bayes, SVM, and Decision Tree models<br>
+                    6. Compare their performance using accuracy, precision, recall, F1-score<br>
+                    7. Visualize the Decision Tree (optional)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Quiz - Algorithm Design -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 10 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Quiz: Make an Algorithm! 🎯</h1>
+                <p class="slide-subtitle">Simple & fun challenge</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <div class="icon-large" style="background: var(--gradient-purple); margin: 0 auto 2rem;">
+                        <i class="fas fa-laugh"></i>
+                    </div>
+                    <h2 class="section-title">Your Mission: Spam Detector! 🕵️</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Help your friend's email inbox (it's drowning in spam!)</p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 5px solid var(--warning-orange);">
+                    <h4 style="color: var(--warning-orange);"><i class="fas fa-envelope-open-text"></i> The Problem:</h4>
+                    <p style="font-size: 1.2rem; line-height: 1.8; color: var(--charcoal); margin-top: 1rem;">
+                        Your friend gets emails like:<br>
+                        <span style="color: var(--error-red);">"WIN FREE MONEY NOW!!! CLICK HERE!!!"</span> (Spam 😱)<br>
+                        <span style="color: var(--success-green);">"Meeting tomorrow at 3pm"</span> (Not Spam ✅)<br><br>
+                        <strong>Your job:</strong> Write a simple algorithm to tell spam from real emails!
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 2rem; font-family: 'Courier New', monospace; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); line-height: 2;">
+<strong style="color: #60a5fa;">📝 ALGORITHM: Is This Email Spam? 🤔</strong>
+
+<strong style="color: #34d399;">STEP 1: Clean the email</strong>
+  → Make everything lowercase (WIN = win)
+  → Remove weird characters (!!!, $$$)
+  
+<strong style="color: #fbbf24;">STEP 2: Count suspicious words</strong>
+  → Look for words like: "free", "win", "money", "click", "prize"
+  → Count how many suspicious words you find
+  
+<strong style="color: #34d399;">STEP 3: Make a decision!</strong>
+  → If you find 2+ suspicious words → SPAM! 🚨
+  → If you find 0-1 suspicious words → NOT SPAM ✅
+  
+<strong style="color: #ec4899;">DONE! 🎉</strong>
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> Your Turn! (5 minutes):</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        Write your own version of this algorithm! You can:
+                    </p>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem; margin-top: 1rem;">
+                        <li>Add more suspicious words to check</li>
+                        <li>Change the rule (maybe 3+ words = spam?)</li>
+                        <li>Add a check for ALL CAPS emails</li>
+                        <li>Make it funnier! 😄</li>
+                    </ul>
+                </div>
+                
+                <div class="warning-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-clock"></i> Time: 5 minutes</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        Write your algorithm on paper or in your notes. Check the next slide for the solution! 😊
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Quiz Solution -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 11 of 11</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Solution: Spam Detector Algorithm ✅</h1>
+                <p class="slide-subtitle">Here's one way to solve it!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <div class="icon-large" style="background: var(--gradient-success); margin: 0 auto 2rem;">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h2 class="section-title">Complete Solution 🎉</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">One possible algorithm (there are many correct answers!)</p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 2rem; font-family: 'Courier New', monospace; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); line-height: 2;">
+<strong style="color: #60a5fa;">📝 ALGORITHM: Is This Email Spam? 🤔</strong>
+
+<strong style="color: #34d399;">STEP 1: Clean the email</strong>
+<span style="white-space: nowrap; display: block;">  1. Convert email to lowercase → Example: "WIN FREE MONEY!" → "win free money!"</span>
+<span style="white-space: nowrap; display: block;">  2. Remove punctuation and special characters → Example: "win free money!" → "win free money"</span>
+<span style="white-space: nowrap; display: block;">  3. Split into words → Example: "win free money" → ["win", "free", "money"]</span>
+
+<strong style="color: #fbbf24;">STEP 2: Count suspicious words</strong>
+<span style="white-space: nowrap; display: block;">  Suspicious words list: ["free", "win", "money", "click", "prize", "now", "urgent"]</span>
+<span style="white-space: nowrap; display: block;">  For each word in email: If word is in suspicious words list: Count = Count + 1</span>
+<span style="white-space: nowrap; display: block;">  Example: "win free money click" → Found: win, free, money, click = 4 suspicious words</span>
+
+<strong style="color: #34d399;">STEP 3: Make a decision!</strong>
+<span style="white-space: nowrap; display: block;">  If Count ≥ 2: Return "SPAM! 🚨" Else: Return "NOT SPAM ✅"</span>
+
+<strong style="color: #ec4899;">END ALGORITHM 🎉</strong>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">
+                            <i class="fas fa-envelope" style="color: var(--error-red);"></i> Test Case 1: SPAM
+                        </h3>
+                        <div style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                            <strong>Email:</strong> "Win FREE money click NOW!"<br><br>
+                            <strong>Step 1:</strong> "win free money click now"<br>
+                            <strong>Step 2:</strong> Found: win, free, money, click, now = 5 words!<br>
+                            <strong>Step 3:</strong> 5 ≥ 2 → <span style="color: var(--error-red); font-weight: bold;">SPAM! 🚨</span>
+                        </div>
+                    </div>
+                    <div class="content-card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">
+                            <i class="fas fa-envelope-open" style="color: var(--success-green);"></i> Test Case 2: NOT SPAM
+                        </h3>
+                        <div style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                            <strong>Email:</strong> "Meeting tomorrow at 3pm"<br><br>
+                            <strong>Step 1:</strong> "meeting tomorrow at 3pm"<br>
+                            <strong>Step 2:</strong> Found: 0 suspicious words<br>
+                            <strong>Step 3:</strong> 0 < 2 → <span style="color: var(--success-green); font-weight: bold;">NOT SPAM ✅</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> Variations You Could Try:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem; margin-top: 1rem;">
+                        <li><strong>Check for ALL CAPS:</strong> If email is mostly uppercase → likely spam</li>
+                        <li><strong>Count exclamation marks:</strong> Too many !!! → suspicious</li>
+                        <li><strong>Use Naïve Bayes:</strong> Calculate probabilities instead of simple counting</li>
+                        <li><strong>Use Decision Tree:</strong> Create rules like "If contains 'free' AND contains 'money' → spam"</li>
+                        <li><strong>Adjust threshold:</strong> Maybe 3+ words = spam instead of 2+</li>
+                    </ul>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-star"></i> Great Job! 🎊</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        Remember: There's no single "correct" answer! As long as your algorithm makes logical sense and can classify emails, you're doing great! 
+                        The key is understanding the steps: preprocessing → feature extraction → decision making.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

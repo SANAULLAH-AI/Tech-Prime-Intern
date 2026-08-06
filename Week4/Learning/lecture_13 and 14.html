@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lectures 13 &amp; 14: Advanced NLP Applications &amp; Ethics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --white: #ffffff;
+            --light-gray: #f1f5f9;
+            --medium-gray: #64748b;
+            --charcoal: #1e293b;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            --gradient-error: linear-gradient(135deg, var(--error-red) 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, var(--purple) 0%, #a855f7 100%);
+            --gradient-pink: linear-gradient(135deg, var(--pink) 0%, #f472b6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
+            color: var(--primary-navy);
+            overflow: hidden;
+            height: 100vh;
+            line-height: 1.6;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1rem 2rem;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            padding-right: 280px;
+        }
+
+        .slide-number-container {
+            position: absolute;
+            top: 0.8rem;
+            right: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-number {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .slide-icon {
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .slide-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            background: var(--white);
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--medium-gray);
+            margin-bottom: 2rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mb-5 { margin-bottom: 3rem; }
+
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .two-col { grid-template-columns: repeat(2, 1fr); }
+        .three-col { grid-template-columns: repeat(3, 1fr); }
+
+        .content-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--light-gray);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--white);
+            font-size: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            color: var(--charcoal);
+        }
+
+        .feature-list i {
+            color: var(--accent-blue);
+            width: 20px;
+            text-align: center;
+        }
+
+        .code-block {
+            background: var(--charcoal);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 2rem 0;
+            overflow-x: auto;
+            border: 1px solid #374151;
+            white-space: pre-line;
+        }
+        
+        .code-block > * {
+            white-space: pre-line;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-left: 5px solid var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-left: 5px solid var(--success-green);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .success-box h4 {
+            color: var(--success-green);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 5px solid var(--warning-orange);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box h4 {
+            color: var(--warning-orange);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .error-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left: 5px solid var(--error-red);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .error-box h4 {
+            color: var(--error-red);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .practical-exercise {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border-left: 5px solid var(--purple);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .practical-exercise h4 {
+            color: var(--purple);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .slide-header {
+                padding: 0.8rem 1.5rem;
+                padding-right: 200px;
+            }
+            
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .slide-title {
+                font-size: 2rem;
+            }
+            
+            .card-grid.two-col,
+            .card-grid.three-col {
+                grid-template-columns: 1fr;
+            }
+            
+            .slide-number-container {
+                right: 1rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation-container">
+        <!-- Slide 1: Title & Overview -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 1 of 8</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Advanced NLP Applications &amp; Ethics</h1>
+                <p class="slide-subtitle">Lectures 13 &amp; 14: Chatbots, Summarization, Translation &amp; Responsible AI</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-5">
+                    <div class="icon-large" style="background: var(--gradient-purple); margin: 0 auto 2rem;">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h2 class="section-title">From Models to Real Systems 🎯</h2>
+                    <p class="section-subtitle">We connect transformers to real products and discuss how to use them responsibly.</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Advanced Applications</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-comments"></i> Chatbots &amp; conversational agents</li>
+                            <li><i class="fas fa-file-alt"></i> Text summarization for long documents</li>
+                            <li><i class="fas fa-language"></i> Machine translation between languages</li>
+                            <li><i class="fas fa-project-diagram"></i> End‑to‑end NLP pipelines</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-scale-balanced"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Ethical Dimensions</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-bullhorn"></i> Bias &amp; unfair predictions</li>
+                            <li><i class="fas fa-user-shield"></i> Privacy &amp; data protection</li>
+                            <li><i class="fas fa-skull-crossbones"></i> Misuse &amp; harmful content</li>
+                            <li><i class="fas fa-clipboard-check"></i> Responsible deployment</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-purple); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🎓 Learning Goals</h3>
+                    <div style="font-size: 1rem; opacity: 0.95;">
+                        🤖 Design a simple chatbot pipeline<br>
+                        📰 Explain extractive vs abstractive summarization<br>
+                        🌍 Describe transformer‑based machine translation<br>
+                        ⚖️ Identify and discuss major ethical risks in NLP
+                    </div>
+                </div>
+                
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-lightbulb"></i> Think About Your Mini Project</h4>
+                    <p>
+                        Which advanced application fits best for your mini project—chatbot, summarizer, or translator?<br>
+                        As we go through the slides, map each concept to a concrete feature you could implement,
+                        and ask yourself: <strong>"Could this be misused or be unfair to someone?"</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Chatbots & Conversational Agents -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 2 of 8</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Chatbots &amp; Conversational Agents</h1>
+                <p class="slide-subtitle">From rule‑based bots to GPT‑style assistants</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">What is a Chatbot? 💬</h2>
+                    <p class="section-subtitle" style="font-size: 1.2rem;">Software that talks to users using natural language.</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-list-ul"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Types of Chatbots</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-code"></i> <strong>Rule‑based:</strong> pattern matching, decision trees</li>
+                            <li><i class="fas fa-brain"></i> <strong>ML‑based:</strong> intent classification + slot filling</li>
+                            <li><i class="fas fa-robot"></i> <strong>LLM‑based:</strong> GPT‑style open‑domain dialogue</li>
+                            <li><i class="fas fa-plug"></i> <strong>Hybrid:</strong> rules + LLM for reliability</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Typical Pipeline</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-language"></i> User text → preprocessing (tokenize, normalize)</li>
+                            <li><i class="fas fa-bullseye"></i> Detect <strong>intent</strong> (what the user wants)</li>
+                            <li><i class="fas fa-database"></i> Extract <strong>slots</strong> (entities: date, product, location)</li>
+                            <li><i class="fas fa-reply"></i> Generate response (template, retrieval, or generation)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Common Use Cases</h4>
+                    <p style="font-size: 1.05rem; line-height: 1.8;">
+                        🛒 <strong>E‑commerce:</strong> order tracking, returns, product questions<br>
+                        🏦 <strong>Banking:</strong> balance queries, card blocking, FAQs<br>
+                        🎓 <strong>Education:</strong> course Q&amp;A, practice questions, office‑hours bot<br>
+                        🩺 <strong>Healthcare (with caution!):</strong> appointment scheduling, symptom screening
+                    </p>
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-terminal"></i> Mini Exercise: Intent Brainstorm</h4>
+                    <p>
+                        Pick a domain (e.g. university helpdesk or food delivery).<br>
+                        List 5–7 <strong>intents</strong> (e.g. "ask_fees", "track_order") and 2–3 example user
+                        utterances for each. This becomes the seed for your chatbot dataset.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Dialogue Design -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 3 of 8</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Designing Effective Dialogues</h1>
+                <p class="slide-subtitle">Making your chatbot helpful, robust, and user‑friendly</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Conversation ≠ One‑Shot Classification</h2>
+                    <p class="section-subtitle" style="font-size: 1.2rem;">We must handle context, clarification, and errors.</p>
+                </div>
+
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Key Design Ideas</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-history"></i> Maintain a <strong>dialogue state</strong> (past turns)</li>
+                            <li><i class="fas fa-question-circle"></i> Ask <strong>clarifying questions</strong> when unsure</li>
+                            <li><i class="fas fa-undo"></i> Allow corrections ("No, I meant…")</li>
+                            <li><i class="fas fa-user-friends"></i> Provide a clear hand‑off to a human agent</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Evaluating Chatbots</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check-circle"></i> Task success rate</li>
+                            <li><i class="fas fa-stopwatch"></i> Average turns to resolution</li>
+                            <li><i class="fas fa-smile"></i> User satisfaction scores</li>
+                            <li><i class="fas fa-bug"></i> Failure analysis on bad conversations</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="code-block" style="font-size: 1rem;">
+<strong style="color: #60a5fa;">📚 Example Dialogue (Food Delivery Bot)</strong>
+
+User:  "Where is my order?"
+Bot:   "Sure! Please share your order ID."
+User:  "It's #A123."
+Bot:   "Thanks. Your order #A123 is on the way and will arrive in 18 minutes. 🚚"
+
+<strong style="color: #34d399;">Underlying NLP Steps</strong>
+• Intent = <em>track_order</em>
+• Slots  = { order_id: "A123" }
+• Backend API call → get order status
+• Response template filled with real data
+                </div>
+
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> Takeaway</h4>
+                    <p style="font-size: 1.05rem; line-height: 1.7;">
+                        Great chatbots are <strong>narrow but reliable</strong> for a clearly defined set of tasks.
+                        Powerful models help, but you still need good intent design, guardrails, and evaluation.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Text Summarization -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 4 of 8</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Text Summarization</h1>
+                <p class="slide-subtitle">Compressing long documents into short, useful summaries</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Why Summarization? 📰</h2>
+                    <p class="section-subtitle" style="font-size: 1.2rem;">We are drowning in text; we need <strong>compressed meaning</strong>.</p>
+                </div>
+
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-highlighter"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Extractive Summarization</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-quote-left"></i> Selects <strong>original sentences</strong> from the text</li>
+                            <li><i class="fas fa-list-ol"></i> Ranks sentences by importance (TF‑IDF, TextRank, attention)</li>
+                            <li><i class="fas fa-check"></i> Grammatically safe (copied text)</li>
+                            <li><i class="fas fa-clone"></i> May be redundant or less coherent</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-pen-nib"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Abstractive Summarization</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-lightbulb"></i> <strong>Generates new sentences</strong> in its own words</li>
+                            <li><i class="fas fa-brain"></i> Uses encoder–decoder transformers</li>
+                            <li><i class="fas fa-magic"></i> More fluent and human‑like</li>
+                            <li><i class="fas fa-exclamation-triangle"></i> Can hallucinate facts if not careful</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="code-block" style="font-size: 0.98rem;">
+<strong style="color: #60a5fa;">📚 Example</strong>
+
+<strong style="color: #34d399;">Article Snippet:</strong>
+“The company announced a new AI‑powered chatbot that helps customers track deliveries,
+answer product questions, and process returns. Early tests show a 30% reduction in call
+center load and higher customer satisfaction scores.”
+
+<strong style="color: #fbbf24;">Extractive Summary:</strong>
+“The company announced a new AI‑powered chatbot that helps customers track deliveries,
+answer product questions, and process returns.”
+
+<strong style="color: #ec4899;">Abstractive Summary:</strong>
+“The company launched an AI chatbot for customer support, reducing call center work
+while improving satisfaction.”
+                </div>
+
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-flask"></i> Lab Idea</h4>
+                    <p>
+                        Use a pre‑trained summarization model (e.g. BART, T5) on news articles.<br>
+                        Compare extractive vs abstractive summaries for readability and faithfulness to the source.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Machine Translation -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 5 of 8</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-language"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Machine Translation</h1>
+                <p class="slide-subtitle">From phrase‑based systems to transformer MT</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Breaking Language Barriers 🌍</h2>
+                    <p class="section-subtitle" style="font-size: 1.2rem;">One of the oldest and most successful NLP applications.</p>
+                </div>
+
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-history"></i> Very Short History</h4>
+                    <p style="font-size: 1.05rem; line-height: 1.8;">
+                        📚 <strong>Rule‑based MT:</strong> hand‑crafted dictionaries &amp; grammars<br>
+                        🧩 <strong>Phrase‑based SMT:</strong> statistical models over phrase pairs<br>
+                        🤖 <strong>Neural MT:</strong> encoder–decoder with RNNs + attention<br>
+                        ⚡ <strong>Transformer MT:</strong> self‑attention + parallel training → state of the art
+                    </p>
+                </div>
+
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-random"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">How Transformer MT Works</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-arrow-right"></i> Encoder reads source sentence (e.g. English)</li>
+                            <li><i class="fas fa-eye"></i> Self‑attention builds contextual embeddings</li>
+                            <li><i class="fas fa-arrow-left"></i> Decoder generates target sentence (e.g. Spanish)</li>
+                            <li><i class="fas fa-link"></i> Cross‑attention links target words to source words</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Quality &amp; Challenges</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check-circle"></i> Strong for high‑resource language pairs</li>
+                            <li><i class="fas fa-language"></i> Harder for low‑resource or morphologically rich languages</li>
+                            <li><i class="fas fa-user-friends"></i> Cultural nuances and politeness are tricky</li>
+                            <li><i class="fas fa-exclamation-triangle"></i> Domain shift can cause wrong translations</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="code-block" style="font-size: 0.98rem;">
+<strong style="color: #60a5fa;">📚 Example</strong>
+
+Source (EN): "The cat sat on the mat because it was soft."
+Target (ES): "El gato se sentó en la alfombra porque era suave."
+
+• Word order changes slightly.
+• The model must know that "it" refers to "alfombra" (mat), not "gato" (cat).
+• Decoder attention helps link "it" to the correct noun in the source sentence.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: NLP Ethics Overview -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 6 of 8</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-scale-balanced"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Ethical Issues in NLP</h1>
+                <p class="slide-subtitle">Bias, fairness, privacy &amp; misuse</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Why Ethics Matters ⚖️</h2>
+                    <p class="section-subtitle" style="font-size: 1.2rem;">NLP systems affect real people and real decisions.</p>
+                </div>
+
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-triangle-exclamation"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Main Risk Areas</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-gavel"></i> Biased or discriminatory predictions</li>
+                            <li><i class="fas fa-user-secret"></i> Privacy leaks (names, addresses, messages)</li>
+                            <li><i class="fas fa-bomb"></i> Misuse for spam, hate speech, propaganda</li>
+                            <li><i class="fas fa-bug"></i> Over‑trusting models that can hallucinate</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Responsible AI Principles</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-users"></i> Fair and inclusive across user groups</li>
+                            <li><i class="fas fa-eye"></i> Transparent about data, limits, and risks</li>
+                            <li><i class="fas fa-handshake"></i> Human‑in‑the‑loop for high‑impact decisions</li>
+                            <li><i class="fas fa-lock"></i> Privacy‑preserving by design</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Questions to Ask</h4>
+                    <p style="font-size: 1.05rem; line-height: 1.8;">
+                        • Who could be <strong>harmed</strong> if this model is wrong?<br>
+                        • Are some groups <strong>systematically misclassified</strong>?<br>
+                        • What <strong>data</strong> was used for training? Was consent obtained?<br>
+                        • Can users <strong>opt out</strong> or appeal decisions that use this model?
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Bias & Fairness -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 7 of 8</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Bias in Language Models</h1>
+                <p class="slide-subtitle">How it appears and what we can do</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Where Does Bias Come From? 🧠</h2>
+                    <p class="section-subtitle" style="font-size: 1.2rem;">Models learn patterns—including bad ones—from data.</p>
+                </div>
+
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Sources of Bias</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-database"></i> Skewed or unbalanced training data</li>
+                            <li><i class="fas fa-history"></i> Historical stereotypes in text corpora</li>
+                            <li><i class="fas fa-filter"></i> Preprocessing choices (which data is kept)</li>
+                            <li><i class="fas fa-cogs"></i> Objectives that ignore fairness constraints</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Mitigation Strategies</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-microscope"></i> Measure bias on dedicated test sets</li>
+                            <li><i class="fas fa-balance-scale"></i> Balance / re‑weight training data</li>
+                            <li><i class="fas fa-eraser"></i> Debias word embeddings / representations</li>
+                            <li><i class="fas fa-user-check"></i> Keep humans in the loop for sensitive tasks</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="code-block" style="font-size: 0.96rem;">
+<strong style="color: #60a5fa;">📚 Example: Toxicity Classifier</strong>
+
+A toxicity model is trained mostly on comments from one region and dialect.
+It starts flagging African‑American English or non‑native grammar as “toxic”
+more often, even when the content is neutral.
+
+Result: Users from certain communities are unfairly moderated or banned.
+
+Mitigation:
+• Add more diverse labeled data.
+• Evaluate performance separately for different groups.
+• Avoid auto‑banning purely based on model scores.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Summary & Checklist -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 8 of 8</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Summary &amp; Responsible NLP Checklist</h1>
+                <p class="slide-subtitle">Lectures 13 &amp; 14 wrap‑up</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">You Can Build Powerful &amp; Responsible NLP Systems 🎓</h2>
+                    <p class="section-subtitle" style="font-size: 1.2rem;">Technical skills + ethical awareness.</p>
+                </div>
+
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Technical Takeaways</h3>
+                        <ul style="font-size: 1.05rem; color: var(--charcoal); line-height: 2;">
+                            <li>✅ Design chatbot intents, slots, and flows</li>
+                            <li>✅ Explain extractive vs abstractive summarization</li>
+                            <li>✅ Describe transformer‑based machine translation</li>
+                            <li>✅ Combine components into end‑to‑end NLP systems</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-scale-balanced"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Ethics Takeaways</h3>
+                        <ul style="font-size: 1.05rem; color: var(--charcoal); line-height: 2;">
+                            <li>✅ Recognize bias and unfair outcomes</li>
+                            <li>✅ Understand privacy and misuse risks</li>
+                            <li>✅ Apply basic mitigation strategies</li>
+                            <li>✅ Communicate limitations clearly to users</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-box" style="margin-top: 1.5rem;">
+                    <h4><i class="fas fa-list-check"></i> Responsible NLP Checklist</h4>
+                    <ul style="font-size: 1.05rem; line-height: 1.9; margin-left: 1.5rem;">
+                        <li>📊 Did you evaluate performance for <strong>different user groups</strong>?</li>
+                        <li>🔍 Do you know <strong>what data</strong> your models were trained on?</li>
+                        <li>🧪 Have you tested for <strong>harmful or biased outputs</strong>?</li>
+                        <li>🔐 Are logs and user data stored <strong>safely and minimally</strong>?</li>
+                        <li>🧑‍⚖️ Is there a <strong>human review path</strong> for high‑impact decisions?</li>
+                    </ul>
+                </div>
+
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🌟 Next Steps</h3>
+                    <p style="font-size: 1.05rem; line-height: 1.8;">
+                        Use these ideas to design your mini project proposal.<br>
+                        Think about both the <strong>technical pipeline</strong> and the <strong>ethical implications</strong> of your idea.<br>
+                        The goal is not just to build something cool—but to build something <strong>useful, fair, and safe</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
+

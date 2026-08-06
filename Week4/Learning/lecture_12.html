@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 12: Attention Mechanism & Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --white: #ffffff;
+            --light-gray: #f1f5f9;
+            --medium-gray: #64748b;
+            --charcoal: #1e293b;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            --gradient-error: linear-gradient(135deg, var(--error-red) 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, var(--purple) 0%, #a855f7 100%);
+            --gradient-pink: linear-gradient(135deg, var(--pink) 0%, #f472b6 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-primary);
+            color: var(--primary-navy);
+            overflow: hidden;
+            height: 100vh;
+            line-height: 1.6;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1rem 2rem;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            padding-right: 280px;
+        }
+
+        .slide-number-container {
+            position: absolute;
+            top: 0.8rem;
+            right: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-number {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .slide-icon {
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .slide-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            background: var(--white);
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--medium-gray);
+            margin-bottom: 2rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mb-5 { margin-bottom: 3rem; }
+
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .two-col { grid-template-columns: repeat(2, 1fr); }
+        .three-col { grid-template-columns: repeat(3, 1fr); }
+
+        .content-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--light-gray);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--white);
+            font-size: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            color: var(--charcoal);
+        }
+
+        .feature-list i {
+            color: var(--accent-blue);
+            width: 20px;
+            text-align: center;
+        }
+
+        .code-block {
+            background: var(--charcoal);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 2rem 0;
+            overflow-x: auto;
+            border: 1px solid #374151;
+            white-space: pre-line;
+        }
+        
+        .code-block > * {
+            white-space: pre-line;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-left: 5px solid var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-left: 5px solid var(--success-green);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .success-box h4 {
+            color: var(--success-green);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 5px solid var(--warning-orange);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box h4 {
+            color: var(--warning-orange);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .error-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left: 5px solid var(--error-red);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .error-box h4 {
+            color: var(--error-red);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .practical-exercise {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border-left: 5px solid var(--purple);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .practical-exercise h4 {
+            color: var(--purple);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .slide-header {
+                padding: 0.8rem 1.5rem;
+                padding-right: 200px;
+            }
+            
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .slide-title {
+                font-size: 2rem;
+            }
+            
+            .card-grid.two-col,
+            .card-grid.three-col {
+                grid-template-columns: 1fr;
+            }
+            
+            .slide-number-container {
+                right: 1rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation-container">
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 1 of 10</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Attention Mechanism & Transformers</h1>
+                <p class="slide-subtitle">Lecture 12: BERT, GPT & The Revolution! 🚀</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-5">
+                    <div class="icon-large" style="background: var(--gradient-purple); margin: 0 auto 2rem;">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h2 class="section-title">Welcome to the Future! 🎉</h2>
+                    <p class="section-subtitle">Today we learn the technology behind ChatGPT and modern AI!</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Attention</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-star"></i> Focuses on important words</li>
+                            <li><i class="fas fa-link"></i> Connects words anywhere in text</li>
+                            <li><i class="fas fa-lightbulb"></i> Like highlighting key parts</li>
+                            <li><i class="fas fa-rocket"></i> No more sequential processing!</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Transformers</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-bolt"></i> Super fast parallel processing</li>
+                            <li><i class="fas fa-brain"></i> Understands context perfectly</li>
+                            <li><i class="fas fa-trophy"></i> Powers BERT and GPT</li>
+                            <li><i class="fas fa-star"></i> The game-changer! 🎯</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-purple); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🎯 Today's Mission</h3>
+                    <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Learn how computers can:</div>
+                    <div style="font-size: 1rem; opacity: 0.9; margin-top: 0.5rem;">
+                        👁️ Pay attention to important words (Attention!)<br>
+                        ⚡ Process everything at once (Transformers!)<br>
+                        📖 Understand text bidirectionally (BERT!)<br>
+                        ✍️ Generate amazing text (GPT!)<br>
+                    </div>
+                </div>
+                
+                <div class="practical-exercise">
+                    <h4><i class="fas fa-lightbulb"></i> Fun Example to Think About:</h4>
+                    <p>When you read: "The cat sat on the mat"<br>
+                    You automatically focus on "cat" and "mat" - they're important!<br>
+                    That's what Attention does - it highlights what matters!<br>
+                    And Transformers let computers read the whole sentence at once, not word by word! 🐱✨</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: The Problem with RNN/LSTM -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 2 of 10</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">The Problem with RNN/LSTM</h1>
+                <p class="slide-subtitle">Why we need something better!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">RNN/LSTM = Reading Word by Word! 📖</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">They're slow because they process sequentially!</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> The Problem:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>RNN/LSTM/GRU</strong> process words one by one, like reading a book page by page<br>
+                        They can't see the whole sentence at once!<br>
+                        It's like reading with blinders on - you only see one word at a time! 😅
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Funny Example:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Sentence:</strong> "The cat that I saw yesterday sat on the mat"<br>
+                        <strong>RNN/LSTM sees:</strong> "The" → "cat" → "that" → "I" → "saw" → "yesterday" → "sat" → "on" → "the" → "mat"<br>
+                        <strong>Problem:</strong> Must process in order, can't jump ahead!<br>
+                        <strong>Result:</strong> Slow and can't see connections between distant words! 🐌
+                    </p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-error);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">RNN/LSTM Problems</h3>
+                        <div style="background: #fee2e2; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--error-red);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ❌ Process sequentially (slow!)<br>
+                                ❌ Can't parallelize<br>
+                                ❌ Hard to see distant connections<br>
+                                ❌ Like reading with tunnel vision! 👁️
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">What We Need</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Process all words at once<br>
+                                ✅ Parallel processing (fast!)<br>
+                                ✅ See connections anywhere<br>
+                                ✅ Like reading the whole page at once! 📄
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Example: Understanding "it" in a sentence</strong>
+
+<strong style="color: #34d399;">Sentence:</strong> "The cat sat on the mat because it was soft"
+
+<strong style="color: #f87171;">RNN/LSTM Processing:</strong>
+<span style="white-space: nowrap; display: block;">• Reads "The cat" → Remembers it</span>
+<span style="white-space: nowrap; display: block;">• Reads "sat on the mat" → Remembers it</span>
+<span style="white-space: nowrap; display: block;">• Reads "because it" → Tries to remember what "it" refers to</span>
+<span style="white-space: nowrap; display: block;">• Problem: "it" is far from "mat" - memory might be weak! 🤯</span>
+<span style="white-space: nowrap; display: block;">• Result: Might confuse "it" with "cat" instead of "mat"!</span>
+
+<strong style="color: #10b981;">Transformer with Attention:</strong>
+<span style="white-space: nowrap; display: block;">• Sees ALL words at once: "The cat sat on the mat because it was soft"</span>
+<span style="white-space: nowrap; display: block;">• Attention mechanism: "it" → looks at all words → finds "mat"!</span>
+<span style="white-space: nowrap; display: block;">• Direct connection: "it" connects to "mat" (not "cat") ✅</span>
+<span style="white-space: nowrap; display: block;">• Result: Perfect understanding! 🎯</span>
+
+<strong style="color: #ec4899;">That's why Transformers are revolutionary! 🚀</strong>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Key Insight:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        <strong>Sequential processing is slow!</strong> We need parallel processing!<br>
+                        Transformers can see ALL words at once and find connections instantly!<br>
+                        That's the power of Attention + Parallel Processing!<br>
+                        That's why ChatGPT and modern AI are so fast and smart! 🚀
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: What is Attention? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 3 of 10</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is Attention?</h1>
+                <p class="slide-subtitle">The magic that makes AI focus!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Attention = Focus on What Matters! 👁️</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Like highlighting important words!</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Attention</strong> = A mechanism that tells the model which words to focus on<br>
+                        It's like when you read a sentence and automatically highlight the important parts!<br>
+                        The model learns to pay attention to relevant words, even if they're far apart! 🎯
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> How Attention Works:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Sentence:</strong> "The cat sat on the mat because it was soft"<br>
+                        <strong>When processing "it":</strong><br>
+                        • Attention looks at ALL words: "The", "cat", "sat", "on", "the", "mat", "because", "it", "was", "soft"<br>
+                        • Calculates: Which word is "it" referring to?<br>
+                        • Finds: "mat" has highest attention score!<br>
+                        • Result: "it" → "mat" (perfect connection!) ✅<br>
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Attention Mechanism Example: "The cat sat on the mat"</strong>
+
+<strong style="color: #34d399;">Step 1: For each word, calculate attention scores</strong>
+<span style="white-space: nowrap; display: block;">When processing "sat":</span>
+<span style="white-space: nowrap; display: block;">• Attention("sat" → "The") = 0.1 (low - not very related)</span>
+<span style="white-space: nowrap; display: block;">• Attention("sat" → "cat") = 0.8 (HIGH - "cat" sat!)</span>
+<span style="white-space: nowrap; display: block;">• Attention("sat" → "on") = 0.6 (medium - "sat on")</span>
+<span style="white-space: nowrap; display: block;">• Attention("sat" → "the") = 0.2 (low)</span>
+<span style="white-space: nowrap; display: block;">• Attention("sat" → "mat") = 0.5 (medium - "sat on mat")</span>
+
+<strong style="color: #fbbf24;">Step 2: Use attention scores to weight words</strong>
+<span style="white-space: nowrap; display: block;">• "cat" gets highest weight (0.8) → Most important!</span>
+<span style="white-space: nowrap; display: block;">• "on" gets medium weight (0.6) → Important!</span>
+<span style="white-space: nowrap; display: block;">• Other words get lower weights → Less important</span>
+
+<strong style="color: #34d399;">Step 3: Combine weighted words</strong>
+<span style="white-space: nowrap; display: block;">• Result: "sat" focuses on "cat" and "on" the most!</span>
+<span style="white-space: nowrap; display: block;">• Perfect understanding: "cat sat on" ✅</span>
+
+<strong style="color: #10b981;">✅ Attention helps find connections instantly!</strong>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Attention Advantages</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Finds connections anywhere<br>
+                                ✅ Focuses on important words<br>
+                                ✅ Understands long-range dependencies<br>
+                                ✅ Like having perfect focus! 🎯
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Key Idea</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                Instead of remembering everything,<br>
+                                Attention learns to LOOK at what matters!<br>
+                                It's like having a spotlight that highlights important words! 💡<br>
+                                Much smarter than sequential memory! 🧠
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Key Point:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        Attention is like having super vision!<br>
+                        Instead of reading word by word, you can instantly see which words are related!<br>
+                        "it" → instantly finds "mat"!<br>
+                        "sat" → instantly finds "cat"!<br>
+                        <strong>Result: Perfect understanding of context! 🎯</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: What are Transformers? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 4 of 10</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What are Transformers?</h1>
+                <p class="slide-subtitle">The architecture that changed everything!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Transformer = Attention + Parallel Processing! ⚡</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">The architecture behind BERT and GPT!</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Transformer</strong> = A neural network architecture that uses Attention<br>
+                        It processes ALL words at once (parallel), not one by one!<br>
+                        It's like reading a whole page instantly instead of word by word! 📄⚡
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> Key Components:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Transformer has 2 main parts:</strong><br>
+                        🔹 <strong>Encoder:</strong> Understands input text (used in BERT)<br>
+                        🔹 <strong>Decoder:</strong> Generates output text (used in GPT)<br>
+                        🔹 <strong>Attention:</strong> Connects words anywhere in the text<br>
+                        🔹 <strong>Parallel Processing:</strong> Processes all words at once! ⚡
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 Transformer Architecture: How It Works</strong>
+
+<strong style="color: #34d399;">Input: "The cat sat on the mat"</strong>
+
+<strong style="color: #fbbf24;">Step 1: Embedding</strong>
+<span style="white-space: nowrap; display: block;">• Convert each word to a vector: "The" → [0.1, 0.2, ...], "cat" → [0.5, 0.3, ...]</span>
+<span style="white-space: nowrap; display: block;">• Add position encoding (knows word order)</span>
+
+<strong style="color: #34d399;">Step 2: Multi-Head Attention (The Magic!)</strong>
+<span style="white-space: nowrap; display: block;">• For each word, calculate attention to ALL other words</span>
+<span style="white-space: nowrap; display: block;">• "sat" pays attention to "cat" (high score), "on" (medium), "mat" (medium)</span>
+<span style="white-space: nowrap; display: block;">• All words processed in parallel! ⚡</span>
+
+<strong style="color: #fbbf24;">Step 3: Feed-Forward Network</strong>
+<span style="white-space: nowrap; display: block;">• Process the attended information</span>
+<span style="white-space: nowrap; display: block;">• Transform and refine understanding</span>
+
+<strong style="color: #34d399;">Step 4: Repeat (Multiple Layers)</strong>
+<span style="white-space: nowrap; display: block;">• Stack multiple transformer layers</span>
+<span style="white-space: nowrap; display: block;">• Each layer refines understanding</span>
+<span style="white-space: nowrap; display: block;">• Result: Deep understanding of context! 🧠</span>
+
+<strong style="color: #10b981;">✅ Transformer understands the whole sentence perfectly!</strong>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Transformer Advantages</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Parallel processing (fast!)<br>
+                                ✅ Understands long-range dependencies<br>
+                                ✅ No sequential bottleneck<br>
+                                ✅ Perfect for modern GPUs! 🚀
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">vs RNN/LSTM</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                RNN/LSTM: Sequential (slow) 🐌<br>
+                                Transformer: Parallel (fast!) ⚡<br>
+                                RNN/LSTM: Memory fades 📉<br>
+                                Transformer: Perfect attention! 👁️
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Key Point:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        Transformers revolutionized NLP!<br>
+                        They're faster, smarter, and can handle longer text!<br>
+                        That's why BERT and GPT (which use Transformers) are so powerful!<br>
+                        <strong>Think of it: Transformer = Attention + Speed + Power! 🚀</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: What is BERT? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 5 of 10</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-book-reader"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is BERT?</h1>
+                <p class="slide-subtitle">Bidirectional Encoder Representations from Transformers</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">BERT = Reads Both Ways! 📖↔️</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Understands context from left AND right!</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>BERT</strong> = A Transformer model that reads text in BOTH directions<br>
+                        It uses only the Encoder part of Transformer<br>
+                        It's pre-trained on huge amounts of text, then fine-tuned for specific tasks!<br>
+                        Think of it as a super reader that understands context perfectly! 🎯
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> The Key Idea:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Bidirectional = Reads both ways!</strong><br>
+                        🔹 <strong>Left to Right:</strong> "The cat sat..." → understands "sat"<br>
+                        🔹 <strong>Right to Left:</strong> "...sat on the mat" → understands "sat"<br>
+                        🔹 <strong>Both Together:</strong> Perfect understanding! ✅<br>
+                        <strong>Result:</strong> BERT understands words from context on BOTH sides! 🎯
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 BERT Processing Example: "The cat sat on the mat"</strong>
+
+<strong style="color: #34d399;">Understanding the word "sat":</strong>
+
+<strong style="color: #fbbf24;">Left Context (before "sat"):</strong>
+<span style="white-space: nowrap; display: block;">• "The cat" → BERT knows: subject is "cat"</span>
+<span style="white-space: nowrap; display: block;">• "sat" → BERT knows: verb, past tense</span>
+
+<strong style="color: #fbbf24;">Right Context (after "sat"):</strong>
+<span style="white-space: nowrap; display: block;">• "on the mat" → BERT knows: location, object</span>
+<span style="white-space: nowrap; display: block;">• "sat" → BERT knows: verb that takes location</span>
+
+<strong style="color: #34d399;">Bidirectional Understanding:</strong>
+<span style="white-space: nowrap; display: block;">• BERT sees: "The cat [sat] on the mat"</span>
+<span style="white-space: nowrap; display: block;">• Left: "cat" sat (subject-verb)</span>
+<span style="white-space: nowrap; display: block;">• Right: sat "on mat" (verb-location)</span>
+<span style="white-space: nowrap; display: block;">• Perfect understanding: "cat sat on mat" ✅</span>
+
+<strong style="color: #10b981;">✅ BERT understands from BOTH directions!</strong>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">BERT Advantages</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Bidirectional understanding<br>
+                                ✅ Great for classification tasks<br>
+                                ✅ Perfect for question answering<br>
+                                ✅ Pre-trained, then fine-tuned! 🎯
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-purple);">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">BERT Applications</h3>
+                        <div style="background: #f3e8ff; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--purple);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Sentiment analysis<br>
+                                ✅ Question answering<br>
+                                ✅ Named entity recognition<br>
+                                ✅ Text classification! 📊
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Key Point:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        BERT is like reading a sentence forwards AND backwards!<br>
+                        It understands context from both sides, making it super accurate!<br>
+                        That's why it's great for understanding tasks (not generating)!<br>
+                        <strong>Think of it: BERT = Bidirectional Understanding! 📖↔️</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: What is GPT? -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 6 of 10</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-pen"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">What is GPT?</h1>
+                <p class="slide-subtitle">Generative Pre-trained Transformer</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">GPT = Text Generator! ✍️</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Creates amazing text, one word at a time!</p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Explanation:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>GPT</strong> = A Transformer model that GENERATES text<br>
+                        It uses only the Decoder part of Transformer<br>
+                        It reads left-to-right and predicts the next word!<br>
+                        Think of it as a super writer that creates amazing text! ✍️✨
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-lightbulb"></i> The Key Idea:</h4>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Generative = Creates text!</strong><br>
+                        🔹 <strong>Input:</strong> "The cat sat on the"<br>
+                        🔹 <strong>GPT:</strong> Predicts next word → "mat" (most likely!)<br>
+                        🔹 <strong>Output:</strong> "The cat sat on the mat" ✅<br>
+                        🔹 <strong>Can continue:</strong> "The cat sat on the mat because it was soft"<br>
+                        <strong>Result:</strong> GPT generates text word by word, using context! 🎯
+                    </p>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 GPT Generation Example: "The cat sat on the..."</strong>
+
+<strong style="color: #34d399;">Step 1: Read input</strong>
+<span style="white-space: nowrap; display: block;">• Input: "The cat sat on the"</span>
+<span style="white-space: nowrap; display: block;">• GPT processes all words with attention</span>
+<span style="white-space: nowrap; display: block;">• Understands: subject="cat", verb="sat", location="on the"</span>
+
+<strong style="color: #fbbf24;">Step 2: Predict next word</strong>
+<span style="white-space: nowrap; display: block;">• GPT calculates probabilities:</span>
+<span style="white-space: nowrap; display: block;">• P("mat" | "The cat sat on the") = 0.8 (HIGH - makes sense!)</span>
+<span style="white-space: nowrap; display: block;">• P("floor" | "The cat sat on the") = 0.15 (medium)</span>
+<span style="white-space: nowrap; display: block;">• P("table" | "The cat sat on the") = 0.05 (low)</span>
+
+<strong style="color: #34d399;">Step 3: Generate word</strong>
+<span style="white-space: nowrap; display: block;">• GPT picks "mat" (highest probability)</span>
+<span style="white-space: nowrap; display: block;">• Output: "The cat sat on the mat"</span>
+
+<strong style="color: #fbbf24;">Step 4: Continue generating (optional)</strong>
+<span style="white-space: nowrap; display: block;">• New input: "The cat sat on the mat"</span>
+<span style="white-space: nowrap; display: block;">• GPT predicts: "because", "and", "while"...</span>
+<span style="white-space: nowrap; display: block;">• Can generate entire stories! 📖</span>
+
+<strong style="color: #10b981;">✅ GPT generates text one word at a time!</strong>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">GPT Advantages</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ Generates amazing text<br>
+                                ✅ Creative writing<br>
+                                ✅ Conversational AI<br>
+                                ✅ Pre-trained on huge data! 🎯
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-purple);">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">GPT Applications</h3>
+                        <div style="background: #f3e8ff; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--purple);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                ✅ ChatGPT (conversation!)<br>
+                                ✅ Text completion<br>
+                                ✅ Story generation<br>
+                                ✅ Code generation! 💻
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> Key Point:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        GPT is like having a super creative writer!<br>
+                        It reads what you wrote and continues the story!<br>
+                        That's why ChatGPT can have conversations - it generates responses!<br>
+                        <strong>Think of it: GPT = Generative Text Creator! ✍️✨</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: BERT vs GPT -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 7 of 10</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">BERT vs GPT</h1>
+                <p class="slide-subtitle">Understanding vs Generation!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">The Great Comparison! 🏆</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Understanding the differences</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-book-reader"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">BERT</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.05rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>✅ Pros:</strong><br>
+                                • Bidirectional (reads both ways)<br>
+                                • Great for understanding<br>
+                                • Perfect for classification<br>
+                                • Excellent for Q&A<br><br>
+                                <strong>❌ Cons:</strong><br>
+                                • Can't generate text<br>
+                                • Needs both sides of context
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-purple);">
+                            <i class="fas fa-pen"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">GPT</h3>
+                        <div style="background: #f3e8ff; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--purple);">
+                            <p style="font-size: 1.05rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>✅ Pros:</strong><br>
+                                • Generates amazing text<br>
+                                • Creative writing<br>
+                                • Conversational AI<br>
+                                • Can continue stories<br><br>
+                                <strong>❌ Cons:</strong><br>
+                                • Unidirectional (left-to-right)<br>
+                                • Can't see future words
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1.1rem; padding: 1.5rem; font-family: 'Courier New', monospace;">
+<strong style="color: #60a5fa;">📚 When to Use Each:</strong>
+
+<strong style="color: #34d399;">Use BERT when:</strong>
+<span style="white-space: nowrap; display: block;">• You need to UNDERSTAND text (classification, Q&A)</span>
+<span style="white-space: nowrap; display: block;">• You have full text available</span>
+<span style="white-space: nowrap; display: block;">• Example: "Is this review positive?" → BERT ✅</span>
+<span style="white-space: nowrap; display: block;">• Example: "What did the cat sit on?" → BERT ✅</span>
+
+<strong style="color: #fbbf24;">Use GPT when:</strong>
+<span style="white-space: nowrap; display: block;">• You need to GENERATE text (writing, conversation)</span>
+<span style="white-space: nowrap; display: block;">• You want creative output</span>
+<span style="white-space: nowrap; display: block;">• Example: "Write a story about a cat" → GPT ✅</span>
+<span style="white-space: nowrap; display: block;">• Example: "Continue: The cat sat..." → GPT ✅</span>
+
+<strong style="color: #ec4899;">Funny Analogy:</strong>
+<span style="white-space: nowrap; display: block;">BERT = A super reader (understands everything perfectly)</span>
+<span style="white-space: nowrap; display: block;">GPT = A super writer (creates amazing stories)</span>
+<span style="white-space: nowrap; display: block;">Both use Transformers, but for different purposes! 🎯</span>
+
+<strong style="color: #10b981;">General Rule: Understanding → BERT, Generation → GPT! 🚀</strong>
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Simple Decision Tree:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        <strong>Need to understand text?</strong> → Use BERT ✅<br>
+                        <strong>Need to generate text?</strong> → Use GPT ✅<br>
+                        <strong>Need both?</strong> → Use both! (BERT for understanding, GPT for generation) ✅<br>
+                        <strong>Not sure?</strong> → BERT for analysis, GPT for creation! 🎯<br><br>
+                        <strong>Funny Analogy:</strong> BERT = Reader, GPT = Writer. Both are amazing at what they do! 📖✍️
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Applications -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 8 of 10</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Real-World Applications</h1>
+                <p class="slide-subtitle">Where Attention & Transformers are used!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">Where You See This Every Day! 🌟</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Attention and Transformers in action</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">ChatGPT</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>💬 Conversational AI:</strong><br>
+                                Uses GPT (Transformer) to generate responses!<br>
+                                Attention helps it understand your question and generate perfect answers!<br><br>
+                                <strong>Example:</strong><br>
+                                You: "What is a transformer?"<br>
+                                ChatGPT: Uses attention to understand, GPT to generate answer!<br>
+                                → Perfect conversation! 🎯
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Google Search</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>🔍 Understanding Queries:</strong><br>
+                                Uses BERT to understand search queries!<br>
+                                Attention helps match your question to relevant web pages!<br><br>
+                                <strong>Example:</strong><br>
+                                Query: "What is attention mechanism?"<br>
+                                BERT understands intent, finds best results!<br>
+                                → Perfect search results! 🎯
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-purple);">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Translation</h3>
+                        <div style="background: #f3e8ff; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--purple);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>🌍 Google Translate:</strong><br>
+                                Uses Transformers for translation!<br>
+                                Attention connects words across languages!<br><br>
+                                <strong>Example:</strong><br>
+                                English: "The cat sat on the mat"<br>
+                                Spanish: "El gato se sentó en la alfombra"<br>
+                                → Attention maps words perfectly! 🎯
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-pink);">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Sentiment Analysis</h3>
+                        <div style="background: #fce7f3; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--pink);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                <strong>😊 Review Analysis:</strong><br>
+                                Uses BERT to understand sentiment!<br>
+                                Attention focuses on emotional words!<br><br>
+                                <strong>Example:</strong><br>
+                                Review: "I thought this would be bad, but it was amazing!"<br>
+                                BERT: Attention on "amazing" → Positive!<br>
+                                → Perfect sentiment detection! 🎯
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="font-size: 1rem; padding: 1.5rem; font-family: 'Courier New', monospace; margin-top: 2rem;">
+<strong style="color: #60a5fa;">📚 More Applications:</strong>
+
+<strong style="color: #34d399;">📝 Text Summarization:</strong>
+<span style="white-space: nowrap; display: block;">• Uses Transformers to summarize long articles</span>
+<span style="white-space: nowrap; display: block;">• Attention identifies key sentences</span>
+<span style="white-space: nowrap; display: block;">• Example: Summarize news articles</span>
+
+<strong style="color: #fbbf24;">💻 Code Generation:</strong>
+<span style="white-space: nowrap; display: block;">• GPT models generate code</span>
+<span style="white-space: nowrap; display: block;">• Attention understands code structure</span>
+<span style="white-space: nowrap; display: block;">• Example: GitHub Copilot, ChatGPT coding</span>
+
+<strong style="color: #ec4899;">🎤 Speech Recognition:</strong>
+<span style="white-space: nowrap; display: block;">• Transformers convert speech to text</span>
+<span style="white-space: nowrap; display: block;">• Attention connects audio to words</span>
+<span style="white-space: nowrap; display: block;">• Example: Siri, Alexa</span>
+
+<strong style="color: #10b981;">All powered by Attention and Transformers! 🎯</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Summary -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 9 of 10</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">Summary & Key Takeaways</h1>
+                <p class="slide-subtitle">What we learned today!</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">You're Now a Transformer Expert! 🎉</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Let's review what we learned</p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Attention</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <ul style="font-size: 1.1rem; color: var(--charcoal); line-height: 2;">
+                                <li>✅ Focuses on important words</li>
+                                <li>✅ Finds connections anywhere</li>
+                                <li>✅ No sequential bottleneck</li>
+                                <li>✅ Like highlighting key parts!</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-purple);">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">Transformers</h3>
+                        <div style="background: #f3e8ff; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--purple);">
+                            <ul style="font-size: 1.1rem; color: var(--charcoal); line-height: 2;">
+                                <li>✅ Parallel processing (fast!)</li>
+                                <li>✅ Uses Attention</li>
+                                <li>✅ Powers BERT and GPT</li>
+                                <li>✅ Revolutionary architecture!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-grid two-col" style="margin-top: 2rem;">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-warning);">
+                            <i class="fas fa-book-reader"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">BERT</h3>
+                        <div style="background: #fef3c7; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--warning-orange);">
+                            <ul style="font-size: 1.1rem; color: var(--charcoal); line-height: 2;">
+                                <li>✅ Bidirectional (reads both ways)</li>
+                                <li>✅ Great for understanding</li>
+                                <li>✅ Perfect for classification</li>
+                                <li>✅ Uses Encoder only</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-pink);">
+                            <i class="fas fa-pen"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal);">GPT</h3>
+                        <div style="background: #fce7f3; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--pink);">
+                            <ul style="font-size: 1.1rem; color: var(--charcoal); line-height: 2;">
+                                <li>✅ Generates amazing text</li>
+                                <li>✅ Creative writing</li>
+                                <li>✅ Conversational AI</li>
+                                <li>✅ Uses Decoder only</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> Key Concepts to Remember:</h4>
+                    <ul style="font-size: 1.15rem; line-height: 2; margin-left: 1.5rem;">
+                        <li><strong>Attention:</strong> Focuses on important words (like highlighting!) 👁️</li>
+                        <li><strong>Transformer:</strong> Architecture with Attention + Parallel Processing ⚡</li>
+                        <li><strong>BERT:</strong> Bidirectional understanding (reads both ways) 📖↔️</li>
+                        <li><strong>GPT:</strong> Text generation (creates amazing text) ✍️</li>
+                        <li><strong>RNN/LSTM vs Transformer:</strong> Sequential vs Parallel (slow vs fast!) 🐌⚡</li>
+                        <li><strong>When to use:</strong> Understanding → BERT, Generation → GPT 🎯</li>
+                    </ul>
+                </div>
+                
+                <div style="background: var(--gradient-purple); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🎓 Congratulations!</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        You now understand how modern AI works!<br>
+                        👁️ Attention mechanism (focuses on what matters!)<br>
+                        ⚡ Transformers (parallel processing power!)<br>
+                        📖 BERT (bidirectional understanding!)<br>
+                        ✍️ GPT (amazing text generation!)<br><br>
+                        <strong>Next time you use ChatGPT, you'll know the magic behind it! ✨</strong>
+                    </p>
+                </div>
+                
+                <div class="practical-exercise" style="margin-top: 2rem;">
+                    <h4><i class="fas fa-rocket"></i> Lab Exercise Ideas:</h4>
+                    <p>1. Implement a simple attention mechanism<br>
+                    2. Use pre-trained BERT for sentiment analysis<br>
+                    3. Use pre-trained GPT for text generation<br>
+                    4. Compare Transformer vs RNN/LSTM performance<br>
+                    5. Fine-tune BERT on a custom dataset<br>
+                    6. Build a simple chatbot using GPT<br><br>
+                    <strong>Have fun experimenting! 🎉</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Final Thoughts -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number-container">
+                    <div class="slide-number">Slide 10 of 10</div>
+                    <div class="slide-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <h1 class="slide-title">The Future of NLP</h1>
+                <p class="slide-subtitle">What's next?</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">The Revolution Continues! 🚀</h2>
+                    <p class="section-subtitle" style="font-size: 1.3rem;">Transformers changed everything!</p>
+                </div>
+                
+                <div class="success-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-check-circle"></i> What We've Achieved:</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        ✅ Attention mechanism revolutionized NLP<br>
+                        ✅ Transformers enabled parallel processing<br>
+                        ✅ BERT achieved state-of-the-art understanding<br>
+                        ✅ GPT created amazing generative AI<br>
+                        ✅ ChatGPT shows the power of these technologies!<br>
+                        <strong>We've come a long way from RNN! 🎉</strong>
+                    </p>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 2rem;">
+                    <h4><i class="fas fa-info-circle"></i> What's Next?</h4>
+                    <p style="font-size: 1.15rem; line-height: 1.8;">
+                        🔮 <strong>Larger Models:</strong> GPT-4, GPT-5, and beyond!<br>
+                        🔮 <strong>Multimodal AI:</strong> Text + Images + Audio together!<br>
+                        🔮 <strong>Efficient Models:</strong> Faster, smaller, cheaper!<br>
+                        🔮 <strong>Better Understanding:</strong> More accurate, more creative!<br>
+                        🔮 <strong>Real Applications:</strong> Healthcare, education, creativity!<br>
+                        <strong>The future is bright! ✨</strong>
+                    </p>
+                </div>
+                
+                <div class="card-grid two-col">
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-success);">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Keep Learning!</h3>
+                        <div style="background: #d1fae5; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--success-green);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                • Experiment with Hugging Face Transformers<br>
+                                • Try fine-tuning BERT/GPT<br>
+                                • Build your own applications<br>
+                                • Stay curious! 🎯
+                            </p>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="icon-large" style="background: var(--gradient-purple);">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h3 style="text-align: center; margin-bottom: 1rem; color: var(--charcoal); font-size: 1.5rem;">Build Something!</h3>
+                        <div style="background: #f3e8ff; padding: 1.2rem; border-radius: 10px; border-left: 4px solid var(--purple);">
+                            <p style="font-size: 1.1rem; color: var(--charcoal); line-height: 1.8;">
+                                • Sentiment analyzer with BERT<br>
+                                • Text generator with GPT<br>
+                                • Question-answering system<br>
+                                • Your own chatbot! 💬
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: var(--gradient-primary); color: var(--white); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🌟 Thank You!</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        You've learned about the technology that powers modern AI!<br>
+                        Attention, Transformers, BERT, and GPT are changing the world!<br>
+                        Now go build something amazing! 🚀<br><br>
+                        <strong>Remember: The best way to learn is by doing! 💪</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
