@@ -1,5 +1,7 @@
 
-## Week 6: Large Language Models - Complete Study Notes
+## Week 6: Large Language Models - Complete Study Notes (Fully Updated Through August 2026)
+
+> **Update scope:** Sections 1–10 have been revised in-place, not merely preserved. Sections 11–26 add the modern 2025–2026 layer.
 
 ### Table of Contents
 
@@ -13,6 +15,23 @@
 8. LLM Deployment and Optimization
 9. Ethics and Safety in LLMs
 10. Complete Project: Fine-Tuned LLM-Powered Chatbot
+11. 2025–2026 Modern LLM Landscape
+12. Reasoning Models
+13. Mixture-of-Experts (MoE)
+14. Modern Attention & Positional Representations
+15. Long Context & Context Engineering
+16. Multimodal Foundation Models
+17. Tool Calling & AI Agents
+18. Model Context Protocol (MCP)
+19. Modern RAG & Graph/Agentic RAG
+20. Modern Fine-Tuning & Preference Optimization
+21. Synthetic Data & Distillation
+22. Modern Quantization & Inference Engineering
+23. LLM/Agent Evaluation
+24. AI Security & Observability
+25. Modern AI Application Architecture
+26. 2026 Study Roadmap & Quick Revision
+    - 26.4 2026 Reference Notes
 
 ---
 
@@ -96,6 +115,120 @@ KEY TREND: Models keep getting larger and more capable
 | **Decoder-Only** | Transformer decoder layers (causal attention) | GPT, Llama, Mistral | Text generation, chat, reasoning |
 | **Encoder-Only** | Transformer encoder layers (bidirectional attention) | BERT, RoBERTa | Text understanding, classification, NER |
 | **Encoder-Decoder** | Both encoder and decoder layers | T5, BART | Translation, summarization, text-to-text tasks |
+
+
+
+### 1.5 2026 Update — What an LLM Is Today
+
+The original "next-token prediction" definition is still the mathematical core for autoregressive language models, but it is no longer a complete description of a modern AI system.
+
+A modern LLM application can combine:
+
+```text
+Foundation Model
+      +
+Post-training
+      +
+Reasoning / inference-time compute
+      +
+Retrieval
+      +
+Tools / APIs
+      +
+Memory / state
+      +
+Multimodal inputs
+      +
+Evaluation
+      +
+Security
+```
+
+### Important Correction: "Large" Does Not Simply Mean "More Parameters"
+
+In 2026, capability depends on much more than parameter count:
+
+```text
+Capability
+=
+Architecture
++ Training data quality
++ Training compute
++ Post-training
++ Reasoning / inference compute
++ Tool use
++ Retrieval
++ System design
+```
+
+A smaller specialized model can be preferable to a much larger model when latency, privacy, cost or local deployment matters.
+
+### 1.6 2026 Model Categories
+
+| Category | Purpose |
+|---|---|
+| Base / pretrained model | General language modeling before instruction tuning |
+| Instruct model | Follows user instructions |
+| Reasoning model | Allocates additional inference/training capacity to difficult reasoning |
+| Multimodal model | Handles multiple modalities such as text, image and audio |
+| MoE model | Uses routed expert subnetworks |
+| Small Language Model (SLM) | Lower-cost/local/specialized deployment |
+| Embedding model | Converts content into representations for retrieval |
+| Reranker | Scores retrieved candidates more deeply |
+| Reward / judge model | Scores outputs or preferences |
+| Tool-using model | Produces structured tool/function calls |
+| Agentic system | Model + tools + state + control loop + verification |
+
+### 1.7 Modern Foundation-Model Lifecycle
+
+```text
+Pretraining
+    ↓
+Instruction / Post-training
+    ↓
+Preference / Reasoning Optimization
+    ↓
+Evaluation
+    ↓
+Quantization / Distillation
+    ↓
+Serving
+    ↓
+Application
+    ↓
+Monitoring + Continuous Evaluation
+```
+
+### 1.8 Important 2026 Vocabulary
+
+Learn these terms early:
+
+- Foundation model
+- Instruct model
+- Reasoning model
+- Test-time / inference-time compute
+- Multimodal model
+- MoE
+- Context window
+- Context engineering
+- RAG
+- Reranking
+- Tool calling
+- Agent
+- MCP
+- Structured output
+- PEFT
+- SFT
+- DPO
+- GRPO
+- Quantization
+- Distillation
+- LLM serving
+- AI observability
+
+
+---
+
 
 ---
 
@@ -415,6 +548,125 @@ TRENDS:
 4. Open-source models are catching up to closed ones
 ```
 
+
+
+### 2.8 2026 Update — Modern Transformer Architecture
+
+The original notes use the classic Transformer explanation correctly as a foundation. Modern LLMs, however, often modify several components.
+
+A practical decoder-only stack is closer to:
+
+```text
+Tokens
+  ↓
+Token Embeddings
+  ↓
+Position Representation (often RoPE-family)
+  ↓
+Repeated Transformer Blocks
+  ├── RMSNorm / normalization
+  ├── Causal Self-Attention
+  │     ├── MHA / GQA / MQA
+  │     ├── RoPE
+  │     └── KV Cache at inference
+  ├── Residual Connection
+  ├── MLP / Gated MLP
+  │     └── Dense FFN OR MoE Experts
+  └── Residual Connection
+  ↓
+Final Normalization
+  ↓
+LM Head
+  ↓
+Logits
+  ↓
+Sampling / Decoding
+```
+
+### 2.9 MHA vs GQA vs MQA
+
+| Method | Q Heads | K/V Heads | Main Advantage |
+|---|---:|---:|---|
+| MHA | Many | Many | Maximum independent attention capacity |
+| GQA | Many | Fewer groups | Good quality/memory trade-off |
+| MQA | Many | 1 | Very small KV cache |
+
+GQA is especially important for efficient autoregressive inference.
+
+### 2.10 RoPE
+
+**Rotary Position Embedding (RoPE)** encodes positional information by rotating query/key representations according to position.
+
+Conceptually:
+
+```text
+Q, K
+ ↓
+Position-dependent rotation
+ ↓
+Position-aware Q, K
+ ↓
+Attention
+```
+
+RoPE-family methods are widely used in modern decoder-only LLMs.
+
+### 2.11 RMSNorm and Gated MLPs
+
+Modern architectures frequently use RMSNorm rather than the exact LayerNorm formulation in the original Transformer.
+
+Modern MLP blocks may also use gated activations such as:
+
+```text
+SwiGLU / GLU-family MLP
+```
+
+instead of the simple:
+
+```text
+Linear → GELU → Linear
+```
+
+### 2.12 Sparse / MoE Transformer Blocks
+
+In an MoE model:
+
+```text
+Hidden State
+    ↓
+Router
+    ↓
+Select top-k experts
+    ↓
+Expert MLPs
+    ↓
+Weighted combination
+```
+
+Attention can remain dense while the feed-forward component becomes sparse.
+
+### 2.13 Architecture Metrics You Should Track
+
+When comparing models, record:
+
+- Total parameters
+- Active parameters per token
+- Number of layers
+- Hidden size
+- Attention heads
+- KV heads
+- Context length
+- Vocabulary size
+- Number of experts
+- Experts selected per token
+- Precision / quantization
+- Maximum generation length
+- Hardware requirements
+
+
+---
+
+
 ---
 
 ## 3. Pre-training and Training Process
@@ -664,6 +916,135 @@ TRAINING STRATEGIES:
    Adds domain knowledge
    Then fine-tune on specific task
 ```
+
+
+
+### 3.6 2026 Update — Modern Pretraining and Post-Training
+
+The original notes describe MLM, CLM and span corruption correctly. Modern LLM development is usually a multi-stage pipeline.
+
+```text
+Raw Data
+  ↓
+Filtering / Deduplication
+  ↓
+Tokenization
+  ↓
+Continued Pretraining / Pretraining
+  ↓
+Instruction Data
+  ↓
+SFT
+  ↓
+Preference / Reasoning Optimization
+  ↓
+Evaluation
+  ↓
+Deployment
+```
+
+### 3.7 Data Quality Is a First-Class Training Variable
+
+Modern training does not simply mean "collect more text."
+
+Important operations:
+
+- Deduplication
+- Near-duplicate detection
+- Quality filtering
+- Language identification
+- Toxicity / safety filtering
+- PII filtering
+- Copyright / licensing review
+- Code quality filtering
+- Contamination checks
+- Domain balancing
+- Document-level and sequence-level packing
+
+### 3.8 Data Contamination
+
+A benchmark can become unreliable if benchmark examples or near-duplicates appear in training data.
+
+Therefore:
+
+```text
+Training Corpus
+      ↓
+Contamination Check
+      ↓
+Benchmark Evaluation
+```
+
+Modern evaluation should include contamination-aware test sets where possible.
+
+### 3.9 Scaling Is Not Only About Model Size
+
+Modern scaling includes:
+
+```text
+Parameter Scaling
++
+Data Scaling
++
+Compute Scaling
++
+Inference-Time Scaling
++
+Post-Training Scaling
+```
+
+Reasoning models demonstrate why **test-time compute** can become an additional scaling axis.
+
+### 3.10 Post-Training
+
+Post-training can include:
+
+- SFT
+- Preference optimization
+- Reward modeling
+- Reinforcement learning
+- Reasoning-focused training
+- Tool-use training
+- Safety training
+- Distillation
+
+### 3.11 Training Efficiency
+
+Important modern techniques:
+
+- BF16 / FP16 mixed precision
+- Gradient checkpointing
+- Gradient accumulation
+- FlashAttention
+- FSDP / ZeRO-style sharding
+- Tensor parallelism
+- Pipeline parallelism
+- Data parallelism
+- Sequence/context parallelism
+- Efficient data packing
+- Optimized kernels
+
+### 3.12 Training Reality for a Student
+
+Do not attempt to pretrain a frontier LLM from scratch on consumer hardware.
+
+For practical learning:
+
+```text
+Use a small open-weight model
+        ↓
+SFT / LoRA / QLoRA
+        ↓
+Evaluate
+        ↓
+Deploy locally or on free/low-cost compute
+```
+
+The objective is to understand the complete pipeline rather than reproduce frontier-scale pretraining.
+
+
+---
+
 
 ---
 
@@ -934,6 +1315,131 @@ WHEN TO FINE-TUNE:
 5. Latency and cost are concerns
 6. Large-scale deployment
 ```
+
+
+
+### 4.7 2026 Update — Prompt Engineering vs Context Engineering
+
+Prompt engineering remains important, but modern applications require a broader concept:
+
+**Context Engineering**
+
+```text
+System Instructions
++
+User Request
++
+Retrieved Evidence
++
+Conversation State
++
+Memory
++
+Tool Results
++
+Task State
++
+Output Schema
+```
+
+The question is no longer only:
+
+> "What prompt should I write?"
+
+It becomes:
+
+> "What information should the model see, from which source, in what order, under what constraints?"
+
+### 4.8 Modern Prompt Components
+
+A production prompt often contains:
+
+```text
+ROLE
+TASK
+CONTEXT
+CONSTRAINTS
+TOOLS
+POLICY
+OUTPUT SCHEMA
+EXAMPLES
+FAILURE CONDITIONS
+```
+
+### 4.9 Reasoning Prompting
+
+Do not treat "show every hidden chain-of-thought step" as a universal best practice.
+
+For many production systems, prefer:
+
+```text
+Problem
+ ↓
+Required reasoning / verification
+ ↓
+Concise final answer
+ ↓
+Evidence / structured result
+```
+
+If a reasoning model is available, model-side reasoning may be handled internally rather than requiring verbose reasoning text in the user-visible output.
+
+### 4.10 Modern Prompt Techniques
+
+Know:
+
+- Zero-shot
+- Few-shot
+- Role/instruction prompting
+- Delimiters
+- Structured output
+- Output schemas
+- Self-check / verification
+- Critic / evaluator patterns
+- Query decomposition
+- Rewriting
+- ReAct-style tool use
+- Prompt chaining
+- Router prompts
+- Context compression
+
+### 4.11 Prompt Injection Awareness
+
+Treat external content as **untrusted data**, not instructions.
+
+```text
+System Instructions
+      +
+User Input
+      +
+Retrieved Document  ← UNTRUSTED
+      +
+Tool Result         ← POTENTIALLY UNTRUSTED
+```
+
+Never allow a retrieved document to silently override system policy.
+
+### 4.12 Prompt Evaluation
+
+Maintain a prompt test set:
+
+```text
+Prompt Version A
+      ↓
+100 test cases
+      ↓
+Metrics
+      ↓
+Prompt Version B
+      ↓
+Regression comparison
+```
+
+Prompt changes should be evaluated like code changes.
+
+
+---
+
 
 ---
 
@@ -1269,6 +1775,111 @@ Model: 7B parameters (28 GB at FP32)
 This makes it possible to run on consumer GPUs!
 ```
 
+
+
+### 5.8 2026 Update — Modern PEFT
+
+The original LoRA section remains important. Modern PEFT is broader than LoRA.
+
+### 5.9 PEFT Family
+
+Know:
+
+- LoRA
+- QLoRA
+- DoRA
+- Adapters
+- Prefix tuning
+- Prompt tuning
+- IA³
+- BitFit
+
+### 5.10 QLoRA
+
+QLoRA combines:
+
+```text
+Quantized Base Model
+        +
+LoRA Adapters
+        ↓
+Memory-efficient fine-tuning
+```
+
+The base model is kept quantized/frozen while trainable low-rank adapters are optimized.
+
+### 5.11 DoRA
+
+**Weight-Decomposed Low-Rank Adaptation (DoRA)** separates magnitude and direction of weight updates, extending the LoRA idea.
+
+Learn it conceptually; LoRA/QLoRA remain the practical first priority.
+
+### 5.12 Modern Post-Training Stack
+
+```text
+Base Model
+   ↓
+SFT
+   ↓
+Preference Optimization
+   ├── DPO
+   ├── KTO
+   └── ORPO / related methods
+   ↓
+Reasoning Optimization
+   └── GRPO / RL-style methods
+   ↓
+Evaluation
+```
+
+### 5.13 Dataset Design Is Often More Important Than the Adapter
+
+A poor dataset can produce a poor fine-tuned model even with perfect LoRA settings.
+
+Check:
+
+- Instruction quality
+- Input diversity
+- Output correctness
+- Duplicates
+- Train/test leakage
+- Class balance
+- Edge cases
+- Safety cases
+- Domain coverage
+
+### 5.14 Modern Hyperparameters to Understand
+
+- rank `r`
+- `lora_alpha`
+- `lora_dropout`
+- target modules
+- learning rate
+- batch size
+- gradient accumulation
+- warmup
+- scheduler
+- number of epochs
+- max sequence length
+- packing
+- quantization configuration
+
+### 5.15 When NOT to Fine-Tune
+
+Use RAG/tools instead when the main requirement is:
+
+- Frequently changing factual knowledge
+- Private documents that change often
+- Live databases
+- Current web information
+- Deterministic calculations
+
+Fine-tuning is mainly about **behavior/capability adaptation**, not acting as a live database.
+
+
+---
+
+
 ---
 
 ## 6. LLM Evaluation (All Metrics)
@@ -1575,6 +2186,139 @@ PITFALLS TO AVOID:
    Solution: Separate validation and test sets
 ```
 
+
+
+### 6.7 2026 Update — Evaluation Must Cover the Whole AI System
+
+The original notes correctly identify the difficulty of evaluating open-ended LLMs. Modern evaluation expands this into multiple layers.
+
+```text
+MODEL
+  ↓
+RETRIEVAL
+  ↓
+GENERATION
+  ↓
+TOOL USE
+  ↓
+AGENT
+  ↓
+PRODUCTION
+```
+
+### 6.8 Model-Level Metrics
+
+Still know:
+
+- Perplexity
+- Cross-entropy loss
+- Accuracy
+- Precision
+- Recall
+- F1
+- BLEU
+- ROUGE
+- Exact Match
+- Pass@k
+
+Also understand benchmark-specific evaluation for:
+
+- Reasoning
+- Coding
+- Mathematics
+- Multimodal understanding
+- Long context
+- Instruction following
+
+### 6.9 RAG Metrics
+
+Add:
+
+- Recall@K
+- Precision@K
+- MRR
+- NDCG
+- Context precision
+- Context recall
+- Context relevance
+- Faithfulness
+- Answer relevance
+- Citation correctness
+
+### 6.10 Agent Metrics
+
+```text
+Task Success Rate
+Tool Selection Accuracy
+Tool Argument Accuracy
+Planning Efficiency
+Recovery Rate
+Average Steps
+Failure Rate
+Safety Violation Rate
+```
+
+### 6.11 Production Metrics
+
+Track:
+
+- TTFT
+- TPOT
+- End-to-end latency
+- Tokens/second
+- Cost/request
+- Error rate
+- Timeout rate
+- User satisfaction
+- Tool failure rate
+- Retrieval failure rate
+
+### 6.12 LLM-as-a-Judge
+
+An LLM can score another model's output.
+
+Useful for scalable evaluation, but judge models can have:
+
+- Position bias
+- Verbosity bias
+- Style bias
+- Agreement bias
+- Evaluation instability
+
+Therefore combine:
+
+```text
+Automated metrics
++
+LLM judge
++
+Human evaluation
++
+Task-specific validators
+```
+
+### 6.13 Regression Evaluation
+
+Create a permanent evaluation set:
+
+```text
+Golden Set
++
+Edge Cases
++
+Adversarial Cases
++
+Historical Failures
++
+Production Samples
+```
+
+Run it after every significant model, prompt, retriever or tool change.
+
+
+---
+
+
 ---
 
 ## 7. Retrieval-Augmented Generation (RAG)
@@ -1747,6 +2491,146 @@ WHEN TO USE FINE-TUNING:
 ✅ Proprietary knowledge (can't share)
 ✅ Low-latency requirements
 ```
+
+
+
+### 7.5 2026 Update — RAG Is Now a System, Not Just Vector Search
+
+The original RAG architecture is a good starting point. A modern RAG pipeline is usually:
+
+```text
+Question
+   ↓
+Query Analysis
+   ↓
+Query Rewrite / Decomposition
+   ↓
+Hybrid Retrieval
+   ├── BM25 / keyword
+   └── Dense vector search
+   ↓
+Metadata Filtering
+   ↓
+Reranking
+   ↓
+Context Compression
+   ↓
+LLM
+   ↓
+Grounding / Citation Check
+   ↓
+Answer
+```
+
+### 7.6 Chunking Has Become More Sophisticated
+
+Do not always use fixed 500-token chunks.
+
+Methods include:
+
+- Fixed-size chunks
+- Sentence chunks
+- Paragraph chunks
+- Recursive splitting
+- Semantic chunking
+- Structure-aware document chunking
+- Parent-child retrieval
+- Table-aware chunking
+
+### 7.7 Hybrid Retrieval
+
+Use both:
+
+```text
+Keyword Retrieval
++
+Semantic Retrieval
+```
+
+Why?
+
+- Keyword search is strong for exact terms, identifiers and names.
+- Semantic search is strong for meaning and paraphrases.
+
+### 7.8 Reranking
+
+```text
+Retrieve 50–100 candidates
+        ↓
+Reranker
+        ↓
+Top 5–10 candidates
+        ↓
+LLM
+```
+
+Reranking can substantially improve context quality without requiring the vector index to solve the entire ranking problem.
+
+### 7.9 Advanced RAG Patterns
+
+Know:
+
+- Query rewriting
+- Multi-query RAG
+- HyDE
+- Query decomposition
+- Parent-document retrieval
+- Contextual compression
+- Self-RAG concepts
+- Corrective RAG concepts
+- Agentic RAG
+- Graph RAG
+- Multimodal RAG
+
+### 7.10 RAG Does Not Guarantee Factuality
+
+Failure modes:
+
+```text
+Wrong retrieval
+     ↓
+Wrong context
+     ↓
+Confidently wrong answer
+```
+
+or:
+
+```text
+Correct context
+     ↓
+Model ignores evidence
+     ↓
+Hallucinated answer
+```
+
+Therefore use grounding and verification.
+
+### 7.11 RAG vs Fine-Tuning — Modern Rule
+
+```text
+Changing knowledge
+→ RAG / tools
+
+Behavior / style / format
+→ Fine-tuning
+
+Complex actions
+→ Tools / agents
+
+Current database facts
+→ Database/API
+
+Private document knowledge
+→ RAG
+
+Reasoning behavior
+→ Post-training / reasoning optimization
+```
+
+
+---
+
 
 ---
 
@@ -1927,6 +2811,109 @@ INFERENCE OPTIMIZATION:
    • Near-linear scaling
 ```
 
+
+
+### 8.4 2026 Update — Modern LLM Serving
+
+The original deployment and optimization section should now include modern inference infrastructure.
+
+### 8.5 Key Inference Metrics
+
+| Metric | Meaning |
+|---|---|
+| TTFT | Time to first generated token |
+| TPOT | Time per output token |
+| Throughput | Tokens or requests processed per unit time |
+| Concurrency | Simultaneous active requests |
+| GPU utilization | Hardware efficiency |
+| Cost/request | Economic efficiency |
+| KV-cache usage | Memory consumed by active sequences |
+
+### 8.6 Modern Serving Techniques
+
+Know:
+
+- KV caching
+- PagedAttention
+- Continuous batching
+- Prefix caching
+- Chunked prefill
+- FlashAttention
+- Speculative decoding
+- Tensor parallelism
+- Pipeline parallelism
+- Expert parallelism
+- Quantization
+
+### 8.7 Quantization
+
+Modern formats include:
+
+- FP16
+- BF16
+- FP8
+- INT8
+- INT4
+- NF4
+- GPTQ
+- AWQ
+- GGUF
+- MXFP-style formats
+
+Lower precision can reduce memory and improve throughput, but always benchmark quality and speed on the actual workload.
+
+### 8.8 Speculative Decoding
+
+```text
+Small Draft Model
+      ↓
+Candidate tokens
+      ↓
+Large Target Model
+      ↓
+Parallel verification
+      ↓
+Accept / reject
+```
+
+Goal:
+
+**reduce latency while preserving the target model's output distribution.**
+
+### 8.9 Modern Local Deployment
+
+For consumer hardware, common approaches include:
+
+```text
+Small model
++
+4-bit / 8-bit quantization
++
+Efficient runtime
++
+Shorter context
++
+CPU/GPU offloading if needed
+```
+
+Local inference is particularly useful when privacy, offline operation or API cost is important.
+
+### 8.10 Serving Engines
+
+Know the purpose of:
+
+- vLLM
+- llama.cpp
+- Hugging Face Transformers inference
+- ONNX/TensorRT-style optimized inference
+- Cloud inference endpoints
+
+Do not confuse a model library with a production serving engine.
+
+
+---
+
+
 ---
 
 ## 9. Ethics and Safety in LLMs
@@ -2072,6 +3059,130 @@ SAFETY MEASURES:
    • User complaints
    • Performance metrics
 ```
+
+
+
+### 9.3 2026 Update — AI Safety Is Also System Safety
+
+Modern safety must protect not only the model but the entire application.
+
+```text
+Model Safety
++
+Data Safety
++
+Prompt Security
++
+Tool Security
++
+Identity / Permissions
++
+Infrastructure Security
++
+Monitoring
+```
+
+### 9.4 New Major Threats
+
+#### Prompt Injection
+
+Attacker-controlled text attempts to change model behavior.
+
+#### Indirect Prompt Injection
+
+Malicious instructions are hidden in:
+
+- Web pages
+- PDFs
+- Emails
+- Documents
+- Search results
+- Tool outputs
+
+#### Tool Abuse
+
+A model may be tricked into using a powerful tool in an unsafe way.
+
+#### Data Exfiltration
+
+Agents may expose:
+
+- Secrets
+- Private files
+- Database records
+- API credentials
+- Personal information
+
+### 9.5 Agent Security Architecture
+
+```text
+Agent
+  ↓
+Permission Check
+  ↓
+Tool Policy
+  ↓
+Input Validation
+  ↓
+Sandbox / Execution Boundary
+  ↓
+Tool
+  ↓
+Output Validation
+  ↓
+Audit Log
+```
+
+### 9.6 Least Privilege
+
+Never give an agent more access than necessary.
+
+Bad:
+
+```text
+Agent → Full Database Access
+```
+
+Better:
+
+```text
+Agent
+  ↓
+Read-only scoped query tool
+  ↓
+Specific tables
+  ↓
+Specific columns
+```
+
+### 9.7 Human-in-the-Loop
+
+Require approval for high-impact actions:
+
+- Financial transactions
+- Deleting data
+- Sending external messages
+- Production deployments
+- Privilege changes
+- Irreversible operations
+
+### 9.8 Modern Safety Evaluation
+
+Test:
+
+- Jailbreak resistance
+- Prompt injection resistance
+- Data leakage
+- Unsafe tool calls
+- Unauthorized actions
+- PII exposure
+- Policy violations
+- Over-refusal
+- Under-refusal
+
+
+---
+
 
 ---
 
@@ -2340,9 +3451,246 @@ IMPROVEMENTS OVER BASE:
 • Reduced hallucination
 ```
 
+
+
+### 10.6 2026 Project Upgrade
+
+The original chatbot project is useful for learning fine-tuning. To make it representative of modern LLM engineering, evolve it in stages.
+
+### Phase 1 — Fine-Tuned Chatbot
+
+```text
+Base Model
+   ↓
+LoRA / QLoRA
+   ↓
+Instruction Dataset
+   ↓
+Fine-Tuned Model
+   ↓
+Chat UI
+```
+
+### Phase 2 — RAG Chatbot
+
+Add:
+
+```text
+PDF / Documents
+     ↓
+Parser
+     ↓
+Chunking
+     ↓
+Embeddings
+     ↓
+Vector Database
+     ↓
+Retriever + Reranker
+     ↓
+LLM
+```
+
+### Phase 3 — Tool-Using Assistant
+
+Add tools:
+
+- Calculator
+- Python execution in sandbox
+- Search
+- Database lookup
+- File retrieval
+
+### Phase 4 — Agent
+
+```text
+User Goal
+   ↓
+Router / Planner
+   ↓
+Tool selection
+   ↓
+Execution
+   ↓
+Observation
+   ↓
+Verification
+   ↓
+Final answer
+```
+
+### Phase 5 — Production
+
+Add:
+
+- Authentication
+- Authorization
+- Rate limiting
+- Structured outputs
+- Evaluation suite
+- Logging
+- Tracing
+- Cost monitoring
+- Prompt/version management
+- Security controls
+- Human approval for sensitive tools
+
+### 10.7 Project Evaluation
+
+Measure:
+
+```text
+Base Model
+      vs
+LoRA Model
+      vs
+RAG Model
+      vs
+RAG + Tool Agent
+```
+
+Compare:
+
+- Task accuracy
+- F1 / exact match where applicable
+- Groundedness
+- Citation accuracy
+- Tool-call success
+- Latency
+- Token usage
+- Cost
+- Failure rate
+
+### 10.8 Modern Project Architecture
+
+```text
+                  USER
+                    ↓
+              Web / Gradio UI
+                    ↓
+               API Backend
+                    ↓
+             Agent / Router
+          ┌─────────┼─────────┐
+          ↓         ↓         ↓
+        RAG       Tools     Memory
+          ↓         ↓         ↓
+      Vector DB   APIs     Database
+          └─────────┼─────────┘
+                    ↓
+              Foundation Model
+                    ↓
+               Validator
+                    ↓
+             Safety / Policy
+                    ↓
+              Observability
+                    ↓
+                  OUTPUT
+```
+
+This turns the original fine-tuned chatbot into a complete **2026 LLM engineering project**.
+
+
 ---
 
-## Summary
+## Unified Summary — 1 to 26
+
+You should now understand the complete progression:
+
+```text
+1. LLM Fundamentals
+        ↓
+2. Transformer Architecture
+        ↓
+3. Pretraining + Post-training
+        ↓
+4. Prompt Engineering
+        ↓
+5. PEFT / LoRA / QLoRA
+        ↓
+6. Evaluation
+        ↓
+7. RAG
+        ↓
+8. Deployment + Optimization
+        ↓
+9. Safety
+        ↓
+10. Fine-Tuned Chatbot
+        ↓
+11. Modern LLM Landscape
+        ↓
+12. Reasoning
+        ↓
+13. MoE
+        ↓
+14. Modern Attention
+        ↓
+15. Long Context + Context Engineering
+        ↓
+16. Multimodal AI
+        ↓
+17. Tools + Agents
+        ↓
+18. MCP
+        ↓
+19. Advanced RAG
+        ↓
+20. Modern Post-training
+        ↓
+21. Synthetic Data + Distillation
+        ↓
+22. Quantization + Inference
+        ↓
+23. Evaluation of Complete Systems
+        ↓
+24. Security + Observability
+        ↓
+25. Production Architecture
+        ↓
+26. 2026 Engineering Roadmap
+```
+
+### What is essential vs advanced?
+
+**Must know deeply:**
+- Transformers
+- Attention
+- Tokenization
+- Pretraining concepts
+- SFT
+- LoRA / QLoRA
+- RAG
+- Embeddings
+- Reranking
+- Tool calling
+- Agents
+- Evaluation
+- Quantization
+- AI security basics
+
+**Know conceptually next:**
+- MoE
+- DPO
+- GRPO
+- Distillation
+- Speculative decoding
+- PagedAttention
+- MCP
+- Graph RAG
+- Multimodal RAG
+
+**Research/deep-specialization topics:**
+- New reasoning architectures
+- Advanced inference-time scaling
+- New preference-learning objectives
+- New multimodal architectures
+- Distributed training at frontier scale
+- Advanced agent evaluation
+
+The objective is not to memorize every 2026 model. The objective is to understand the **architecture, training, retrieval, post-training, inference, agent, evaluation and security principles** that remain useful as individual models change.
+
 
 ```
 WEEK 6 - KEY TAKEAWAYS:
@@ -2389,3 +3737,1278 @@ WEEK 6 - KEY TAKEAWAYS:
    • Regular audits
    • Responsible deployment
 ```
+---
+
+## 11. 2025–2026 Modern LLM Landscape
+
+The modern LLM field has shifted from "generate text" toward complete AI systems that combine reasoning, multimodality, retrieval, tools, memory, evaluation and security.
+
+## 11.1 The Modern AI Stack
+
+```text
+                 AI APPLICATION
+                       ↓
+              Agent / Workflow Layer
+                       ↓
+          ┌────────────┼────────────┐
+          ↓            ↓            ↓
+       Retrieval      Tools       Memory
+          ↓            ↓            ↓
+      Vector/SQL      APIs        State
+          └────────────┼────────────┘
+                       ↓
+                 Foundation Model
+                       ↓
+             Reasoning / Generation
+                       ↓
+          Validation / Guardrails
+                       ↓
+                Observability
+```
+
+## 11.2 Major 2025–2026 Trends
+
+- Reasoning and inference-time compute
+- Multimodal foundation models
+- Mixture-of-Experts
+- Long-context models
+- Context engineering
+- Agentic workflows
+- Tool calling
+- MCP
+- Advanced RAG
+- Open-weight models
+- Small language models
+- PEFT and preference optimization
+- Synthetic data
+- Distillation
+- Quantized local inference
+- High-throughput serving
+- Continuous AI evaluation
+- AI security and observability
+
+## 11.3 The Important Shift
+
+```text
+LLM
+ ↓
+LLM + RAG
+ ↓
+LLM + Tools
+ ↓
+LLM + Tools + Memory
+ ↓
+Agent
+ ↓
+Agent + Multiple Tools + Verification
+ ↓
+Production AI System
+```
+
+---
+
+## 12. Reasoning Models
+
+## 12.1 What Is a Reasoning Model?
+
+Reasoning models are optimized to solve difficult multi-step problems by allocating additional computation during inference and/or using reasoning-focused post-training.
+
+```text
+Problem
+  ↓
+Understand
+  ↓
+Plan
+  ↓
+Reason / Search
+  ↓
+Verify
+  ↓
+Answer
+```
+
+## 12.2 Inference-Time Scaling
+
+Traditional:
+
+```text
+Same approximate compute budget
+for every request
+```
+
+Modern reasoning:
+
+```text
+Easy problem → less compute
+Hard problem → more compute
+```
+
+This creates a new optimization problem:
+
+```text
+Quality ↔ Reasoning Compute ↔ Latency ↔ Cost
+```
+
+## 12.3 Reasoning Techniques
+
+Know:
+
+- Chain-of-thought concepts
+- Self-consistency
+- Best-of-N sampling
+- Verification
+- Search
+- Test-time scaling
+- Adaptive compute
+- Process supervision
+- Outcome supervision
+- Reasoner/verifier architectures
+
+## 12.4 Important Principle
+
+A reasoning model is not automatically the best model for every request.
+
+Use routing:
+
+```text
+Simple → Small/Fast model
+Normal → General model
+Hard → Reasoning model
+Specialized → Specialized model/tool
+```
+
+---
+
+## 13. Mixture-of-Experts (MoE)
+
+## 13.1 Basic Architecture
+
+```text
+Input Token
+    ↓
+Router
+    ↓
+Top-k Experts
+ ┌──┼───┐
+ ↓  ↓   ↓
+E1 E7  E12
+ └──┼───┘
+    ↓
+Weighted Output
+```
+
+## 13.2 Dense vs MoE
+
+| Dense | MoE |
+|---|---|
+| Most parameters active for each token | Only selected experts active |
+| Simpler architecture | More complex routing |
+| Simpler serving | More distributed communication |
+| Compute scales directly with model size | Can increase capacity without activating all parameters |
+
+## 13.3 Terms to Know
+
+- Total parameters
+- Active parameters
+- Router
+- Expert
+- Top-k routing
+- Load balancing
+- Expert capacity
+- Routing auxiliary loss
+- Expert parallelism
+
+## 13.4 Why MoE Matters
+
+MoE allows high total parameter capacity while keeping active computation lower than an equivalently sized dense model.
+
+But memory and communication can still be large.
+
+---
+
+## 14. Modern Attention & Positional Representations
+
+## 14.1 Attention Variants
+
+### MHA
+
+Multiple independent Q/K/V heads.
+
+### MQA
+
+Many query heads share one K/V head.
+
+### GQA
+
+Groups of query heads share K/V heads.
+
+```text
+MHA → maximum K/V duplication
+GQA → reduced K/V duplication
+MQA → minimum K/V duplication
+```
+
+## 14.2 RoPE
+
+RoPE rotates Q/K representations based on position.
+
+Important for understanding modern decoder-only models.
+
+## 14.3 Sliding / Local Attention
+
+Some architectures restrict attention to a local window to reduce computation for long sequences.
+
+## 14.4 FlashAttention
+
+FlashAttention is an IO-aware attention implementation that reduces unnecessary memory movement and improves practical attention performance.
+
+It is an implementation optimization, not a different attention formula.
+
+---
+
+## 15. Long Context & Context Engineering
+
+## 15.1 Long Context
+
+Large context windows allow more information to be supplied in a single request.
+
+But:
+
+**Large context is not equivalent to reliable retrieval.**
+
+Problems include:
+
+- Context cost
+- KV-cache memory
+- Latency
+- Distractor information
+- Lost-in-the-middle behavior
+- Contradictory evidence
+
+## 15.2 Context Engineering
+
+```text
+User Query
+   ↓
+Retrieve
+   ↓
+Filter
+   ↓
+Rerank
+   ↓
+Compress
+   ↓
+Prioritize
+   ↓
+Build Context
+   ↓
+LLM
+```
+
+## 15.3 Context Sources
+
+Modern agents may assemble context from:
+
+- System policy
+- User input
+- Conversation history
+- Long-term memory
+- Files
+- Databases
+- Search
+- Tool results
+- RAG evidence
+- Current task state
+
+## 15.4 Context Budgeting
+
+Do not maximize context blindly.
+
+Optimize:
+
+```text
+Useful information / Context cost
+```
+
+A smaller, highly relevant context can outperform a huge noisy context.
+
+---
+
+## 16. Multimodal Foundation Models
+
+## 16.1 Modalities
+
+Modern systems can work with:
+
+- Text
+- Images
+- Audio
+- Video
+- Documents
+- Tables
+- Code
+- Structured data
+
+## 16.2 Vision-Language Model
+
+```text
+Image
+ ↓
+Vision Encoder
+ ↓
+Visual Tokens
+ ─────────────┐
+Text Tokens ──┼→ Multimodal Model
+              ↓
+           Reasoning
+              ↓
+        Text / Action
+```
+
+## 16.3 Applications
+
+- OCR
+- Document understanding
+- Visual QA
+- Chart analysis
+- UI understanding
+- Image classification
+- Image-grounded reasoning
+- Audio transcription + reasoning
+- Video understanding
+
+## 16.4 Multimodal RAG
+
+A knowledge base can contain:
+
+```text
+PDF
+ ├── Text
+ ├── Tables
+ ├── Images
+ └── Layout
+```
+
+Retrieval can therefore operate over multiple representations.
+
+---
+
+## 17. Tool Calling & AI Agents
+
+## 17.1 Function / Tool Calling
+
+A model can output a structured request:
+
+```json
+{
+  "name": "get_weather",
+  "arguments": {
+    "city": "Islamabad"
+  }
+}
+```
+
+The application, not the model, executes the tool.
+
+## 17.2 Tool-Calling Loop
+
+```text
+User
+ ↓
+Model
+ ↓
+Tool Call
+ ↓
+Application
+ ↓
+Tool
+ ↓
+Tool Result
+ ↓
+Model
+ ↓
+Final Answer
+```
+
+## 17.3 What Is an Agent?
+
+An agent is a model-driven system that can pursue a goal through iterative planning, tool use, observation and correction.
+
+```text
+Goal
+ ↓
+Plan
+ ↓
+Act
+ ↓
+Observe
+ ↓
+Evaluate
+ ↓
+Replan
+ ↓
+Done
+```
+
+## 17.4 Agent Components
+
+- Model
+- Instructions
+- State
+- Memory
+- Tools
+- Planner/router
+- Executor
+- Permissions
+- Guardrails
+- Evaluator
+- Observability
+
+## 17.5 Agent Patterns
+
+### ReAct
+
+```text
+Reason → Act → Observe → Repeat
+```
+
+### Plan-and-Execute
+
+```text
+Plan all major steps
+ ↓
+Execute
+ ↓
+Replan when necessary
+```
+
+### Router
+
+```text
+Query
+ ↓
+Router
+ ├── Research
+ ├── Coding
+ ├── Data
+ └── General
+```
+
+## 17.6 Agent Failure Modes
+
+- Wrong tool selection
+- Wrong tool arguments
+- Infinite loops
+- Context growth
+- Tool hallucination
+- Permission escalation
+- Unverified results
+- Expensive overthinking
+
+---
+
+## 18. Model Context Protocol (MCP)
+
+## 18.1 What Is MCP?
+
+MCP is an open protocol for connecting AI applications to external tools, resources and prompts.
+
+Conceptually:
+
+```text
+AI Host
+  ↓
+MCP Client
+  ↓
+MCP Server
+ ├── Tools
+ ├── Resources
+ └── Prompts
+```
+
+## 18.2 Why MCP Matters
+
+Instead of building a unique connector for every AI application:
+
+```text
+Application A ─┐
+Application B ─┼→ Standard MCP Server
+Application C ─┘
+```
+
+## 18.3 2026 MCP Update
+
+The **2026-07-28 MCP specification** introduced major changes including:
+
+- Stateless protocol core
+- Multi Round-Trip Requests
+- Header-based routing
+- Cacheable list results
+- Authorization hardening
+- Formal extensions framework
+- Updated SDKs
+- Deprecation policy
+
+The stateless core allows requests to be routed through ordinary load-balancing infrastructure without requiring the old session model.
+
+## 18.4 MCP Security
+
+MCP does not make tools automatically safe.
+
+Still use:
+
+- Authentication
+- Authorization
+- Least privilege
+- Input validation
+- Output validation
+- Tool allow-lists
+- Audit logs
+- Human approval
+
+---
+
+## 19. Modern RAG & Graph/Agentic RAG
+
+## 19.1 Advanced RAG Pipeline
+
+```text
+Query
+ ↓
+Query Analysis
+ ↓
+Rewrite / Decompose
+ ↓
+Hybrid Retrieval
+ ├── BM25
+ └── Dense Vector
+ ↓
+Metadata Filtering
+ ↓
+Reranking
+ ↓
+Compression
+ ↓
+LLM
+ ↓
+Grounding / Verification
+```
+
+## 19.2 Agentic RAG
+
+```text
+Question
+ ↓
+Agent
+ ↓
+"What evidence do I need?"
+ ↓
+Retrieve
+ ↓
+Inspect evidence
+ ↓
+Missing evidence?
+ ├── Yes → Search again
+ └── No
+ ↓
+Synthesize
+ ↓
+Verify
+```
+
+## 19.3 Graph RAG
+
+Graph RAG represents entities and relationships:
+
+```text
+[Researcher]
+     │
+ published
+     ↓
+[Paper]
+     │
+ uses
+     ↓
+[Dataset]
+```
+
+Useful for relationship-heavy questions.
+
+## 19.4 Multimodal RAG
+
+Retrieve across:
+
+- Text
+- Images
+- Tables
+- Audio
+- Video
+- Layout-aware documents
+
+## 19.5 RAG Evaluation
+
+Measure both retrieval and generation:
+
+```text
+Retrieval:
+Recall@K
+MRR
+NDCG
+Context Precision
+
+Generation:
+Faithfulness
+Answer Relevance
+Citation Correctness
+```
+
+---
+
+## 20. Modern Fine-Tuning & Preference Optimization
+
+## 20.1 SFT
+
+Train on high-quality instruction/response examples.
+
+## 20.2 LoRA / QLoRA
+
+Efficient task adaptation with a small trainable parameter set.
+
+## 20.3 DPO
+
+Direct Preference Optimization learns from:
+
+```text
+Prompt
+ ├── Preferred response
+ └── Rejected response
+```
+
+without requiring the classic RLHF reward-model + PPO pipeline.
+
+## 20.4 KTO / ORPO / Related Methods
+
+Modern post-training libraries provide several preference-learning alternatives.
+
+The important skill is understanding the objective and data format, not memorizing every trainer.
+
+## 20.5 GRPO
+
+GRPO uses groups of sampled responses and relative rewards and is strongly associated with modern reasoning-oriented post-training.
+
+## 20.6 Modern Post-Training Stack
+
+```text
+Base Model
+ ↓
+SFT
+ ↓
+Preference Optimization
+ ↓
+Reasoning / RL-style Optimization
+ ↓
+Safety Training
+ ↓
+Evaluation
+```
+
+Modern Hugging Face TRL provides SFT, DPO, GRPO, KTO and additional post-training trainers.
+
+---
+
+## 21. Synthetic Data & Distillation
+
+## 21.1 Synthetic Data
+
+```text
+Teacher Model
+ ↓
+Generate examples
+ ↓
+Filter
+ ↓
+Verify
+ ↓
+Deduplicate
+ ↓
+Train Student
+```
+
+## 21.2 Why Synthetic Data Is Useful
+
+- Generate rare examples
+- Expand instruction datasets
+- Create domain-specific data
+- Generate reasoning traces / solutions
+- Create difficult edge cases
+- Distill capabilities
+
+## 21.3 Risks
+
+- Teacher hallucinations
+- Repetitive distributions
+- Bias amplification
+- Incorrect labels
+- Model collapse / loss of diversity
+
+## 21.4 Knowledge Distillation
+
+```text
+Large Teacher
+     ↓
+High-quality outputs / signals
+     ↓
+Smaller Student
+```
+
+Use distillation when you need:
+
+- Lower latency
+- Lower cost
+- Local deployment
+- Edge deployment
+- Specialized behavior
+
+---
+
+## 22. Modern Quantization & Inference Engineering
+
+## 22.1 Precision
+
+Know:
+
+```text
+FP32 → FP16/BF16 → FP8 → INT8 → INT4/NF4
+```
+
+Lower precision generally reduces memory, but accuracy and hardware support must be tested.
+
+## 22.2 Quantization Methods
+
+Know conceptually:
+
+- GPTQ
+- AWQ
+- bitsandbytes
+- NF4
+- GGUF
+- FP8
+- MXFP-style formats
+
+## 22.3 KV Cache
+
+During generation, previous key/value states can be reused.
+
+```text
+Without KV cache
+→ recompute previous attention states
+
+With KV cache
+→ reuse previous states
+```
+
+KV-cache memory becomes a major constraint for long contexts and high concurrency.
+
+## 22.4 PagedAttention
+
+Manages KV-cache memory in blocks/pages to improve utilization.
+
+## 22.5 Continuous Batching
+
+Requests dynamically enter and leave a running batch.
+
+This improves throughput under variable request lengths.
+
+## 22.6 Speculative Decoding
+
+```text
+Draft Model
+ ↓
+Candidate tokens
+ ↓
+Target Model verifies
+ ↓
+Accept / reject
+```
+
+## 22.7 Prefix Caching
+
+If multiple requests share the same prefix, previously computed states can potentially be reused.
+
+## 22.8 Serving Engines
+
+Important tools:
+
+- vLLM
+- llama.cpp
+- Transformers inference
+- TensorRT/ONNX-style optimized runtimes
+- Managed cloud inference
+
+---
+
+## 23. LLM/Agent Evaluation
+
+## 23.1 Four Evaluation Layers
+
+```text
+1. Model
+2. RAG
+3. Agent
+4. Production
+```
+
+## 23.2 Model Evaluation
+
+- Perplexity
+- Accuracy
+- Exact Match
+- F1
+- BLEU
+- ROUGE
+- Pass@k
+- Reasoning benchmarks
+- Coding benchmarks
+- Multimodal benchmarks
+
+## 23.3 Agent Evaluation
+
+Measure:
+
+```text
+Task Success
+Tool Selection
+Tool Arguments
+Number of Steps
+Recovery
+Latency
+Cost
+Safety
+```
+
+## 23.4 Benchmark Example: PaperBench
+
+PaperBench evaluates whether AI agents can reproduce AI research, decomposing research replication into thousands of gradable subtasks.
+
+This illustrates a major shift:
+
+**Agent evaluation is moving from "does the chatbot answer correctly?" to "can the system complete a long-horizon real task?"**
+
+## 23.5 Evaluation Dataset
+
+Maintain:
+
+```text
+Golden Cases
++
+Edge Cases
++
+Adversarial Cases
++
+Regression Cases
++
+Production Failures
+```
+
+## 23.6 LLM-as-a-Judge
+
+Useful, but never blindly trust it.
+
+Combine:
+
+```text
+Automated metrics
++
+LLM judge
++
+Human review
++
+Deterministic validators
+```
+
+---
+
+## 24. AI Security & Observability
+
+## 24.1 Security Threat Model
+
+```text
+User Input
+   ↓
+Prompt Injection
+   ↓
+Agent
+   ↓
+Tool
+   ↓
+Data / API
+```
+
+Every boundary can become an attack surface.
+
+## 24.2 Major Threats
+
+- Direct prompt injection
+- Indirect prompt injection
+- Jailbreaking
+- Sensitive information disclosure
+- Insecure tool use
+- Excessive agency
+- Data poisoning
+- Supply-chain attacks
+- Credential exposure
+- Unauthorized actions
+
+## 24.3 Observability
+
+Trace:
+
+```text
+Request ID
+Model
+Prompt Version
+Input Tokens
+Output Tokens
+Retrieved Documents
+Tool Calls
+Tool Results
+Latency
+Errors
+Safety Events
+Final Outcome
+```
+
+## 24.4 Production Trace
+
+```text
+User
+ ↓
+Router
+ ↓
+Retriever
+ ↓
+Tool
+ ↓
+LLM
+ ↓
+Validator
+ ↓
+Response
+```
+
+Every major step should be inspectable.
+
+---
+
+## 25. Modern AI Application Architecture
+
+## 25.1 Production Architecture
+
+```text
+                  USER
+                    ↓
+              Web / Mobile
+                    ↓
+              API Gateway
+                    ↓
+            Authentication
+                    ↓
+            Agent / Workflow
+          ┌─────────┼─────────┐
+          ↓         ↓         ↓
+        RAG       Tools     Memory
+          ↓         ↓         ↓
+      Vector DB    APIs      DB
+          └─────────┼─────────┘
+                    ↓
+             Foundation Model
+                    ↓
+             Structured Output
+                    ↓
+              Validation
+                    ↓
+            Safety / Policies
+                    ↓
+             Observability
+                    ↓
+                 Response
+```
+
+## 25.2 Separation of Responsibilities
+
+The LLM should not directly own everything.
+
+```text
+LLM
+→ Reason / decide / generate
+
+Application
+→ Orchestrate
+
+Database
+→ Persist data
+
+Retriever
+→ Find evidence
+
+Tool
+→ Perform deterministic action
+
+Validator
+→ Check output
+
+Policy layer
+→ Control permissions
+
+Observability
+→ Monitor behavior
+```
+
+## 25.3 Why This Architecture Matters
+
+It improves:
+
+- Reliability
+- Security
+- Testability
+- Maintainability
+- Cost control
+- Debugging
+- Model interchangeability
+
+---
+
+## 26. 2026 Study Roadmap & Quick Revision
+
+## 26.1 Learning Order
+
+### Phase 1 — Foundations
+
+```text
+Python
+ ↓
+PyTorch
+ ↓
+Neural Networks
+ ↓
+Transformers
+ ↓
+Tokenization
+ ↓
+Attention
+```
+
+### Phase 2 — LLM Engineering
+
+```text
+Hugging Face
+ ↓
+Inference
+ ↓
+Prompting
+ ↓
+Structured Outputs
+ ↓
+Embeddings
+ ↓
+RAG
+ ↓
+Reranking
+```
+
+### Phase 3 — Fine-Tuning
+
+```text
+SFT
+ ↓
+LoRA
+ ↓
+QLoRA
+ ↓
+DPO
+ ↓
+GRPO Concepts
+```
+
+### Phase 4 — Agents
+
+```text
+Tool Calling
+ ↓
+ReAct
+ ↓
+Agent State
+ ↓
+MCP
+ ↓
+Memory
+ ↓
+Verification
+```
+
+### Phase 5 — Production
+
+```text
+Quantization
+ ↓
+Serving
+ ↓
+Caching
+ ↓
+Evaluation
+ ↓
+Security
+ ↓
+Observability
+ ↓
+Deployment
+```
+
+## 26.2 2026 Quick Revision
+
+```text
+LLM
+→ Foundation model for language generation/understanding
+
+Transformer
+→ Attention-based neural architecture
+
+RoPE
+→ Position representation used by many modern LLMs
+
+GQA
+→ Groups of query heads share K/V heads
+
+MoE
+→ Router selects a subset of experts
+
+Reasoning model
+→ Uses additional training/inference computation for difficult reasoning
+
+Multimodal model
+→ Handles multiple modalities
+
+RAG
+→ Retrieve external information before generation
+
+Reranker
+→ Reorders retrieved candidates
+
+Agentic RAG
+→ Agent decides what/when to retrieve
+
+Graph RAG
+→ Retrieval using entity relationships
+
+Tool calling
+→ Structured model request for an external function
+
+Agent
+→ Model-driven loop of planning, acting, observing and verifying
+
+MCP
+→ Protocol for connecting AI applications to tools/data
+
+SFT
+→ Supervised instruction fine-tuning
+
+LoRA
+→ Low-rank parameter-efficient adaptation
+
+QLoRA
+→ Quantized base + LoRA adapters
+
+DPO
+→ Preference optimization from chosen/rejected responses
+
+GRPO
+→ Group-relative optimization used in modern reasoning post-training
+
+Quantization
+→ Lower numerical precision for efficiency
+
+KV Cache
+→ Reuse attention states during generation
+
+PagedAttention
+→ Efficient KV-cache memory management
+
+Continuous batching
+→ Dynamically batches active requests
+
+Speculative decoding
+→ Draft with one model, verify with another
+
+Evaluation
+→ Model + retrieval + agent + production evaluation
+
+AI Security
+→ Protect model, data, tools, identities and infrastructure
+
+Observability
+→ Trace prompts, retrieval, tools, latency, cost and failures
+```
+
+## 26.3 Final Mental Model
+
+```text
+                 AI APPLICATION
+                       │
+              ┌────────┴────────┐
+              │                 │
+            AGENT            WORKFLOW
+              │                 │
+        ┌─────┼─────┐      ┌────┼────┐
+      Tools  RAG  Memory   APIs  Rules State
+        │     │     │
+        └─────┼─────┘
+              ↓
+        FOUNDATION MODEL
+              ↓
+       ┌──────┼───────┐
+       │      │       │
+   Reasoning Multi   Tool Use
+       │   modal      │
+       └──────┼───────┘
+              ↓
+        POST-TRAINING
+       ┌──────┼──────┐
+      SFT    PEFT   Preference
+              ↓
+             DATA
+              ↓
+        INFRASTRUCTURE
+              ↓
+     Serving / GPU / Cache
+              ↓
+          EVALUATION
+              ↓
+           SECURITY
+```
+
+### The Core 2026 Mindset
+
+Do not ask only:
+
+> **"How do I train an LLM?"**
+
+Also ask:
+
+> **"How do I choose the right model, prepare the right data, provide the right context, connect tools safely, evaluate the complete system, and deploy it efficiently?"**
+
+That is the difference between learning **LLMs as a topic** and learning **modern LLM engineering**.
+
+---
+
+### 26.4 2026 Reference Notes
+
+The following current sources were used to verify the modernization layer:
+
+- Model Context Protocol — 2026-07-28 specification
+- Hugging Face Transformers documentation — current architecture/model support
+- Hugging Face TRL — current SFT, DPO, GRPO, KTO and post-training workflows
+- vLLM documentation — modern serving and inference optimization
+- Research literature on reasoning and inference-time scaling
+- OpenAI PaperBench — agent/research evaluation
+
+**Important:** Model APIs, model names, benchmark scores, SDKs and protocol revisions change rapidly. Always verify the exact version of documentation before implementing a production system.
