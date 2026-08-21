@@ -1,0 +1,43 @@
+
+# Model Configuration
+model:
+  name: "microsoft/DialoGPT-small"
+  max_length: 128
+  temperature: 0.7
+
+# LoRA Configuration
+lora:
+  r: 8
+  alpha: 16
+  target_modules: ["c_attn", "c_proj", "c_fc"]
+  dropout: 0.1
+  bias: "none"
+
+# Training Configuration
+training:
+  epochs: 3
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 2e-4
+  warmup_steps: 20
+  weight_decay: 0.01
+  fp16: true
+  save_steps: 50
+  eval_steps: 50
+
+# Data Configuration
+data:
+  max_samples: 500
+  train_split: 0.9
+  seed: 42
+
+# Creator Information
+creator:
+  name: "Sanaullah"
+  education: "BSCS student at Abasyn University Islamabad"
+  cgpa: "3.86/4.00"
+  skills: "Python, Pandas, NumPy, PyTorch, CV, CNN"
+  internship: "AI/ML Engineer Intern at Tech Prime Pvt. Limited"
+  github: "https://github.com/SANAULLAH-AI"
+  linkedin: "https://www.linkedin.com/in/sanaullah-ai"
+  portfolio: "https://sanaullah7964.netlify.app/"
