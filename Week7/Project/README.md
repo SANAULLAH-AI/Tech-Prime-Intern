@@ -1,4 +1,4 @@
-# NotebookLM RAG Studio - README
+# NotebookLM RAG Studio
 
 A comprehensive Retrieval-Augmented Generation (RAG) system built with Google Gemini and hybrid retrieval techniques for document question-answering, podcast generation, and knowledge synthesis.
 
