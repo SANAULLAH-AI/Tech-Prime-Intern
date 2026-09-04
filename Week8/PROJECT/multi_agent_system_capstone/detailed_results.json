@@ -1,0 +1,90 @@
+[
+  {
+    "query": "Calculate the compound interest for $10,000 at 5% for 3 years",
+    "success": true,
+    "execution_time": 0.21587252616882324,
+    "tasks_completed": 2,
+    "agents_used": [
+      "summarizer"
+    ],
+    "final_answer": "Error in Summarizer: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+    "error": ""
+  },
+  {
+    "query": "Analyze recent sales trends and predict future growth",
+    "success": true,
+    "execution_time": 0.10779285430908203,
+    "tasks_completed": 2,
+    "agents_used": [
+      "summarizer"
+    ],
+    "final_answer": "Error in Summarizer: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+    "error": ""
+  },
+  {
+    "query": "Create a Python function to sort a list of numbers",
+    "success": true,
+    "execution_time": 0.10698747634887695,
+    "tasks_completed": 2,
+    "agents_used": [
+      "summarizer"
+    ],
+    "final_answer": "Error in Summarizer: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+    "error": ""
+  },
+  {
+    "query": "Explain the benefits of AI in healthcare with data analysis",
+    "success": true,
+    "execution_time": 0.10303497314453125,
+    "tasks_completed": 2,
+    "agents_used": [
+      "summarizer"
+    ],
+    "final_answer": "Error in Summarizer: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+    "error": ""
+  },
+  {
+    "query": "Plan a marketing strategy for a new tech product launch",
+    "success": true,
+    "execution_time": 0.10761713981628418,
+    "tasks_completed": 2,
+    "agents_used": [
+      "summarizer"
+    ],
+    "final_answer": "Error in Summarizer: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+    "error": ""
+  },
+  {
+    "query": "Analyze customer feedback and suggest improvements",
+    "success": true,
+    "execution_time": 0.11089539527893066,
+    "tasks_completed": 2,
+    "agents_used": [
+      "summarizer"
+    ],
+    "final_answer": "Error in Summarizer: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+    "error": ""
+  },
+  {
+    "query": "Generate code for a weather API integration",
+    "success": true,
+    "execution_time": 0.10570025444030762,
+    "tasks_completed": 2,
+    "agents_used": [
+      "summarizer"
+    ],
+    "final_answer": "Error in Summarizer: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+    "error": ""
+  },
+  {
+    "query": "Evaluate market conditions for renewable energy investments",
+    "success": true,
+    "execution_time": 0.10839176177978516,
+    "tasks_completed": 2,
+    "agents_used": [
+      "summarizer"
+    ],
+    "final_answer": "Error in Summarizer: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}",
+    "error": ""
+  }
+]
