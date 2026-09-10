@@ -1,6 +1,6 @@
 
 # Tech Prime Internship Program
-## 8-Week Advanced AI/ML Training Portfolio
+## 9-Week Advanced AI/ML Training Portfolio
 
 [![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
@@ -22,6 +22,7 @@
   - [Week 6: Large Language Models](#week-6-large-language-models)
   - [Week 7: Retrieval-Augmented Generation](#week-7-retrieval-augmented-generation-rag)
   - [Week 8: Agentic AI Capstone](#week-8-agentic-ai-capstone)
+  - [Week 9: Agentic AI Capstone](#week-9-SupportIQ-Enterprise-AI-Customer-Support-Copilot)
 - [Portfolio Checklist](#portfolio-checklist)
 - [Technologies & Tools](#technologies--tools)
 - [Contact & Connect](#contact--connect)
@@ -184,7 +185,7 @@ The 8-Week Advanced AI/ML Internship Program by Tech Prime Pvt Limited delivers 
 
 ## Portfolio Checklist
 
-- [ ] 8 completed advanced AI/ML projects
+- [ ] 9 completed advanced AI/ML projects
 - [ ] Well-documented GitHub repository
 - [ ] Professional README files for each project
 - [ ] Project demonstrations
