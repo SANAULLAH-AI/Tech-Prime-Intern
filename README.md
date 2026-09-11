@@ -1,4 +1,3 @@
-
 # Tech Prime Internship Program
 ## 9-Week Advanced AI/ML Training Portfolio
 
@@ -22,7 +21,7 @@
   - [Week 6: Large Language Models](#week-6-large-language-models)
   - [Week 7: Retrieval-Augmented Generation](#week-7-retrieval-augmented-generation-rag)
   - [Week 8: Agentic AI Capstone](#week-8-agentic-ai-capstone)
-  - [Week 9: Agentic AI Capstone](#week-9-SupportIQ-Enterprise-AI-Customer-Support-Copilot)
+  - [Week 9: SupportIQ — Enterprise AI Customer-Support Copilot](#week-9-supportiq--enterprise-ai-customer-support-copilot)
 - [Portfolio Checklist](#portfolio-checklist)
 - [Technologies & Tools](#technologies--tools)
 - [Contact & Connect](#contact--connect)
@@ -33,15 +32,15 @@
 
 | **Aspect** | **Details** |
 |------------|-------------|
-| **Program** | 8-Week Advanced AI/ML Internship Program |
+| **Program** | 9-Week Advanced AI/ML Internship Program |
 | **Organization** | Tech Prime Pvt Limited |
-| **Duration** | 8 Weeks |
+| **Duration** | 9 Weeks |
 | **Commitment** | 9:00 AM – 5:00 PM (Monday – Friday) |
 | **Objective** | Build advanced proficiency in PyTorch, Computer Vision, NLP, Large Language Models, and Agentic AI through hands-on, project-based training. |
 
 ### Description
 
-The 8-Week Advanced AI/ML Internship Program by Tech Prime Pvt Limited delivers hands-on training in deep learning, computer vision, natural language processing, large language models, and agentic AI systems through a structured, project-based curriculum. Participants use industry-standard tools and frameworks to complete one real-world project each week, building a professional portfolio. By the end of the program, trainees are equipped to design, fine-tune, and deploy modern AI systems, and to showcase their work on GitHub.
+The 9-Week Advanced AI/ML Internship Program by Tech Prime Pvt Limited delivers hands-on training in deep learning, computer vision, natural language processing, large language models, and agentic AI systems through a structured, project-based curriculum. Participants use industry-standard tools and frameworks to complete one real-world project each week, building a professional portfolio. By the end of the program, trainees are equipped to design, fine-tune, and deploy modern AI systems, and to showcase their work on GitHub.
 
 ---
 
@@ -183,6 +182,23 @@ The 8-Week Advanced AI/ML Internship Program by Tech Prime Pvt Limited delivers 
 
 ---
 
+### Week 9: SupportIQ — Enterprise AI Customer-Support Copilot
+
+| **Component** | **Details** |
+|---------------|-------------|
+| **Focus** | Enterprise AI Customer-Support Copilot (Production-Focused Portfolio Project) |
+| **Topics** | Multi-tenant SaaS architecture, Retrieval-Augmented Generation (RAG), hybrid retrieval, reranking, grounded generation, citation verification, confidence-based routing, human escalation, tenant isolation, RBAC, prompt-injection defense, PII protection, quality evaluation, observability, deployment |
+| **Weekly Project** | SupportIQ — a secure, multi-tenant AI support platform that answers customer questions from company knowledge, cites its sources, detects uncertainty, and hands difficult cases to a human agent |
+| **Deliverables** | Deployed application, source code, evaluation report, demo video, README, architecture diagram, resume bullet |
+
+**Project Goals:**
+- Complete the project independently
+- Document findings
+- Push source code to GitHub
+- Prepare a short presentation
+
+
+
 ## Portfolio Checklist
 
 - [ ] 9 completed advanced AI/ML projects
@@ -209,7 +225,6 @@ The 8-Week Advanced AI/ML Internship Program by Tech Prime Pvt Limited delivers 
 
 ---
 
-
 ## Contact & Connect
 
 | **Platform** | **Link** |
@@ -227,10 +242,8 @@ Special thanks to **Tech Prime Pvt Limited** for providing this comprehensive tr
 
 <div align="center">
 
-**Tech Prime Pvt Limited** | 8-Week Advanced AI/ML Internship Program
+**Tech Prime Pvt Limited** | 9-Week Advanced AI/ML Internship Program
 
 *Built with dedication, curiosity, and a commitment to excellence.*
 
 </div>
-```
-
